@@ -1,0 +1,11 @@
+node_modules/
+dist/
+shots/
+.env*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+.superpowers/
+design/art-source/
+__pycache__/

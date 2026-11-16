@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" data-style="flat" class="sick">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life-sim mockup v2: the year screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens ---------- */
+:root{--tile:64px;--rail:320px}
+:root[data-style=flat]{--font:"Plus Jakarta Sans",system-ui,sans-serif;--fs:15px;
+  --ink:#252A5E;--ink2:#5F648C;--ink3:#A3A6C0;--page:#EDE4D8;--card:rgba(255,255,255,.76);--solid:#fff;
+  --hair:rgba(37,42,94,.10);--track:rgba(37,42,94,.09);--accent:#D2432A;--on-accent:#fff;
+  --good:#14795D;--bad:#C43A30;--warn:#96590A;--health:#F2674A;--happy:#F2B137;--smarts:#4D5AC7;--looks:#2F9C8C;--minor:#8B90B3;
+  --r:24px;--r2:18px;--ease:cubic-bezier(.2,.9,.25,1.15);--dur:.22s}
+:root[data-style=pixel]{--font:"Pixelify Sans",ui-monospace,monospace;--fs:17px;
+  --ink:#EEF2FF;--ink2:#A9B8E8;--ink3:#5F73BA;--page:#030A22;--card:#0B1E57;--solid:#0B1E57;--slot:#01123E;
+  --hair:rgba(169,184,232,.2);--track:#01123E;--line:#DCE4FF;--edge:#01081C;--accent:#FFC533;--on-accent:#1A1206;
+  --good:#57D37A;--bad:#FF7A7A;--warn:#FFC533;--health:#FF6B5E;--happy:#FFD23F;--smarts:#6FA8FF;--looks:#3FE0C5;--minor:#8C9DD6;
+  --r:0px;--r2:0px;--ease:steps(4,end);--dur:.12s}
+
+/* ---------- base and layout (shared by both styles) ---------- */
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+.noanim *{transition:none!important}
+html,body{height:100%}
+body{font:500 var(--fs)/1.45 var(--font);color:var(--ink);background:var(--page);display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px;padding:12px 20px 18px;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;text-align:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.fl,.px{display:none!important}
+[data-style=flat] .fl,[data-style=pixel] .px{display:block!important}
+.amb{position:fixed;inset:-40px;z-index:-1;background:center/cover no-repeat}
+.label{font-weight:700;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--track);margin-left:6px}
+
+.top{display:flex;align-items:center;gap:16px;min-height:36px}
+.brand{font-weight:800;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand i{width:10px;height:10px;border-radius:var(--r);background:var(--accent)}
+.brand em{font-style:normal;font-weight:600;font-size:12px;color:var(--ink2);padding:2px 8px;border-radius:var(--r);background:var(--track)}
+.hint{flex:1;text-align:center;font-size:13px;color:var(--ink2);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;gap:8px;align-items:center}
+.seg{display:flex;padding:3px;border-radius:12px;background:var(--track)}
+.seg button{padding:6px 12px;border-radius:9px;font-weight:700;font-size:13px;color:var(--ink2)}
+.seg button[aria-pressed=true]{background:var(--solid);color:var(--ink)}
+.ghost{padding:7px 12px;border-radius:10px;font-weight:700;font-size:13px;color:var(--ink2);background:var(--track);white-space:nowrap}
+.ghost:hover{color:var(--ink)}
+
+.app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:20px;min-height:0}
+.rail{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto;scrollbar-width:thin;padding:4px;margin:-4px}
+.scene{position:relative;width:var(--rail);height:var(--rail);flex:none;border-radius:var(--r);overflow:hidden}
+.scene img{width:100%;height:100%;object-fit:cover;object-position:50% 0;transition:filter .6s}
+.sick .scene img{filter:saturate(.7)}
+.badges{position:absolute;left:10px;top:10px;display:grid;gap:6px;justify-items:start}
+.badge{padding:4px 10px;border-radius:99px;font-weight:800;font-size:12px;background:var(--solid);color:var(--bad)}
+.who{padding:0 4px}
+.who h1{font-size:25px;font-weight:800;letter-spacing:-.025em;line-height:1.1}
+.who p{color:var(--ink2);font-size:13.5px;margin-top:3px}
+.card{background:var(--card);border-radius:var(--r)}
+.stats{padding:14px 16px;display:grid;gap:9px}
+.stat{display:grid;grid-template-columns:92px 1fr 30px;align-items:center;gap:10px;position:relative;font-size:14px;font-weight:600}
+.stat b{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.stat.low b{color:var(--bad)}
+.bar{position:relative;height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;width:calc(var(--v)*1%);background:var(--c);border-radius:inherit;transition:width .7s var(--ease)}
+.stat.minor{font-size:13px;color:var(--ink2)}.stat.minor .bar{height:5px}
+.rule{height:1px;background:var(--hair);margin:2px 0}
+.money{display:flex;justify-content:space-between;align-items:baseline;position:relative;font-size:13.5px;color:var(--ink2);font-weight:600}
+.money b{font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.delta{position:absolute;right:0;top:-8px;font-weight:800;font-size:12.5px;padding:1px 7px;border-radius:99px;background:var(--solid);pointer-events:none;animation:rise 1.6s var(--ease) forwards;z-index:2}
+.delta.up{color:var(--good)}.delta.down{color:var(--bad)}
+@keyframes rise{0%{opacity:0;transform:translateY(8px) scale(.8)}14%{opacity:1;transform:translateY(-6px) scale(1)}75%{opacity:1;transform:translateY(-10px)}100%{opacity:0;transform:translateY(-18px)}}
+.cond{padding:12px 16px;display:grid;gap:3px;font-size:13.5px;color:var(--ink2)}
+.cond div{display:grid;gap:1px}
+.cond b{font-size:15.5px;color:var(--ink)}
+.cond .st{color:var(--bad);font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em}
+.cond button{justify-self:start;margin-top:4px;font-weight:800;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+
+.main{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:14px;min-height:0;min-width:0}
+.stage{position:relative;min-height:0}
+.journal{position:absolute;inset:0;display:grid;grid-template-rows:auto minmax(0,1fr);padding:20px 26px 0}
+.jh{display:flex;align-items:flex-end;gap:30px;padding-bottom:14px;border-bottom:1px solid var(--hair)}
+.agebig{display:grid;gap:4px}
+.agebig b{font-size:62px;font-weight:800;letter-spacing:-.05em;line-height:.82;font-variant-numeric:tabular-nums}
+.life{flex:1;display:flex;gap:4px;min-width:0;padding-bottom:1px}
+.life>div{flex:var(--g) 1 0;min-width:0;position:relative;transition:flex-grow .8s var(--ease)}
+.life>div::before{content:"";display:block;height:6px;border-radius:var(--r);background:var(--ink3)}
+.life span{display:block;margin-top:7px;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.life .now::before{background:var(--accent)}.life .now span{color:var(--accent)}
+.life .ahead::before{background:repeating-linear-gradient(90deg,var(--ink3) 0 4px,transparent 4px 10px)}
+.life i{position:absolute;top:-3px;width:12px;height:12px;border-radius:var(--r);background:var(--solid);border:3px solid var(--happy);cursor:help}
+.entries{overflow:auto;padding:4px 6px 22px 0;scrollbar-width:thin}
+.yr{display:flex;align-items:center;gap:12px;margin:16px 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+.yr::after{content:"";flex:1;height:1px;background:var(--hair)}
+.e{position:relative;padding:6px 0 6px 22px;font-size:15.5px;line-height:1.55;max-width:78ch}
+.e::before{content:"";position:absolute;left:3px;top:15px;width:7px;height:7px;border-radius:var(--r);background:var(--ink3)}
+.e.did::before{background:var(--accent)}.e.mem::before{background:var(--happy)}.e.old{color:var(--ink2)}
+.e.new{animation:enter .45s var(--ease)}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}}
+.chg,.chip{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:700;background:var(--track);color:var(--ink2);white-space:nowrap}
+.chg{margin-left:6px}
+.chg.up,.chip.up{color:var(--good)}.chg.down,.chip.down{color:var(--bad)}
+.tagm{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--warn);margin-right:7px}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:calc(100% - 100px);display:grid;grid-template-rows:auto minmax(0,1fr);padding:16px 18px 18px;z-index:3;animation:up .3s var(--ease)}
+@keyframes up{from{opacity:0;transform:translateY(22px)}}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:0 4px}
+.sh h2{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.sh p{color:var(--ink2);font-size:13.5px}
+.sh .ghost{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;overflow:auto;padding:4px}
+.act{position:relative;display:grid;grid-template-columns:var(--tile) minmax(0,1fr);gap:13px;align-items:center;padding:10px 12px 10px 10px;border-radius:20px;transition:transform var(--dur) var(--ease),box-shadow var(--dur),background var(--dur)}
+.act .t{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:15.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.act .d{display:block;font-size:13px;font-weight:500;color:var(--ink2);line-height:1.35;margin:2px 0 6px}
+.act .meta{display:flex;flex-wrap:wrap;gap:5px}
+.act .why{display:block;font-size:12.5px;font-weight:700;color:var(--warn)}
+.act:disabled{cursor:not-allowed}.act:disabled .ico,.act:disabled .t,.act:disabled .d{opacity:.5}
+.pill{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--accent);color:var(--on-accent)}
+.pill.q{background:var(--track);color:var(--smarts)}
+
+.ico{display:block;width:var(--tile);height:var(--tile);flex:none;background-repeat:no-repeat;background-size:calc(var(--tile)*8) calc(var(--tile)*8);background-position:calc(var(--c)*-1*var(--tile)) calc(var(--r)*-1*var(--tile))}
+.ico.s{--tile:32px}
+
+.dock{padding:10px 14px 12px;display:grid;gap:8px;justify-self:center;width:min(100%,1010px)}
+.energy{display:flex;align-items:center;gap:10px;padding:0 6px 8px;border-bottom:1px solid var(--hair);font-size:13.5px}
+.pips{display:flex;gap:4px}
+.pips i{width:16px;height:9px;border-radius:99px;background:var(--ink)}
+.pips i.off{background:var(--track)}.pips i.over{background:var(--bad)}
+.energy .left{font-weight:700;font-variant-numeric:tabular-nums}
+.energy .tip{margin-left:auto;color:var(--ink2);font-size:13px;text-align:right}
+.cats{display:flex;align-items:center;justify-content:center;gap:4px}
+.cat{display:grid;justify-items:center;gap:5px;width:86px;padding:7px 2px 5px;border-radius:20px;font-weight:700;font-size:12.5px;color:var(--ink2);transition:background var(--dur),color var(--dur)}
+.cat .ico{transition:transform var(--dur) var(--ease),box-shadow var(--dur)}
+.cat:hover{background:var(--track);color:var(--ink)}
+.cat[aria-pressed=true]{color:var(--accent)}
+.age{margin:0 12px;height:78px;min-width:168px;padding:0 24px;border-radius:26px;background:var(--accent);color:var(--on-accent);display:grid;place-content:center;justify-items:center;line-height:1.12;transition:transform var(--dur) var(--ease),filter var(--dur)}
+.age small{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.age b{font-size:25px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+
+.veil{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.modal{width:min(720px,100%);max-height:100%;overflow:auto;padding:20px 22px;animation:pop .34s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}}
+.modal h2{font-size:26px;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin:3px 0 4px}
+.modal p{color:var(--ink2)}
+.pitch{position:relative;margin:14px auto 12px;aspect-ratio:3/2;border-radius:var(--r2);overflow:hidden;width:min(100%,66vh)}
+.pitch img{width:100%;height:100%;object-fit:cover;transform-origin:50% 42%}
+.pitch.zoom img{animation:zoom .75s var(--ease)}
+@keyframes zoom{25%{transform:scale(1.18)}}
+.pitch.flash::after{content:"";position:absolute;inset:0;background:#fff;animation:flash .24s steps(2) forwards}
+@keyframes flash{to{opacity:0}}
+.ball{position:absolute;left:50%;top:75%;width:44px;height:44px;transform:translate(-50%,-50%);background:center/contain no-repeat}
+.shout{position:absolute;inset:0;display:grid;place-items:center;font-size:60px;font-weight:800;letter-spacing:-.03em;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 40px rgba(0,0,0,.45);pointer-events:none;opacity:0}
+.shout.on{animation:shout .9s var(--ease) forwards}
+@keyframes shout{0%{opacity:0;transform:scale(2.2)}18%{opacity:1;transform:scale(.94)}30%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+.modal.hit{animation:hit .5s}
+@keyframes hit{0%,8%{filter:invert(1)}9%{filter:none;transform:scale(1.035)}30%{transform:translate(-7px,3px)}50%{transform:translate(6px,-2px)}70%{transform:translate(-3px,1px)}100%{transform:none}}
+.modal.miss{animation:miss .35s}
+@keyframes miss{25%{transform:translateX(-9px) rotate(-.6deg)}75%{transform:translateX(9px) rotate(.6deg)}}
+.pitch .badge{position:absolute;left:10px;top:10px}
+.meter{position:relative;height:30px;border-radius:99px;background:var(--track);overflow:hidden;margin:0 auto;width:min(100%,560px)}
+.zone{position:absolute;inset:0 22% 0 58%;background:var(--good)}
+.zone::after{content:"";position:absolute;inset:0 40%;background:var(--happy)}
+.marker{position:absolute;top:0;bottom:0;width:6px;margin-left:-3px;background:var(--ink)}
+.mf{display:flex;align-items:center;gap:10px;margin-top:14px;min-height:46px}
+.mf .res{flex:1;font-weight:600;line-height:1.7}
+.primary{padding:12px 22px;border-radius:16px;background:var(--ink);color:var(--solid);font-weight:800;font-size:15px;white-space:nowrap;transition:transform var(--dur) var(--ease)}
+.primary:active,.age:active,.act:active:not(:disabled){transform:scale(.97)}
+.ev{padding:0;width:min(760px,100%)}
+.banner{aspect-ratio:21/9;overflow:hidden}
+.banner img{width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+.evb{padding:18px 24px 22px;display:grid;gap:8px}
+.evb .label{margin-top:8px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{padding:9px 14px;border-radius:14px;background:var(--track);font-weight:700;font-size:14px;transition:background var(--dur),color var(--dur)}
+.opt small{display:block;font-size:11px;font-weight:700;color:var(--smarts)}
+.opt[aria-pressed=true]{background:var(--ink);color:var(--solid)}
+.opt[aria-pressed=true] small{color:var(--happy)}
+.evb .primary{justify-self:end;margin-top:8px}
+.turn{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:var(--accent);color:var(--on-accent);text-align:center;animation:turnbg 1.25s forwards}
+.turn small{font-size:15px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+.turn b{display:block;font-size:min(46vh,340px);font-weight:800;letter-spacing:-.06em;line-height:.9;animation:turnnum 1.25s var(--ease) forwards}
+@keyframes turnnum{0%{transform:scale(.3);opacity:0}22%{transform:scale(1.08);opacity:1}34%,80%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0}}
+@keyframes turnbg{0%{opacity:0}12%,80%{opacity:1}100%{opacity:0}}
+
+/* ---------- flat illustrated skin: frosted glass over a blur of your own room ---------- */
+[data-style=flat] .amb{background-image:url(/files/amb-flat.webp);filter:saturate(1.4) brightness(1.08)}
+[data-style=flat] .amb::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 15% 0%,rgba(255,255,255,.6),rgba(255,255,255,.15) 60%)}
+[data-style=flat] .card{border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 12px 34px rgba(37,42,94,.09);backdrop-filter:blur(18px) saturate(1.3)}
+[data-style=flat] .seg button[aria-pressed=true]{box-shadow:0 1px 3px rgba(37,42,94,.18)}
+[data-style=flat] .scene{box-shadow:0 14px 36px rgba(37,42,94,.18)}
+[data-style=flat] .badge,[data-style=flat] .delta{box-shadow:0 2px 10px rgba(37,42,94,.18)}
+[data-style=flat] .cond{background:linear-gradient(rgba(196,58,48,.07),rgba(196,58,48,.07)),var(--card);border-color:rgba(196,58,48,.2)}
+[data-style=flat] .sheet{background:rgba(255,255,255,.93);box-shadow:inset 0 1px 0 #fff,0 -14px 44px rgba(37,42,94,.16)}
+[data-style=flat] .act{background:rgba(255,255,255,.7);border:1px solid var(--hair)}
+[data-style=flat] .act:hover:not(:disabled){transform:translateY(-2px);background:#fff;box-shadow:0 10px 26px rgba(37,42,94,.13)}
+[data-style=flat] .act.urgent{border-color:rgba(196,58,48,.45);background:#FFF6F4}
+[data-style=flat] .ico{background-image:url(/files/icons-flat.webp);background-color:#fff;background-blend-mode:multiply;border-radius:calc(var(--tile)*.28);box-shadow:0 0 0 1px var(--hair)}
+[data-style=flat] .dock{border-radius:30px;background:rgba(255,255,255,.84);box-shadow:inset 0 1px 0 #fff,0 18px 50px rgba(37,42,94,.17)}
+[data-style=flat] .cat:hover .ico{transform:translateY(-3px) scale(1.04)}
+[data-style=flat] .cat[aria-pressed=true] .ico{box-shadow:0 0 0 3px var(--accent)}
+[data-style=flat] .age{box-shadow:0 12px 28px rgba(210,67,42,.42),inset 0 1px 0 rgba(255,255,255,.4)}
+[data-style=flat] .age:hover{transform:translateY(-2px) scale(1.03);filter:brightness(1.06)}
+[data-style=flat] .veil{background:rgba(24,22,52,.42);backdrop-filter:blur(10px)}
+[data-style=flat] .modal{background:rgba(255,255,255,.95)}
+[data-style=flat] .ball{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='%23fff' stroke='%23252A5E' stroke-width='2'/%3E%3Cpath d='M20 12l7 5-3 8h-8l-3-8z' fill='%23252A5E'/%3E%3Cpath d='M20 12V2M27 17l10-4M24 25l6 9M16 25l-6 9M13 17L3 13' stroke='%23252A5E' stroke-width='2'/%3E%3C/svg%3E")}
+[data-style=flat] .marker{border-radius:99px;box-shadow:0 0 0 2px #fff}
+[data-style=flat] .banner{border-radius:var(--r) var(--r) 0 0}
+
+/* ---------- pixel skin: 16-bit console windows, hard edges, stepped motion ---------- */
+[data-style=pixel] *{image-rendering:pixelated}
+[data-style=pixel] .amb{background-image:url(/files/amb-pixel.webp);opacity:.14}
+[data-style=pixel] :is(.card,.scene,.act,.age,.seg,.primary,.meter,.opt,.pitch){--frame:0 -2px 0 0 var(--line),0 2px 0 0 var(--line),-2px 0 0 0 var(--line),2px 0 0 0 var(--line),-2px -2px 0 0 var(--edge),2px -2px 0 0 var(--edge),-2px 2px 0 0 var(--edge),2px 2px 0 0 var(--edge),0 -4px 0 0 var(--edge),0 4px 0 0 var(--edge),-4px 0 0 0 var(--edge),4px 0 0 0 var(--edge);box-shadow:var(--frame);border-radius:0}
+[data-style=pixel] :is(.act,.opt,.meter,.seg){--line:#3F58B0}
+[data-style=pixel] :is(.label,.yr,.tagm){color:var(--accent);font-size:13px;font-weight:500;letter-spacing:.08em}
+[data-style=pixel] :is(.who h1,.agebig b,.sh h2,.modal h2,.money b){font-weight:700;letter-spacing:0;text-shadow:2px 2px 0 var(--edge)}
+[data-style=pixel] .agebig b{color:var(--accent);text-shadow:4px 4px 0 var(--edge);letter-spacing:.02em}
+[data-style=pixel] .brand{letter-spacing:.02em}
+[data-style=pixel] :is(.seg,.seg button,.ghost,kbd,.badge,.delta,.chg,.chip,.pill,.pips i,.bar,.cat){border-radius:0}
+[data-style=pixel] .seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+[data-style=pixel] .badge{background:var(--bad);color:#2A0508;box-shadow:0 0 0 2px var(--edge)}
+[data-style=pixel] .delta{background:var(--edge)}
+[data-style=pixel] .stat{font-size:16px;font-weight:500}
+[data-style=pixel] .bar{height:10px;box-shadow:0 0 0 2px var(--edge)}
+[data-style=pixel] .bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--card) calc(10% - 2px) 10%)}
+[data-style=pixel] .stat.minor .bar{height:6px}
+[data-style=pixel] .cond{--line:var(--bad)}
+[data-style=pixel] .e{font-size:17px}
+[data-style=pixel] .act{background:var(--slot)}
+[data-style=pixel] .act:hover:not(:disabled),[data-style=pixel] .act:focus-visible{--line:var(--accent)}
+[data-style=pixel] .act:hover:not(:disabled) .t::before{content:"▶";color:var(--accent);animation:blink .7s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+[data-style=pixel] .act.urgent{--line:var(--bad)}
+[data-style=pixel] .act .t{font-size:17px;font-weight:600}
+[data-style=pixel] .act .d{font-size:14.5px;font-weight:400}
+[data-style=pixel] :is(.chg,.chip){font-size:13px;font-weight:500;background:var(--edge)}
+[data-style=pixel] .act:active:not(:disabled),[data-style=pixel] .age:active,[data-style=pixel] .primary:active{transform:translate(2px,2px)}
+[data-style=pixel] .ico{background-image:url(/files/icons-pixel.webp);background-color:var(--slot);box-shadow:0 0 0 2px var(--edge)}
+[data-style=pixel] .cat{font-size:14px;font-weight:500}
+[data-style=pixel] .cat:hover{background:var(--slot)}
+[data-style=pixel] .cat[aria-pressed=true] .ico{box-shadow:0 0 0 2px var(--accent),0 0 0 4px var(--edge)}
+[data-style=pixel] .pips i{width:12px;height:12px;box-shadow:0 0 0 2px var(--edge)}
+[data-style=pixel] .age{--line:#FFF1B8}
+[data-style=pixel] .age:hover{filter:brightness(1.12)}
+[data-style=pixel] .age b{font-weight:700;letter-spacing:.01em}
+[data-style=pixel] .veil{background:rgba(1,6,24,.84)}
+[data-style=pixel] .ball{width:32px;height:32px;background-image:var(--ballpx)}
+[data-style=pixel] .shout{color:var(--accent);text-shadow:4px 4px 0 #000;letter-spacing:.02em}
+[data-style=pixel] .marker{width:8px;margin-left:-4px;background:#fff;box-shadow:0 0 0 2px var(--edge)}
+[data-style=pixel] .primary{background:var(--accent);color:var(--on-accent);--line:#FFF1B8}
+[data-style=pixel] .opt[aria-pressed=true]{background:var(--accent);color:var(--on-accent);--line:#FFF1B8}
+[data-style=pixel] .opt[aria-pressed=true] small{color:#5A3B00}
+[data-style=pixel] .sheet{background:#102873}
+/* pixel art is only ever shown at exactly 2x, so every pixel stays square */
+[data-style=pixel] #gm{width:min(772px,100%)}
+[data-style=pixel] .pitch{width:720px;max-width:100%}
+[data-style=pixel] .ev{width:min(768px,100%)}
+[data-style=pixel] .banner{aspect-ratio:auto;height:320px}
+[data-style=pixel] .banner img{object-position:0 -112px}
+@media (max-height:859px){[data-style=pixel] .pitch{width:540px}}
+
+/* pixel type is larger, so the side rail is packed a little tighter to fit a 900px-tall window */
+@media (min-width:940px){[data-style=pixel] .stats{gap:7px;padding:12px 16px}[data-style=pixel] .cond{padding:10px 14px;font-size:14px;line-height:1.35;gap:2px}}
+@media (max-width:1340px){.cat{width:74px}.age{min-width:140px;margin:0 6px;padding:0 14px}.hint{display:none}}
+@media (max-height:820px){.scene{height:220px}.agebig b{font-size:48px}}
+/* below 1180px the dock cannot hold everything in one row: the age button moves up beside the energy meter */
+@media (max-width:1179px){
+  .dock{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px 2px;padding:10px 10px 8px}
+  .cats{display:contents}
+  .energy{grid-column:1/6;border-bottom:0;padding:0 4px;align-self:center}
+  .energy .tip{display:none}
+  .pips i{width:10px}
+  .age{grid-column:6/9;grid-row:1;height:48px;min-width:0;margin:0;padding:0 12px;border-radius:16px;grid-auto-flow:column;align-items:baseline;gap:8px}
+  .age b{font-size:19px}
+  .cat{width:auto;grid-row:2}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+}
+/* below 940px the character becomes a band across the top, with the stats beside the room, so nothing sits next to empty space */
+@media (max-width:939px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:12px}
+  .rail{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;gap:10px 20px;overflow:visible}
+  .scene{grid-row:1/3;height:256px}
+  .who h1{font-size:22px}
+  .stats{padding:10px 14px;gap:6px 24px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));align-content:space-between}
+  .stats .rule{display:none}
+  .cond{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:0 14px;padding:8px 14px}
+  .cond p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cond button{margin:0}
+  .journal{padding:14px 18px 0}
+  .jh{gap:20px;padding-bottom:10px}
+  .agebig b{font-size:44px}
+  .sheet{max-height:100%}
+  .sick .sheet{max-height:calc(100% + 68px)}
+  .brand em{display:none}
+}
+@media (max-width:939px) and (max-height:759px),(max-height:620px){body{overflow:auto;height:auto}.stage{height:380px}}
+@media (max-width:559px){body{overflow:auto;height:auto}.rail{grid-template-columns:minmax(0,1fr)}.scene{grid-row:auto;justify-self:center}.cond{grid-template-columns:minmax(0,1fr)}.cond p{white-space:normal}.stage{height:440px}.dock{grid-template-columns:repeat(4,minmax(0,1fr))}.energy,.age{grid-column:1/-1}.age,.cat{grid-row:auto}.tools .ghost{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="amb" aria-hidden="true"></div>
+<header class="top">
+  <div class="brand"><i></i>Life-sim <em>working title</em></div>
+  <p class="hint">Mockup. Open a category below, play Futsal practice in Body, rest when you run low, then turn 17.</p>
+  <div class="tools">
+    <div class="seg" role="group" aria-label="Art style"><button data-s="flat" aria-pressed="true">Flat illustrated</button><button data-s="pixel" aria-pressed="false">Pixel</button></div>
+    <button class="ghost" id="mute" aria-pressed="false">Sound on</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="rail">
+    <figure class="scene">
+      <img class="fl" src="/files/hero-flat.webp" alt="Raka in his bedroom, wearing his school uniform">
+      <img class="px" src="/files/hero-pixel.webp" alt="Raka in his bedroom, wearing his school uniform">
+      <figcaption class="badges"><span class="badge" id="sickBadge">Feverish</span><span class="badge" id="overBadge" hidden>Overworked</span></figcaption>
+    </figure>
+    <div class="who"><h1>Raka Pratama</h1><p><span id="age">16</span> years old · SMA kelas 11 · Surabaya</p></div>
+    <section class="card stats" aria-label="Stats">
+      <div class="stat" data-k="health" style="--c:var(--health);--v:58"><span>Health</span><div class="bar"><i></i></div><b>58</b></div>
+      <div class="stat" data-k="happy" style="--c:var(--happy);--v:71"><span>Happiness</span><div class="bar"><i></i></div><b>71</b></div>
+      <div class="stat" data-k="smarts" style="--c:var(--smarts);--v:64"><span>Smarts</span><div class="bar"><i></i></div><b>64</b></div>
+      <div class="stat" data-k="looks" style="--c:var(--looks);--v:49"><span>Looks</span><div class="bar"><i></i></div><b>49</b></div>
+      <div class="rule"></div>
+      <div class="money"><span>Pocket money</span><b id="money">Rp 215.000</b></div>
+      <div class="rule"></div>
+      <div class="stat minor" data-k="stress" style="--c:var(--minor);--v:35"><span>Stress</span><div class="bar"><i></i></div><b>35</b></div>
+      <div class="stat minor" data-k="rep" style="--c:var(--minor);--v:62"><span>Reputation</span><div class="bar"><i></i></div><b>62</b></div>
+    </section>
+    <section class="card cond" id="cond">
+      <div><span class="st">Untreated illness</span><b>Dengue fever</b></div>
+      <p>Fever and joint pain. Your aim wobbles in timing games, and it gets worse every year you leave it.</p>
+      <button onclick="openCat('health',true)">Get treatment</button>
+    </section>
+  </aside>
+
+  <main class="main">
+    <div class="stage">
+      <article class="card journal">
+        <header class="jh">
+          <div class="agebig"><span class="label">Age</span><b id="ageBig">16</b></div>
+          <div class="life" aria-label="Your life so far">
+            <div style="--g:3"><span>Baby</span></div>
+            <div style="--g:3"><span>Toddler</span></div>
+            <div style="--g:6"><span>SD</span><i style="left:30%" title="Age 8: you won the class spelling contest"></i></div>
+            <div style="--g:3"><span>SMP</span><i style="left:40%" title="Age 13: you covered for Dimas"></i></div>
+            <div class="now" id="segNow" style="--g:2"><span>SMA</span></div>
+            <div class="ahead" style="--g:7"><span>The years ahead</span></div>
+          </div>
+        </header>
+        <div class="entries" id="entries" aria-live="polite">
+          <h3 class="yr">Age 15</h3>
+          <p class="e old">You started SMA at SMAN 5 Surabaya.</p>
+          <p class="e old">You made the school futsal team as a reserve.</p>
+          <p class="e old">Ayah was out of work for three months. Money was tight at home.</p>
+          <h3 class="yr">Age 16</h3>
+          <p class="e">You moved up to kelas 11. Your voice finally stopped cracking. Mostly.</p>
+          <p class="e">The rainy season came early. You caught dengue fever and have not seen a doctor.<span class="chg down">Health −6</span></p>
+          <p class="e mem"><span class="tagm">Remembered</span>Dimas has not forgotten that you covered for him in SMP.</p>
+          <p class="e">The year is yours. Pick something to do below.</p>
+        </div>
+      </article>
+      <section class="card sheet" id="sheet" hidden aria-label="Activities">
+        <header class="sh"><div><h2 id="shT"></h2><p id="shB"></p></div><button class="ghost" onclick="closeSheet()">Close<kbd>Esc</kbd></button></header>
+        <div class="grid" id="grid"></div>
+      </section>
+    </div>
+    <nav class="card dock" aria-label="Activities and age up">
+      <div class="energy"><span class="ico s" style="--c:6;--r:1" aria-hidden="true"></span><b>Energy</b><div class="pips" id="pips"></div><span class="left" id="eLeft"></span><span class="tip" id="eTip"></span></div>
+      <div class="cats" id="cats"></div>
+    </nav>
+  </main>
+</div>
+
+<div class="veil" id="game" hidden>
+  <div class="card modal" id="gm" role="dialog" aria-modal="true" aria-labelledby="gT">
+    <span class="label">Mini-game · timing</span>
+    <h2 id="gT">Futsal practice</h2>
+    <p>Stop the marker in the green to score. The gold centre is a perfect strike. Miss badly and you get hurt.</p>
+    <div class="pitch" id="pitch">
+      <img class="fl" src="/files/futsal-flat.webp" alt=""><img class="px" src="/files/futsal-pixel.webp" alt="">
+      <i class="ball" id="ball"></i>
+      <span class="badge" id="feverTag">Dengue fever: your aim wobbles</span>
+      <div class="shout" id="shout"></div>
+    </div>
+    <div class="meter"><div class="zone"></div><div class="marker" id="marker"></div></div>
+    <div class="mf"><div class="res" id="gRes"></div><button class="ghost" id="skip" onclick="kick(true)">Skip for a weaker result</button><button class="primary" id="kick" onclick="kick()">Kick<kbd>Space</kbd></button></div>
+  </div>
+</div>
+
+<div class="veil" id="event" hidden>
+  <div class="card modal ev" role="dialog" aria-modal="true" aria-labelledby="evT">
+    <div class="banner"><img class="fl" src="/files/event-flat.webp" alt=""><img class="px" src="/files/event-pixel.webp" alt=""></div>
+    <div class="evb">
+      <span class="label">Event · age 17</span>
+      <h2 id="evT">The class trip money is missing</h2>
+      <p>Rp 800.000 has gone from the class cash box, and people are looking at Dimas. You saw him near it yesterday.</p>
+      <span class="label">What do you do?</span><div class="opts" id="what"></div>
+      <span class="label">How?</span><div class="opts" id="how"></div>
+      <button class="primary" id="decide" onclick="decide()">Decide</button>
+    </div>
+  </div>
+</div>
+<div class="turn" id="turn" hidden><div><small>Happy birthday</small><b id="turnN">17</b></div></div>
+
+<script>
+const R=document.documentElement,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rp=n=>'Rp '+Math.abs(n).toLocaleString('id-ID');
+const ico=(n,c='')=>`<span class="ico ${c}" style="--c:${n%8};--r:${n>>3}" aria-hidden="true"></span>`;
+const NAMES={health:'Health',happy:'Happiness',smarts:'Smarts',looks:'Looks',stress:'Stress',rep:'Reputation'};
+
+// ---------- content: 8 categories, 48 activities ----------
+const CATS=[
+ {id:'school',n:'School',i:0,b:'Classes, exams and clubs. This becomes Work once you leave school.'},
+ {id:'mind',n:'Mind',i:1,b:'Read, learn and think. Mostly Smarts.'},
+ {id:'body',n:'Body',i:2,b:'Sports and training. Health and Looks.'},
+ {id:'health',n:'Health',i:3,b:'Doctors, medicine and habits. Treat illness before it gets worse.'},
+ {id:'people',n:'People',i:4,b:'Family, friends and romance. Closeness grows when you show up.'},
+ {id:'money',n:'Money',i:5,b:'Earn it, save it, spend it.'},
+ {id:'fun',n:'Fun',i:6,b:'Play, music and going out. Happiness up, Stress down.'},
+ {id:'rest',n:'Rest',i:7,b:'Rest gives energy back. Each rest this year restores less than the one before.'}];
+// c category, t title, d description, i icon, g mini-game type, e energy cost (negative gives energy), m money, fx stat changes, j journal line
+const A=(c,t,d,i,g,e,m,fx,j,x)=>({c,t,d,i,g,e,m,fx,j,...x});
+const ACTS=[
+ A('school','Study for the exam','Hit the books before semester exams. Builds Smarts.',16,'Quiz',2,0,{smarts:5,stress:3},'You studied hard for the semester exam.'),
+ A('school','Do your homework','Keep up with assignments. A little Smarts and a calmer head.',17,'Typing',1,0,{smarts:2,stress:-1},'You handed in your homework on time, for once.'),
+ A('school','Run for OSIS','Campaign for a seat on the student council.',18,'Tapping',2,0,{rep:6,stress:2},'You campaigned for a seat on OSIS.',{req:'Reputation 60+'}),
+ A('school','Group project','Build a science poster with classmates. Smarts and friendships.',19,'Memory',2,0,{smarts:3,happy:2},'Your group finished the science project.'),
+ A('school','Bimbel after school','Paid tutoring for the university entrance test. Big Smarts.',20,'Quiz',2,-250000,{smarts:8,stress:4},'You went to bimbel three evenings a week.'),
+ A('school','Skip class','Slip out early. You get an hour back, and you might get caught.',21,'Timing',-1,0,{happy:3,rep:-3,smarts:-1},'You skipped class. A teacher saw you at the gate.'),
+ A('mind','Read at the library','Novels and history books from the city library.',22,'Memory',1,0,{smarts:3,stress:-1},'You spent quiet afternoons at the city library.'),
+ A('mind','Practise English','Podcasts and subtitles. Opens better jobs later.',23,'Typing',1,0,{smarts:3},'Your English got noticeably better.'),
+ A('mind','Learn to code','Free tutorials on an old laptop. Smarts, and a way into tech.',24,'Typing',2,0,{smarts:5,stress:2},'You wrote your first working program.'),
+ A('mind','Chess club','Play the seniors after school. Smarts and patience.',25,'Memory',1,0,{smarts:2,rep:1},'You won two games at chess club.'),
+ A('mind','Write in your diary','Get the year out of your head. Lowers Stress.',26,'Typing',1,0,{stress:-5,happy:1},'You wrote it all down in your diary.'),
+ A('mind','Solve puzzle cubes','Learn the moves, chase a faster time.',27,'Timing',1,0,{smarts:2,happy:1},'You solved the cube in under a minute.'),
+ A('body','Futsal practice','Shooting drills with the school team. Health and Looks.',28,'Timing',2,0,{health:4,looks:1,stress:-2},'',{play:1}),
+ A('body','Morning jog','Laps around the neighbourhood before school.',29,'Tapping',1,0,{health:3,stress:-2},'You jogged most mornings.'),
+ A('body','Gym session','Weights at the gym near the market. Health and Looks.',30,'Tapping',2,-30000,{health:4,looks:3},'You lifted weights at the gym.'),
+ A('body','Badminton','Doubles at the community hall. Health and good company.',31,'Timing',2,0,{health:3,happy:2},'You played badminton at the community hall.'),
+ A('body','Swim laps','The public pool on Sunday morning.',32,'Tapping',2,-15000,{health:4,stress:-2},'You swam laps at the public pool.'),
+ A('body','Pencak silat class','Learn the forms. Health and Reputation.',33,'Memory',2,0,{health:3,rep:2},'You learned new pencak silat forms.'),
+ A('health','See a doctor','Get the dengue fever treated properly before it turns dangerous.',34,'',1,-150000,{health:10},'The doctor treated your dengue fever. The wobble is gone.',{cure:1}),
+ A('health','Buy medicine','Paracetamol from the apotek. Eases the symptoms. It does not cure.',35,'',0,-40000,{health:3},'You bought medicine at the apotek. The fever eased a little.'),
+ A('health','Health check-up','A check at the puskesmas. Finds hidden illness early.',36,'',1,-25000,{stress:-1},'Your check-up found nothing new.'),
+ A('health','See the dentist','A cleaning and a filling. Health and Looks.',37,'',1,-120000,{health:2,looks:2},'The dentist fixed a cavity.'),
+ A('health','Eat better this year','More vegetables, less fried food. Slow, steady Health.',38,'Catch',1,0,{health:4,happy:-1},'You ate better this year. You miss gorengan.'),
+ A('health','Talk to the counsellor','The school counsellor listens. Lowers Stress a lot.',39,'',1,0,{stress:-8,happy:2},'You talked things through with the school counsellor.'),
+ A('people','Hang out with Dimas','Your best friend since SMP.',40,'Tapping',1,0,{happy:4,stress:-2},'You and Dimas wasted a perfect afternoon together.'),
+ A('people','Help Ibu cook','Chop, stir, taste. Time with your mother.',41,'Catch',1,0,{happy:2,stress:-1},'You helped Ibu cook dinner.'),
+ A('people','Family dinner','Everyone at the table, for once.',42,'',1,0,{happy:3},'The whole family ate dinner together.'),
+ A('people','Call Nenek','Your grandmother loves hearing from you.',43,'',0,0,{happy:2},'You called Nenek. She talked for an hour.'),
+ A('people','Make a new friend','Talk to someone outside your circle.',44,'Quiz',1,0,{rep:3,happy:2},'You made a new friend: Sari from kelas 11 IPA 2.'),
+ A('people','Confess to your crush','Tell Putri how you feel. It could go either way.',45,'Timing',1,0,{happy:5,stress:3},'You told Putri how you feel. She smiled.'),
+ A('money','Shift at the warung','Serve customers at Bu Yanti’s food stall.',46,'Memory',2,60000,{stress:2},'You worked shifts at the warung.'),
+ A('money','Sell snacks at school','Buy kue in bulk and sell it at break time.',47,'Quiz',1,35000,{rep:1},'You sold snacks at break time.'),
+ A('money','Tutor a neighbour’s kid','Teach maths to a primary-school kid.',48,'Quiz',2,75000,{smarts:1,rep:1},'You tutored a neighbour’s kid in maths.',{req:'Smarts 60+'}),
+ A('money','Save at the bank','Put money away. It earns a little interest each year.',49,'',0,0,{},'You opened a savings account.'),
+ A('money','Buy new clothes','A sharper look for school and weekends.',50,'',0,-180000,{looks:5,happy:2},'You bought new clothes.'),
+ A('money','Buy a motorbike','A second-hand scooter means freedom.',51,'',0,-4500000,{happy:8,rep:3},'You bought a second-hand scooter.',{lock:{age:17,txt:'From age 17, with a SIM C licence'}}),
+ A('fun','Band rehearsal','Guitar with your school band. Happiness and Reputation.',52,'Tapping',2,0,{happy:5,rep:2},'Your band finally nailed the chorus.'),
+ A('fun','Games at the warnet','A few hours at the internet café.',53,'Tapping',1,-10000,{happy:4,stress:-3,smarts:-1},'You lost an evening at the warnet.'),
+ A('fun','Watch a film','The new release at the bioskop, with popcorn.',54,'',1,-45000,{happy:4,stress:-2},'You watched a film at the bioskop.'),
+ A('fun','Karaoke night','Sing badly, laugh a lot.',55,'Timing',1,-30000,{happy:5,stress:-2},'You sang yourself hoarse at karaoke.'),
+ A('fun','Ride around town','Take the angkot to the mall and back, just because.',56,'',1,-8000,{happy:3},'You rode around town with no plan at all.'),
+ A('fun','Draw comics','Fill a sketchbook with your own characters.',57,'Memory',1,0,{happy:3,smarts:1},'You filled half a sketchbook with comics.'),
+ A('rest','Sleep in','A slow Sunday morning.',58,'',0,0,{stress:-3},'You slept in.',{rest:3}),
+ A('rest','Afternoon nap','An hour in the hammock.',59,'',0,0,{stress:-2},'You napped through the afternoon heat.',{rest:2}),
+ A('rest','Meditate','Ten quiet minutes a day.',60,'Timing',0,0,{stress:-6},'You meditated most evenings.',{rest:2}),
+ A('rest','Get a pijat','A proper massage for sore muscles.',61,'',0,-80000,{health:2,stress:-4},'You got a pijat. Everything stopped hurting.',{rest:4}),
+ A('rest','Holiday at Nenek’s village','A week away from the city.',62,'',0,-300000,{happy:5,stress:-8},'You spent a week in Nenek’s village.',{rest:5}),
+ A('rest','Do nothing at home','TV, snacks, sofa.',63,'',0,0,{happy:1,smarts:-1},'You did absolutely nothing for a while.',{rest:2})];
+
+// ---------- state ----------
+const S={health:58,happy:71,smarts:64,looks:49,stress:35,rep:62},MAXE=10;
+let money=215000,energy=MAXE,rests=0,age=16,sick=true,cur=null,muted=false,done={},eventDone=false;
+const isGood=(k,d)=>k==='stress'?d<0:d>0, gain=a=>Math.max(0,a.rest-rests);
+const chg=(t,good)=>`<span class="chg ${good===undefined?'':good?'up':'down'}">${t}</span>`;
+const fmt=(k,v)=>chg(`${NAMES[k]} ${v>0?'+':'−'}${Math.abs(v)}`,isGood(k,v));
+
+function pop(el,txt,good){const s=document.createElement('span');s.className='delta '+(good?'up':'down');s.textContent=txt;el.append(s);setTimeout(()=>s.remove(),1600)}
+function setStat(k,d){if(!d)return;S[k]=Math.max(0,Math.min(100,S[k]+d));const el=$(`.stat[data-k=${k}]`);el.style.setProperty('--v',S[k]);el.querySelector('b').textContent=S[k];
+  el.classList.toggle('low',k==='stress'?S[k]>=70:k!=='rep'&&S[k]<35);pop(el,(d>0?'+':'−')+Math.abs(d),isGood(k,d))}
+function setMoney(d){if(!d)return;money+=d;$('#money').textContent=rp(money);pop($('.money'),(d>0?'+':'−')+rp(d),d>0)}
+function drawEnergy(){let h='';for(let i=0;i<MAXE;i++)h+=`<i class="${i<energy?'':'off'}"></i>`;for(let i=0;i<-energy;i++)h+='<i class="over"></i>';
+  $('#pips').innerHTML=h;$('#eLeft').textContent=energy>0?`${energy} of ${MAXE} left`:energy===0?'None left':`${-energy} over`;
+  $('#eTip').textContent=energy>3?'Rest gives energy back. Each rest this year gives less.':energy>0?'Running low. Rest, or push on.':'Out of energy. Anything more is overwork: Stress up, Health down.';
+  $('#overBadge').hidden=energy>=0}
+function say(html,cls=''){const p=document.createElement('p');p.className='e new '+cls;p.innerHTML=html;const en=$('#entries');en.append(p);en.scrollTop=en.scrollHeight;return p}
+
+// ---------- doing an activity ----------
+function resolve(i,fx,line){const a=ACTS[i],n=done[i]||0,out=[];fx={...(fx||a.fx)};line=line||a.j;
+  if(a.rest){const g=Math.min(gain(a),MAXE-energy);rests++;energy+=g;out.push(g?chg('Energy +'+g,true):chg(energy>=MAXE?'Energy already full':'No energy gained'))}
+  else if(a.e<0){const g=Math.min(-a.e,MAXE-energy);energy+=g;if(g)out.push(chg('Energy +'+g,true))}
+  else if(a.e>0){const over=Math.max(0,a.e-Math.max(0,energy));energy-=a.e;if(over){fx.stress=(fx.stress||0)+4*over;fx.health=(fx.health||0)-2*over;line+=' You were already worn out.'}}
+  for(const k in fx){let v=fx[k];if(n&&isGood(k,v))v=Math.sign(v)*Math.max(1,Math.round(Math.abs(v)/(1+n)));if(!v)continue;setStat(k,v);out.push(fmt(k,v))}
+  if(a.m){setMoney(a.m);out.push(chg((a.m>0?'+':'−')+rp(a.m),a.m>0))}
+  if(a.cure&&sick){sick=false;R.classList.remove('sick');$('#sickBadge').hidden=true;$('#cond').hidden=true}
+  done[i]=n+1;drawEnergy();const p=say(line+out.slice(0,5).join(''),'did');if(cur){render();pad()}return p}
+function go(i){sfx.tap();ACTS[i].play?openGame(i):resolve(i)}
+
+function card(a,i){const n=done[i]||0,ch=[];let why='';
+  if(a.lock&&age<a.lock.age)why=a.lock.txt;
+  else if(a.m<0&&money<-a.m)why=`You need ${rp(a.m)}. You have ${rp(money)}.`;
+  else if(a.cure&&!sick)why='Nothing to treat right now.';
+  if(a.rest){const g=gain(a);ch.push(g?`<span class="chip up">+${g} energy</span>`:'<span class="chip">No more energy from rest this year</span>')}
+  else if(a.e<0)ch.push(`<span class="chip up">+${-a.e} energy</span>`);
+  else if(a.e>0)ch.push(`<span class="chip${energy<a.e?' down':''}">${a.e} energy${energy<a.e?' · overwork':''}</span>`);
+  else ch.push('<span class="chip">No energy</span>');
+  if(a.g)ch.push(`<span class="chip">${a.g} game</span>`);
+  if(a.m)ch.push(`<span class="chip ${a.m>0?'up':''}">${a.m>0?'+':''}${rp(a.m)}</span>`);
+  if(n)ch.push(`<span class="chip">Done ${n}× · smaller gains</span>`);
+  const urgent=a.cure&&sick;
+  return `<button class="act${urgent?' urgent':''}" ${why?'disabled':''} onclick="go(${i})">${ico(a.i)}<span><span class="t">${a.t}${urgent?'<span class="pill">Do this</span>':''}${a.req?`<span class="pill q">Open to you: ${a.req}</span>`:''}</span><span class="d">${a.d}</span>${why?`<span class="why">${why}</span>`:`<span class="meta">${ch.join('')}</span>`}</span></button>`}
+function render(){const c=CATS.find(c=>c.id===cur);$('#shT').textContent=c.n;$('#shB').textContent=c.b;$('#grid').innerHTML=ACTS.map((a,i)=>a.c===cur?card(a,i):'').join('')}
+function pad(){requestAnimationFrame(()=>{const en=$('#entries');en.style.paddingBottom=($('#sheet').offsetHeight+12)+'px';en.scrollTop=en.scrollHeight})}
+function openCat(id,keep){if(cur===id&&!keep){closeSheet();return}sfx.open();cur=id;render();const s=$('#sheet');s.hidden=false;s.style.animation='none';s.offsetWidth;s.style.animation='';
+  $$('.cat').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));pad()}
+function closeSheet(){cur=null;$('#sheet').hidden=true;$$('.cat').forEach(b=>b.setAttribute('aria-pressed','false'));$('#entries').style.paddingBottom=''}
+
+// ---------- futsal: the one playable mini-game in this mockup ----------
+let gi=-1,raf=0,pos=0,run=false,t0=0,lock=0,pending=null;
+const TIER={perfect:{to:[63,33],say:'Perfect strike!',fx:{health:6,looks:2,stress:-4},j:'Futsal practice: a perfect strike into the top corner.',snd:'good'},
+  goal:{to:[39,43],say:'Goal!',fx:{health:4,looks:1,stress:-2},j:'Futsal practice: you scored.',snd:'ok'},
+  saved:{to:[50,47],say:'Saved',fx:{health:2},j:'Futsal practice: the keeper got a hand to it.',snd:'tap'},
+  miss:{to:[90,12],say:'Wide',fx:{health:-3,happy:-2},j:'Futsal practice: you shot wide and pulled a muscle.',snd:'bad'},
+  skip:{fx:{health:1},j:'You went through the motions at futsal practice.'}};
+function openGame(i){gi=i;$('#game').hidden=false;$('#gRes').innerHTML='';$('#skip').hidden=false;$('#kick').innerHTML='Kick<kbd>Space</kbd>';
+  const sh=$('#shout');sh.className='shout';sh.textContent='';$('#pitch').className='pitch';$('#gm').classList.remove('hit','miss');
+  $('#ball').getAnimations().forEach(x=>x.cancel());$('#feverTag').hidden=!sick;run=true;t0=performance.now();lock=t0+250;loop()}
+function loop(){const t=(performance.now()-t0)/1000;pos=50+46*Math.sin(t*2.5)+(sick?3.4*Math.sin(t*19)+1.6*Math.sin(t*31):0);pos=Math.max(1,Math.min(99,pos));
+  $('#marker').style.left=pos+'%';if(run)raf=requestAnimationFrame(loop)}
+function kick(skip){const now=performance.now();if(now<lock)return;lock=now+600;
+  if(!run){if(pending)pending();$('#game').hidden=true;gi=-1;return}
+  run=false;cancelAnimationFrame(raf);
+  const k=skip?'skip':pos>=66&&pos<=70?'perfect':pos>=58&&pos<=78?'goal':pos>=50&&pos<=86?'saved':'miss',T=TIER[k];
+  $('#skip').hidden=true;$('#kick').textContent='Back to your year';
+  const end=()=>{$('#gRes').innerHTML=resolve(gi,T.fx,T.j).innerHTML};
+  if(skip){end();return}
+  // the result lands on impact; the timer covers a tab that is not drawing frames
+  pending=()=>{pending=null;const sh=$('#shout');sh.textContent=T.say;sh.classList.add('on');sfx[T.snd]();
+    if(k==='perfect'||k==='goal'){$('#pitch').classList.add('flash','zoom');$('#gm').classList.add('hit')}else $('#gm').classList.add('miss');
+    end()};
+  const land=()=>pending&&pending();
+  $('#ball').animate([{left:T.to[0]+'%',top:T.to[1]+'%',transform:'translate(-50%,-50%) scale(.42)'}],
+    {duration:reduce?1:430,easing:R.dataset.style==='pixel'?'steps(7,end)':'cubic-bezier(.15,.6,.3,1)',fill:'forwards'}).onfinish=land;
+  setTimeout(land,900)}
+
+// ---------- age up: birthday card, then an event with a "what" and a "how" ----------
+const WHAT=[
+ {t:'Defend Dimas',fx:{rep:2,happy:2},j:h=>`You defended Dimas, ${h}. The money turned up in the teacher’s drawer a week later. Dimas will not forget it.`},
+ {t:'Stay out of it',fx:{happy:-2},j:()=>'You stayed out of it. The money turned up a week later, and Dimas noticed who said nothing.'},
+ {t:'Tell the teacher what you saw',fx:{rep:1,happy:-3},j:h=>`You told the teacher what you saw, ${h}. Dimas was cleared in the end, but he is not speaking to you.`},
+ {t:'Speak for the class',w:'Open to you: Reputation 60+',fx:{rep:5},j:h=>`You spoke for the class, ${h}, and asked everyone to look before blaming anyone. The money was in the teacher’s drawer.`},
+ {t:'Remind him he owes you',w:'Open to you: your choice at 13',fx:{happy:-3,stress:2},j:h=>`You reminded Dimas what he owes you, ${h}. He looked hurt. The money was in the teacher’s drawer all along.`}];
+const HOW=[['Calmly','calmly'],['Bluntly','bluntly'],['With a joke','with a joke']];
+const opts=(id,list)=>{const el=$(id);el.innerHTML=list.map((o,i)=>`<button class="opt" data-i="${i}" aria-pressed="${!i}">${o.t||o[0]}${o.w?`<small>${o.w}</small>`:''}</button>`).join('');
+  el.onclick=e=>{const b=e.target.closest('.opt');if(!b)return;sfx.tap();el.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed',x===b))}};
+opts('#what',WHAT);opts('#how',HOW);
+function ageUp(){closeSheet();sfx.age();const t=$('#turn'),next=()=>{t.hidden=true;if(eventDone)newYear();else{$('#event').hidden=false;$('#decide').focus()}};
+  if(reduce){next();return}$('#turnN').textContent=age+1;t.hidden=false;setTimeout(next,1250)}
+function decide(){const w=WHAT[+$('#what [aria-pressed=true]').dataset.i],h=HOW[+$('#how [aria-pressed=true]').dataset.i][1];$('#event').hidden=true;eventDone=true;newYear(w.j(h),w.fx)}
+function newYear(line,fx){age++;energy=MAXE;rests=0;done={};
+  $('#age').textContent=$('#ageBig').textContent=age;$('#next').textContent=age+1;
+  const seg=$('#segNow');seg.style.setProperty('--g',+seg.style.getPropertyValue('--g')+1);
+  const h=document.createElement('h3');h.className='yr';h.textContent='Age '+age;$('#entries').append(h);
+  if(age===17)say('You turned 17. Your student card became a KTP, and you can now apply for a SIM C licence.');
+  if(sick){setStat('health',-12);say('Your dengue fever went untreated for another year. It is getting worse.'+chg('Health −12',false))}
+  if(line){const out=[];for(const k in fx){setStat(k,fx[k]);out.push(fmt(k,fx[k]))}say('<span class="tagm">Event</span>'+line+out.join(''),'mem')}
+  else say('A quiet year begins.');
+  drawEnergy()}
+
+// ---------- chrome: dock, style switch, sound, keys ----------
+const catBtn=c=>`<button class="cat" data-id="${c.id}" aria-pressed="false" onclick="openCat('${c.id}')">${ico(c.i)}${c.n}</button>`;
+$('#cats').innerHTML=CATS.slice(0,4).map(catBtn).join('')+'<button class="age" onclick="ageUp()"><small>Age up</small><b>Turn <span id="next">17</span></b></button>'+CATS.slice(4).map(catBtn).join('');
+function setStyle(s){R.classList.add('noanim');R.dataset.style=s;void R.offsetWidth;R.classList.remove('noanim'); // switch skins instantly, no half-faded colours
+  $$('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===s));try{localStorage.setItem('ls-style',s)}catch(e){}}
+$$('.seg button').forEach(b=>b.onclick=()=>{setStyle(b.dataset.s);sfx.open()});
+try{const s=localStorage.getItem('ls-style');if(s)setStyle(s)}catch(e){}
+$('#mute').onclick=e=>{muted=!muted;e.target.textContent=muted?'Sound off':'Sound on';e.target.setAttribute('aria-pressed',muted)};
+let ac;function tone(f,d=.12,when=0,vol=.06){if(muted)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+when;
+  o.type=R.dataset.style==='pixel'?'square':'triangle';o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const sfx={tap:()=>tone(520,.05),open:()=>tone(660,.06),ok:()=>{tone(587,.1);tone(784,.18,.08)},good:()=>{tone(660,.1);tone(880,.12,.08);tone(1320,.25,.16)},
+  bad:()=>{tone(180,.25);tone(130,.32,.1)},age:()=>[392,523,659,784].forEach((f,i)=>tone(f,.2,i*.09))};
+addEventListener('keydown',e=>{if(!$('#game').hidden){if(e.code==='Space'){e.preventDefault();kick()}return}
+  if(!$('#event').hidden||!$('#turn').hidden)return;
+  if(e.key==='Escape')closeSheet();else if(/^[1-8]$/.test(e.key))openCat(CATS[e.key-1].id)});
+// the pixel ball is drawn from a 16x16 map so its pixels match the rest of the pixel art
+const BALL=[".....######.....","...##WWWWWW##...","..#WWWWKKWWWW#..",".#WWWWKKKKWWWW#.",".#WKWWKKKKWWKW#.","#WKKWWWKKWWWKKW#","#WKKWWWWWWWWKKW#","#WWKWWWWWWWWKWW#","#WWWWWKKKKWWWWW#","#WWWWKKKKKKWWWW#","#WKWWWKKKKWWWKW#",".#KKWWWWWWWWKK#.",".#WKKWWWWWWKKW#.","..#WWWWKKWWWW#..","...##WWKKWW##...",".....######....."];
+const PAL={'#':'#01081C',W:'#F4F6FF',K:'#2B3A7A'};
+R.style.setProperty('--ballpx',`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'>${BALL.map((r,y)=>[...r].map((c,x)=>c==='.'?'':`<rect x='${x}' y='${y}' width='1' height='1' fill='${PAL[c]}'/>`).join('')).join('')}</svg>`)}")`);
+drawEnergy();
+const toNow=()=>{$('#entries').scrollTop=1e6};toNow();addEventListener('resize',toNow); // the journal always opens on the current year
+</script>
+</body>
+</html>
