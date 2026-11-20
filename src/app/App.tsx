@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { useSettings } from '../engine/settings'
 import { YearScreen } from '../screens/year/YearScreen'
 import { GAME_NAME } from './name'
+import { useReducedMotion } from '../ui/useReducedMotion'
+import { installKeys } from './keys'
 import { applySkin } from './skin'
 import { useApp } from './store'
 
@@ -13,6 +15,13 @@ export function App() {
 
   useEffect(() => void useApp.getState().boot(), [])
   useEffect(() => applySkin(style), [style])
+  useEffect(installKeys, [])
+  const reduced = useReducedMotion()
+  useEffect(() => {
+    const root = document.documentElement
+    if (reduced) root.dataset.motion = 'reduce'
+    else delete root.dataset.motion
+  }, [reduced])
 
   if (!ready) return null
   if (!life) {
