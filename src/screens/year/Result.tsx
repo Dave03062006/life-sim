@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
-import type { ActivityDef } from '../../content/types'
+import { RESULT_SOUND, play } from '../../app/sound'
+import type { ActivityDef, ResultTier } from '../../content/types'
 import type { JournalEntry } from '../../life/types'
 import { Changes } from '../../ui/Changes'
 
 /** What an activity with no mini-game did: its journal line and changes. */
-export function Result({ def, entry, onClose }: { def: ActivityDef; entry: JournalEntry; onClose(): void }) {
+export function Result({ def, tier, entry, onClose }: { def: ActivityDef; tier: ResultTier; entry: JournalEntry; onClose(): void }) {
   const back = useRef<HTMLButtonElement>(null)
   useEffect(() => back.current?.focus(), [])
+  useEffect(() => play(RESULT_SOUND[tier]), [tier])
   return (
     <div className="veil">
       {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- the mockup's veil and card, not the browser's dialog styling */}

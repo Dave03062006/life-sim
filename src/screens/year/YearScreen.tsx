@@ -1,9 +1,11 @@
 import { type CSSProperties, useEffect, useState } from 'react'
+import { play } from '../../app/sound'
 import { useApp } from '../../app/store'
 import { GAME_NAME } from '../../app/name'
 import { useSettings } from '../../engine/settings'
 import { stageOf } from '../../life/stages'
 import type { CategoryId, Life } from '../../life/types'
+import { MinigameHost } from '../../minigames/Host'
 import { ambientPath, type Skin } from '../../styles/art'
 import { ActivitySheet } from './ActivitySheet'
 import { Birthday } from './Birthday'
@@ -23,7 +25,14 @@ export function YearScreen({ life }: { life: Life }) {
   const { style, sound, update } = useSettings()
   const [cover, setCover] = useState(0)
   const stage = stageOf(life.age)
-  const toggle = (id: CategoryId) => open(openCategory === id ? null : id)
+  const toggle = (id: CategoryId) => {
+    if (openCategory !== id) play('open')
+    open(openCategory === id ? null : id)
+  }
+  const onAgeUp = () => {
+    play('age')
+    ageUp()
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -34,7 +43,10 @@ export function YearScreen({ life }: { life: Life }) {
       }
       const id = stage.categories[Number(e.key) - 1]
       if (e.key === 'Escape') open(null)
-      else if (/^[1-8]$/.test(e.key) && id) open(openCategory === id ? null : id)
+      else if (/^[1-8]$/.test(e.key) && id) {
+        if (openCategory !== id) play('open')
+        open(openCategory === id ? null : id)
+      }
     }
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
@@ -58,7 +70,14 @@ export function YearScreen({ life }: { life: Life }) {
           {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a fieldset would bring its own border and padding */}
           <div className="seg" role="group" aria-label="Art style">
             {SKINS.map(([skin, label]) => (
-              <button key={skin} aria-pressed={style === skin} onClick={() => update({ style: skin })}>
+              <button
+                key={skin}
+                aria-pressed={style === skin}
+                onClick={() => {
+                  play('open')
+                  update({ style: skin })
+                }}
+              >
                 {label}
               </button>
             ))}
@@ -75,10 +94,11 @@ export function YearScreen({ life }: { life: Life }) {
             <Journal life={life} cover={openCategory ? cover : 0} />
             {openCategory && <ActivitySheet life={life} category={openCategory} onBegin={begin} onClose={() => open(null)} onHeight={setCover} />}
           </div>
-          <Dock life={life} open={openCategory} onToggle={toggle} onAgeUp={ageUp} />
+          <Dock life={life} open={openCategory} onToggle={toggle} onAgeUp={onAgeUp} />
         </main>
       </div>
-      {lastResult && !playing && <Result def={lastResult.def} entry={lastResult.entry} onClose={closeResult} />}
+      {lastResult && !playing && <Result def={lastResult.def} tier={lastResult.tier} entry={lastResult.entry} onClose={closeResult} />}
+      <MinigameHost />
       {birthday !== null && <Birthday age={birthday} onDone={endBirthday} />}
     </>
   )

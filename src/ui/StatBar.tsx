@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { STAT_LABEL } from '../life/stats'
 import type { StatKey } from '../life/types'
 
@@ -13,7 +13,7 @@ const COLOUR: Record<StatKey, string> = {
 
 const isLow = (stat: StatKey, value: number) => (stat === 'stress' ? value >= 70 : stat !== 'reputation' && value < 35)
 
-export function StatBar({ stat, value, minor }: { stat: StatKey; value: number; minor?: boolean }) {
+export function StatBar({ stat, value, minor, children }: { stat: StatKey; value: number; minor?: boolean; children?: ReactNode }) {
   const label = STAT_LABEL[stat]
   const style = { '--c': COLOUR[stat], '--v': value } as CSSProperties
   return (
@@ -24,6 +24,7 @@ export function StatBar({ stat, value, minor }: { stat: StatKey; value: number; 
         <i />
       </div>
       <b>{value}</b>
+      {children}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import '@fontsource-variable/plus-jakarta-sans'
 import '@fontsource-variable/pixelify-sans'
 import './styles/base.css'
+import './minigames/minigames.css'
 import './styles/flat.css'
 import './styles/pixel.css'
 import { StrictMode } from 'react'

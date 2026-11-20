@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
+import { play } from '../../app/sound'
 import { packFor } from '../../content'
 import { type ActivityOffer, offersFor } from '../../life/activities'
 import { formatRupiah } from '../../life/format'
@@ -22,7 +23,11 @@ function chips(offer: ActivityOffer): { text: string; tone?: 'up' | 'down' }[] {
 function Card({ offer, onBegin }: { offer: ActivityOffer; onBegin(id: string): void }) {
   const { def, blocked, openNote } = offer
   return (
-    <button className="act" disabled={blocked !== null} onClick={() => onBegin(def.id)}>
+    <button className="act" disabled={blocked !== null} onClick={() => {
+        play('tap')
+        onBegin(def.id)
+      }}
+    >
       <Icon id={def.icon} fallback={`cat-${def.category}`} />
       <span>
         <span className="t">
