@@ -66,3 +66,20 @@ it('comes back after a reload', async () => {
   await useApp.getState().boot(saves)
   expect(useApp.getState().life!.age).toBe(15)
 })
+it('keeps playing when saving fails', async () => {
+  const failing = { ...memoryStore(), set: () => Promise.reject(new Error('quota')) }
+  useApp.setState(useApp.getInitialState())
+  await useApp.getState().boot(createSaves(failing))
+  useApp.getState().startDemoLife(7)
+  useApp.getState().begin('jog')
+  useApp.getState().finish(0.9)
+  await flush()
+  expect(useApp.getState().lastResult!.tier).toBe('great')
+})
+it('ignores a second boot', async () => {
+  const saves = await fresh()
+  useApp.getState().startDemoLife(7)
+  const life = useApp.getState().life
+  await useApp.getState().boot(saves)
+  expect(useApp.getState().life).toBe(life)
+})
