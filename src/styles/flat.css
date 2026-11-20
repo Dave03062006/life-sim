@@ -1,0 +1,26 @@
+/* ---------- flat illustrated skin: frosted glass over a blur of your own room ---------- */
+:root[data-style=flat]{--font:"Plus Jakarta Sans Variable",system-ui,sans-serif;--fs:15px;
+  --ink:#252A5E;--ink2:#5F648C;--ink3:#A3A6C0;--page:#EDE4D8;--card:rgba(255,255,255,.76);--solid:#fff;
+  --hair:rgba(37,42,94,.10);--track:rgba(37,42,94,.09);--accent:#D2432A;--on-accent:#fff;
+  --good:#14795D;--bad:#C43A30;--warn:#96590A;--health:#F2674A;--happy:#F2B137;--smarts:#4D5AC7;--looks:#2F9C8C;--minor:#8B90B3;
+  --r:24px;--r2:18px;--ease:cubic-bezier(.2,.9,.25,1.15);--dur:.22s}
+
+/* the ambient art depends on the life stage, so the page sets --amb-flat on .amb */
+[data-style=flat] .amb{background-image:var(--amb-flat);filter:saturate(1.4) brightness(1.08)}
+[data-style=flat] .amb::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 15% 0%,rgba(255,255,255,.6),rgba(255,255,255,.15) 60%)}
+[data-style=flat] .card{border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 12px 34px rgba(37,42,94,.09);backdrop-filter:blur(18px) saturate(1.3)}
+[data-style=flat] .seg button[aria-pressed=true]{box-shadow:0 1px 3px rgba(37,42,94,.18)}
+[data-style=flat] .scene{box-shadow:0 14px 36px rgba(37,42,94,.18)}
+[data-style=flat] .badge,[data-style=flat] .delta{box-shadow:0 2px 10px rgba(37,42,94,.18)}
+[data-style=flat] .sheet{background:rgba(255,255,255,.93);box-shadow:inset 0 1px 0 #fff,0 -14px 44px rgba(37,42,94,.16)}
+[data-style=flat] .act{background:rgba(255,255,255,.7);border:1px solid var(--hair)}
+[data-style=flat] .act:hover:not(:disabled){transform:translateY(-2px);background:#fff;box-shadow:0 10px 26px rgba(37,42,94,.13)}
+[data-style=flat] .act.urgent{border-color:rgba(196,58,48,.45);background:#FFF6F4}
+[data-style=flat] .ico{background-image:url(/art/icons-flat.webp);background-color:#fff;background-blend-mode:multiply;border-radius:calc(var(--tile)*.28);box-shadow:0 0 0 1px var(--hair)}
+[data-style=flat] .dock{border-radius:30px;background:rgba(255,255,255,.84);box-shadow:inset 0 1px 0 #fff,0 18px 50px rgba(37,42,94,.17)}
+[data-style=flat] .cat:hover .ico{transform:translateY(-3px) scale(1.04)}
+[data-style=flat] .cat[aria-pressed=true] .ico{box-shadow:0 0 0 3px var(--accent)}
+[data-style=flat] .age{box-shadow:0 12px 28px rgba(210,67,42,.42),inset 0 1px 0 rgba(255,255,255,.4)}
+[data-style=flat] .age:hover{transform:translateY(-2px) scale(1.03);filter:brightness(1.06)}
+[data-style=flat] .veil{background:rgba(24,22,52,.42);backdrop-filter:blur(10px)}
+[data-style=flat] .modal{background:rgba(255,255,255,.95)}
