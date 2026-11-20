@@ -28,7 +28,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
       >
         <h2 id="settings-title">Settings</h2>
         <label>
-          <input type="checkbox" checked={reduced} onChange={(e) => update({ reducedMotion: e.target.checked ? 'on' : 'system' })} /> Reduce motion
+          <input type="checkbox" checked={reduced} onChange={(e) => update({ reducedMotion: e.target.checked ? 'on' : window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'off' : 'system' })} /> Reduce motion
         </label>
         <label>
           <input type="checkbox" checked={relaxed} onChange={(e) => update({ relaxed: e.target.checked })} /> Relaxed mini-games

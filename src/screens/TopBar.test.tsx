@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, it } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { useApp } from '../app/store'
 import { createSaves } from '../engine/save/saves'
@@ -59,4 +59,22 @@ it('runs a dialog that holds focus, names its note and gives focus back', async 
   await userEvent.keyboard('{Escape}')
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(document.activeElement).toBe(button)
+})
+
+afterEach(() => vi.unstubAllGlobals())
+
+it('lets the player turn motion back on when the device asks for less', async () => {
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query === '(prefers-reduced-motion: reduce)',
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }))
+  await start()
+  await userEvent.click(screen.getByRole('button', { name: 'Settings' }))
+  const box = screen.getByRole('checkbox', { name: 'Reduce motion' }) as HTMLInputElement
+  expect(box.checked).toBe(true)
+  await userEvent.click(box)
+  expect(useSettings.getState().reducedMotion).toBe('off')
+  expect(document.documentElement.dataset.motion).not.toBe('reduce')
 })
