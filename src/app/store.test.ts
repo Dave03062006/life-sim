@@ -83,3 +83,13 @@ it('ignores a second boot', async () => {
   await useApp.getState().boot(saves)
   expect(useApp.getState().life).toBe(life)
 })
+it('lets only one of two overlapping boots load', async () => {
+  const saves = createSaves(memoryStore())
+  useApp.setState(useApp.getInitialState())
+  await Promise.all([useApp.getState().boot(saves), useApp.getState().boot(saves)])
+  useApp.getState().startDemoLife(7)
+  const life = useApp.getState().life
+  await flush()
+  await useApp.getState().boot(saves)
+  expect(useApp.getState().life).toBe(life)
+})

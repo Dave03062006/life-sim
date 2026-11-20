@@ -29,6 +29,8 @@ export interface AppState {
 }
 
 let saves: Saves | null = null
+let booting: Promise<void> | null = null
+let loading = false
 const persist = (life: Life) => void saves?.store({ version: 1, active: life, past: [] }).catch(() => {}) // a failed save must not break the game
 
 export const useApp = create<AppState>()((set, get) => ({
@@ -38,11 +40,18 @@ export const useApp = create<AppState>()((set, get) => ({
   playing: null,
   lastResult: null,
   birthday: null,
-  async boot(given) {
-    if (get().ready) return // StrictMode runs the boot effect twice
+  boot(given) {
+    // StrictMode runs the boot effect twice: share one load, never reload over newer play.
+    if (booting && (loading || get().ready)) return booting
+    loading = true
     saves = given ?? createSaves(indexedDbStore('life-sim', 'saves'))
-    const file = await saves.load()
-    set({ ready: true, life: file.active })
+    booting = saves
+      .load()
+      .then((file) => set({ ready: true, life: file.active }))
+      .finally(() => {
+        loading = false
+      })
+    return booting
   },
   startDemoLife(seed = randomSeed()) {
     const life = newLife({ seed, startAge: 15 })
