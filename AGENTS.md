@@ -56,9 +56,9 @@ Run `npm run check`, `npm test` and `npm run build` before committing.
 
 ## How to add an activity
 
-1. Add a data entry in `src/content/countries/indonesia/activities.ts`. The fields are defined in `src/content/types.ts`.
-2. Give it an icon id (for example `act-futsal`) that exists in `tools/art/names.json`, or let it fall back to its category icon.
-3. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry.
+1. Add an entry in `src/content/countries/indonesia/activities.ts` through the `a(...)` helper. The fields are defined in `src/content/types.ts`.
+2. The helper sets the icon id to `act-<id>` (for example `act-futsal`). That id needs an entry in `tools/art/names.json` and a drawn icon. For a new icon, update the source sheet and rerun `python tools/art/build.py` (see `tools/art/README.md`). The display falls back to the category icon only when art is missing at runtime; that does not make the content test pass.
+3. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry, including that its icon exists.
 
 Adding events, conditions or mini-game types: those systems come in later plans.
 
