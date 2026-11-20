@@ -1,0 +1,76 @@
+# Life Sim
+
+A life simulator that runs in the browser. You live one life, a year at a time. Each year you spend energy on activities, every activity is a short skill mini-game, and how well you play decides the result.
+
+It is in the same genre as BitLife, but has its own name, look and writing. Nothing is copied from BitLife.
+
+## Three promises
+
+1. **You play your life.** Activities are mini-games, and how well you play decides the result.
+2. **You are not boxed in.** Choices are built from a "what" and a "how", more options open up because of who you have become, every limit states its reason, and there is no single correct path through life.
+3. **You feel what you do.** Your stats change how the mini-games play, your character and surroundings change, old choices come back years later, and every result lands with motion and sound.
+
+## What is playable today (Plan 1)
+
+- Start a life. In this first plan you start at 15.
+- 46 late-teen activities in eight categories.
+- The Timing mini-game (Futsal practice and other Timing activities). Activities whose mini-game type is not built yet also play as Timing for now.
+- Energy, overwork, rest and repeats.
+- Ageing up, with the KTP milestone at 17.
+- Two art styles, switchable at any time.
+- Settings: sound, reduce motion, relaxed mini-games.
+- Keys 1-8 and Esc.
+- Automatic saving on the device.
+
+## Roadmap
+
+Milestone 1 is built as seven plans:
+
+1. Foundation and the playable year (this is what exists now).
+2. Five more mini-games: Tapping, Memory, Quiz with a starter question bank, Catch, Typing.
+3. Events, memories and people.
+4. A whole lifespan: eight stages, the new-life roll, school, work, money, death, the life summary, past lives, export and import.
+5. Health and disease.
+6. Content and art for every stage, including the staged 60 images.
+7. Checks and publishing: the life simulation, browser checks, accessibility, a code tour, Vercel.
+
+## Long-term goals
+
+- Every activity gets its own unique mini-game. Milestone 1 uses six reusable types as a first step.
+- A broad catalogue of real conditions, each with cited sources. Milestone 1 ships about 14.
+
+## Run it
+
+Needs Node 22.12 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+## Check it
+
+```bash
+npm run check   # type check and lint
+npm test        # unit and component tests (Vitest)
+npm run build   # type check and production build
+```
+
+## The two skins
+
+The same screen has two looks: a flat one and a pixel-art one. You can switch at any time. Colours live only in the skin files in `src/styles/` (`flat.css`, `pixel.css`). Pixel art is shown at exactly twice its logical size.
+
+## How art is made
+
+The art is AI-generated, then converted to WebP by Python scripts in `tools/art/`. See [tools/art/README.md](tools/art/README.md).
+
+## Where saves live
+
+- Saves: the browser's IndexedDB, database `life-sim`.
+- Settings: localStorage, key `life-sim-settings`.
+
+Nothing leaves your device. A damaged or newer save is kept aside and a fresh game starts.
+
+## More
+
+The design is in `docs/superpowers/specs/2026-11-16-life-sim-design.md` and the build plans are in `docs/superpowers/plans/`.
