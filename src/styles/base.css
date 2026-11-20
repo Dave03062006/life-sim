@@ -166,10 +166,10 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
   .brand em{display:none}
 }
 @media (max-width:939px) and (max-height:759px),(max-height:620px){body{overflow:auto;height:auto}.stage{height:380px}}
-@media (max-width:559px){body{overflow:auto;height:auto}.rail{grid-template-columns:minmax(0,1fr)}.scene{grid-row:auto;justify-self:center}.stage{height:440px}.dock{grid-template-columns:repeat(4,minmax(0,1fr))}.energy,.age{grid-column:1/-1}.age,.cat{grid-row:auto}.tools .ghost{display:none}}
+@media (max-width:559px){body{overflow:auto;height:auto}.rail{grid-template-columns:minmax(0,1fr)}.scene{grid-row:auto;justify-self:center}.stage{height:440px}.dock{grid-template-columns:repeat(4,minmax(0,1fr))}.energy,.age{grid-column:1/-1}.age,.cat{grid-row:auto}.tools .snd{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;transition-duration:.01s!important}}
 :root[data-motion=reduce] :is(*,*::before,*::after){animation-duration:.01s!important;transition-duration:.01s!important}
-.scrim{position:fixed;inset:0;display:grid;place-items:center;background:rgba(20,24,60,.45);z-index:50}
+.scrim{position:fixed;inset:0;display:grid;place-items:center;background:var(--scrim);z-index:50}
 .dialog{display:grid;gap:12px;padding:20px 24px;max-width:min(420px,calc(100vw - 32px));color:var(--ink)}
 .dialog h2{margin:0}
 .dialog .note{margin:0;font-size:13px;color:var(--ink2)}

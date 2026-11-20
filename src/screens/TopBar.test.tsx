@@ -78,3 +78,11 @@ it('lets the player turn motion back on when the device asks for less', async ()
   expect(useSettings.getState().reducedMotion).toBe('off')
   expect(document.documentElement.dataset.motion).not.toBe('reduce')
 })
+
+it('keeps focus on the checkbox you just toggled', async () => {
+  await start()
+  await userEvent.click(screen.getByRole('button', { name: 'Settings' }))
+  const box = screen.getByRole('checkbox', { name: 'Reduce motion' })
+  await userEvent.click(box)
+  expect(document.activeElement).toBe(box)
+})

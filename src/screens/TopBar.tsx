@@ -41,7 +41,7 @@ export function TopBar() {
             </button>
           ))}
         </div>
-        <button className="ghost" aria-pressed={!sound} onClick={() => update({ sound: !sound })}>
+        <button className="ghost snd" aria-pressed={!sound} onClick={() => update({ sound: !sound })}>
           {sound ? 'Sound on' : 'Sound off'}
         </button>
         <button ref={opener} className="ghost" onClick={() => setSettings(true)}>

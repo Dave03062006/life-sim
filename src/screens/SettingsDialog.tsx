@@ -8,12 +8,18 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const reduced = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
 
+  const latest = useRef(onClose)
+  useEffect(() => {
+    latest.current = onClose
+  })
+
+  // Once per open: move focus in and listen for Escape.
   useEffect(() => {
     ref.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && latest.current()
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [])
 
   return (
     <div className="scrim">
