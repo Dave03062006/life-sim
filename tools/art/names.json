@@ -1,0 +1,6 @@
+{
+  "icons-01": ["cat-school","cat-mind","cat-body","cat-health","cat-people","cat-money","cat-fun","cat-rest","mg-timing","mg-tapping","mg-memory","mg-quiz","mg-catch","mg-typing","ui-energy","ui-time"],
+  "icons-02": ["act-study-exam","act-homework","act-osis","act-group-project","act-bimbel","act-skip-class","act-library","act-english","act-code","act-chess","act-diary","act-puzzle-cube","act-futsal","act-jog","act-gym","act-badminton"],
+  "icons-03": ["act-swim","act-silat","act-doctor","act-medicine","act-checkup","act-dentist","act-eat-better","act-counsellor","act-hang-out","act-cook","act-family-dinner","act-call-nenek","act-new-friend","act-crush","act-warung-shift","act-sell-snacks"],
+  "icons-04": ["act-tutor","act-save-bank","act-clothes","act-motorbike","act-band","act-warnet","act-film","act-karaoke","act-ride-town","act-comics","act-sleep-in","act-nap","act-meditate","act-pijat","act-holiday","act-do-nothing"]
+}

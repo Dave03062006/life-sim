@@ -1,0 +1,98 @@
+{
+  "icons": {
+    "sheet": {
+      "flat": "/art/icons-flat.webp",
+      "pixel": "/art/icons-pixel.webp"
+    },
+    "index": {
+      "cat-school": 0,
+      "cat-mind": 1,
+      "cat-body": 2,
+      "cat-health": 3,
+      "cat-people": 4,
+      "cat-money": 5,
+      "cat-fun": 6,
+      "cat-rest": 7,
+      "mg-timing": 8,
+      "mg-tapping": 9,
+      "mg-memory": 10,
+      "mg-quiz": 11,
+      "mg-catch": 12,
+      "mg-typing": 13,
+      "ui-energy": 14,
+      "ui-time": 15,
+      "act-study-exam": 16,
+      "act-homework": 17,
+      "act-osis": 18,
+      "act-group-project": 19,
+      "act-bimbel": 20,
+      "act-skip-class": 21,
+      "act-library": 22,
+      "act-english": 23,
+      "act-code": 24,
+      "act-chess": 25,
+      "act-diary": 26,
+      "act-puzzle-cube": 27,
+      "act-futsal": 28,
+      "act-jog": 29,
+      "act-gym": 30,
+      "act-badminton": 31,
+      "act-swim": 32,
+      "act-silat": 33,
+      "act-doctor": 34,
+      "act-medicine": 35,
+      "act-checkup": 36,
+      "act-dentist": 37,
+      "act-eat-better": 38,
+      "act-counsellor": 39,
+      "act-hang-out": 40,
+      "act-cook": 41,
+      "act-family-dinner": 42,
+      "act-call-nenek": 43,
+      "act-new-friend": 44,
+      "act-crush": 45,
+      "act-warung-shift": 46,
+      "act-sell-snacks": 47,
+      "act-tutor": 48,
+      "act-save-bank": 49,
+      "act-clothes": 50,
+      "act-motorbike": 51,
+      "act-band": 52,
+      "act-warnet": 53,
+      "act-film": 54,
+      "act-karaoke": 55,
+      "act-ride-town": 56,
+      "act-comics": 57,
+      "act-sleep-in": 58,
+      "act-nap": 59,
+      "act-meditate": 60,
+      "act-pijat": 61,
+      "act-holiday": 62,
+      "act-do-nothing": 63
+    }
+  },
+  "scenes": {
+    "late-teen-male": {
+      "flat": "/art/scene-late-teen-male-flat.webp",
+      "pixel": "/art/scene-late-teen-male-pixel.webp"
+    }
+  },
+  "ambient": {
+    "late-teen-male": {
+      "flat": "/art/ambient-late-teen-male-flat.webp",
+      "pixel": "/art/ambient-late-teen-male-pixel.webp"
+    }
+  },
+  "games": {
+    "body": {
+      "flat": "/art/game-body-flat.webp",
+      "pixel": "/art/game-body-pixel.webp"
+    }
+  },
+  "events": {
+    "class-trip": {
+      "flat": "/art/event-class-trip-flat.webp",
+      "pixel": "/art/event-class-trip-pixel.webp"
+    }
+  }
+}
