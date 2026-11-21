@@ -39,7 +39,7 @@ export function actionsFor(life: Life, personId: string): PersonAction[] {
     { id: 'gift', label: 'Give a gift', blocked: giftBlocked(life), detail: `${formatRupiah(GIFT_PRICE)}. Closeness +${GIFT_CLOSENESS}.` },
   ]
   if (person.relation === 'crush') {
-    const blocked = missing('ask-out') ??
+    const blocked = missing('ask-out') ?? (life.interest === 'none' ? 'You are not looking for romance.' : null) ??
       (life.age < ASK_OUT_AGE ? `You need to be ${ASK_OUT_AGE}.` : person.closeness < ASK_OUT_CLOSENESS ? 'You are not close enough yet.' : null)
     actions.push({ id: 'ask-out', label: 'Ask out', blocked, detail: `Ask ${name} to be your partner.` })
   }

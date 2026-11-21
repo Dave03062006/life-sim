@@ -98,7 +98,7 @@ export function drawEvents(life: Life, pack: ContentPack): Life {
 
 export function availableActions(life: Life, ev: EventDef, cast: Record<string, string>): { action: EventAction; openNote: string | null }[] {
   return (ev.actions ?? [])
-    .filter((a) => (!a.romance || life.interest !== null) && (!a.open || holds(life, a.open.condition)))
+    .filter((a) => (!a.romance || (life.interest !== null && life.interest !== 'none')) && (!a.open || holds(life, a.open.condition)))
     .map((a) => ({ action: { ...a, label: fill(a.label, life, cast) }, openNote: a.open ? fill(a.open.note, life, cast) : null }))
 }
 
@@ -114,13 +114,21 @@ const MANNER_SCALE: Record<MannerKind, (tier: EventTier) => number> = {
   joke: (tier) => (tier === 'fail' ? 1.25 : 1),
 }
 
-export function resolveEvent(life: Life, pack: ContentPack, actionId: string, mannerId: string): { life: Life; tier: EventTier; entry: JournalEntry } {
+/** Drops leading pending events that cannot show: gone from the pack, or a cast person has left. */
+export function dropStale(life: Life, pack: ContentPack): Life {
+  const first = life.pendingEvents.findIndex((p) =>
+    pack.events.some((e) => e.id === p.eventId) && Object.values(p.cast).every((id) => personById(life, id)))
+  if (first === 0) return life
+  return { ...life, pendingEvents: first < 0 ? [] : life.pendingEvents.slice(first) }
+}
+
+export function resolveEvent(life: Life, pack: ContentPack, actionId: string, mannerId: string): { life: Life; tier: EventTier; entry: JournalEntry; skipped: boolean } {
   const [pending, ...rest] = life.pendingEvents
   if (!pending) throw new Error('Nothing pending to resolve')
   const ev = pack.events.find((e) => e.id === pending.eventId)
   if (!ev) throw new Error(`Unknown event ${pending.eventId}`)
   if (Object.values(pending.cast).some((id) => !personById(life, id))) {
-    return { life: { ...life, pendingEvents: rest }, tier: 'mixed', entry: { age: life.age, kind: 'event', text: MOMENT_PASSED, changes: [] } }
+    return { life: { ...life, pendingEvents: rest }, tier: 'mixed', entry: { age: life.age, kind: 'event', text: MOMENT_PASSED, changes: [] }, skipped: true }
   }
   const action = availableActions(life, ev, pending.cast).find((o) => o.action.id === actionId)?.action
   if (!action) throw new Error(`Action ${actionId} is not available in ${ev.id}`)
@@ -135,5 +143,5 @@ export function resolveEvent(life: Life, pack: ContentPack, actionId: string, ma
     next = { ...next, journal: [...next.journal, { age: life.age, kind: 'memory', text: fill(recall.text, life, pending.cast), changes: [] }] }
   }
   const done = applyOutcome(next, action.outcomes[tier], pending.cast, MANNER_SCALE[manner.kind](tier), manner.kind === 'calm' ? -2 : 0)
-  return { life: done.life, tier, entry: done.entry }
+  return { life: done.life, tier, entry: done.entry, skipped: false }
 }

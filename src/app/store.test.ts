@@ -204,9 +204,28 @@ it('refuses other actions while an event waits', async () => {
 it('skips an event whose person has gone', async () => {
   await fresh(choice('e1'))
   useApp.setState({ life: testLife({ pendingEvents: [{ eventId: 'talk', cast: { them: 'p-9' } }, { eventId: 'e1', cast: {} }] }) })
-  useApp.getState().endBirthday()
-  useApp.getState().decide('chat', 'calm')
+  useApp.getState().endBirthday() // the dialog never opens for it
   expect(useApp.getState()).toMatchObject({ lastEvent: null, pendingEvent: { eventId: 'e1', cast: {} } })
+  expect(useApp.getState().life!.pendingEvents).toEqual([{ eventId: 'e1', cast: {} }])
+})
+it('never lets an event missing from the pack block the year', async () => {
+  const saves = createSaves(memoryStore())
+  events.splice(0, events.length, ...builtIns, choice('e1'))
+  const unknown = { eventId: 'removed', cast: {} }
+  await saves.store({ version: 2, active: testLife({ pendingEvents: [unknown, { eventId: 'e1', cast: {} }] }), past: [] })
+  useApp.setState(useApp.getInitialState())
+  await useApp.getState().boot(saves)
+  expect(useApp.getState().pendingEvent).toEqual({ eventId: 'e1', cast: {} })
+  await flush()
+  expect((await saves.load()).active!.pendingEvents).toEqual([{ eventId: 'e1', cast: {} }])
+
+  const only = createSaves(memoryStore())
+  await only.store({ version: 2, active: testLife({ age: 15, pendingEvents: [unknown] }), past: [] })
+  useApp.setState(useApp.getInitialState())
+  await useApp.getState().boot(only)
+  expect(useApp.getState().pendingEvent).toBeNull()
+  useApp.getState().ageUp()
+  expect(useApp.getState()).toMatchObject({ birthday: 16 })
 })
 it('brings back an unanswered event after reload', async () => {
   const saves = createSaves(memoryStore())

@@ -6,7 +6,7 @@ import { createSaves, type Saves } from '../engine/save/saves'
 import { indexedDbStore, memoryStore } from '../engine/save/storage'
 import { useSettings } from '../engine/settings'
 import { finishActivity, GOOD_SCORE, offersFor } from '../life/activities'
-import { drawEvents, MOMENT_PASSED, resolveEvent, type EventTier } from '../life/events'
+import { drawEvents, dropStale, resolveEvent, type EventTier } from '../life/events'
 import { modifiersFor } from '../life/modifiers'
 import { personById } from '../life/people'
 import { actionsFor, afterEvent, giveGift, queuePersonEvent, timeActivity, type PersonActionId } from '../life/personActions'
@@ -57,15 +57,18 @@ const busy = (s: AppState) =>
   !s.life || s.playing !== null || s.lastResult !== null || s.birthday !== null || s.pendingEvent !== null || s.lastEvent !== null || s.askingInterest
 /** Runs once the romance question is answered; null means show the next event. */
 let resume: (() => void) | null = null
-/** The first pending event, or the romance question when it has a romance option and none was answered yet. */
-function showNext(life: Life): Partial<AppState> {
+/** The first pending event that can show, or the romance question before one with a romance option; saves any dropped. */
+function showNext(given: Life): Partial<AppState> {
+  const pack = packFor(given.country)
+  const life = dropStale(given, pack)
+  if (life !== given) persist(life)
   const pending = life.pendingEvents[0] ?? null
-  const ev = pending && packFor(life.country).events.find((e) => e.id === pending.eventId)
+  const ev = pending && pack.events.find((e) => e.id === pending.eventId)
   if (life.interest === null && ev?.actions?.some((a) => a.romance)) {
     resume = null
-    return { pendingEvent: null, askingInterest: true }
+    return { life, pendingEvent: null, askingInterest: true }
   }
-  return { pendingEvent: pending }
+  return { life, pendingEvent: pending }
 }
 
 export const useApp = create<AppState>()((set, get) => {
@@ -154,7 +157,7 @@ export const useApp = create<AppState>()((set, get) => {
       const def = pack.events.find((e) => e.id === pendingEvent.eventId)!
       const resolved = resolveEvent(life, pack, actionId, mannerId)
       const next = afterEvent(resolved.life, pendingEvent.eventId, pendingEvent.cast, resolved.tier)
-      if (resolved.entry.text === MOMENT_PASSED) return saveAndShow(next) // skipped silently
+      if (resolved.skipped) return saveAndShow(next) // skipped silently
       persist(next)
       set({ life: next, pendingEvent: null, lastEvent: { def, tier: resolved.tier, entry: resolved.entry } })
     },

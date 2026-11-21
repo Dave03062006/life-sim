@@ -38,6 +38,8 @@ describe('person actions', () => {
     expect(blockedOf(withAyu(50), 'p-4')['ask-out']).toBeNull()
     expect(blockedOf(withAyu(49), 'p-4')['ask-out']).toBe('You are not close enough yet.')
     expect(blockedOf(withAyu(80, 14), 'p-4')['ask-out']).toBe('You need to be 15.')
+    expect(blockedOf({ ...withAyu(80), interest: 'none' }, 'p-4')['ask-out']).toBe('You are not looking for romance.')
+    expect(blockedOf({ ...withAyu(80), interest: 'men' }, 'p-4')['ask-out']).toBeNull()
   })
   it('gives a gift only when you can pay', () => {
     expect(blockedOf(testLife({ money: 40000 })).gift).toBe('You need Rp 50.000. You have Rp 40.000.')

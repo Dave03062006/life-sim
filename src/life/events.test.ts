@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ContentPack, EventAction, EventDef, Outcome } from '../content/types'
 import { createRng } from '../engine/random'
-import { availableActions, drawEvents, fill, resolveEvent, rollTier } from './events'
+import { availableActions, drawEvents, dropStale, fill, resolveEvent, rollTier } from './events'
 import { testLife } from './testLife'
 import type { Life, Person } from './types'
 
@@ -166,11 +166,21 @@ describe('resolving events', () => {
     const lowRep = testLife({ stats: { ...testLife().stats, reputation: 40 } })
     expect(ids(lowRep)).toEqual([['cover', null]])
     expect(ids(testLife({ interest: 'women' })).map(([id]) => id)).toEqual(['cover', 'speak', 'flirt'])
+    expect(ids(testLife({ interest: 'none' })).map(([id]) => id)).toEqual(['cover', 'speak'])
+  })
+  it('drops leading pending events that cannot show', () => {
+    const life = testLife({ pendingEvents: [...pending('gone-from-pack'), ...pending('cover-friend', { friend: 'p-9' }), ...pending('bad-day'), ...pending('nope')] })
+    expect(dropStale(life, pack).pendingEvents).toEqual([...pending('bad-day'), ...pending('nope')])
+    expect(dropStale(testLife({ pendingEvents: pending('nope') }), pack).pendingEvents).toEqual([])
+    const fine = testLife({ pendingEvents: pending('bad-day') })
+    expect(dropStale(fine, pack)).toBe(fine)
   })
   it('lets the moment pass when a cast person has left', () => {
     const life = testLife({ pendingEvents: [...pending('cover-friend', { friend: 'p-9' }), ...pending('bad-day')] })
     const { life: after, tier, entry } = resolveEvent(life, pack, 'cover', 'calm')
     expect(tier).toBe('mixed')
+    expect(resolveEvent(life, pack, 'cover', 'calm').skipped).toBe(true)
+    expect(resolveEvent(testLife({ pendingEvents: pending('bad-day') }), pack, 'a', 'calm').skipped).toBe(false)
     expect(entry.text).toBe('The moment passed.')
     expect(after).toEqual({ ...life, pendingEvents: pending('bad-day') })
   })
