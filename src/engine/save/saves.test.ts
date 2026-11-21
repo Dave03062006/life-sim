@@ -29,6 +29,17 @@ describe('saves', () => {
     expect(loaded.active!.rng).not.toBe(old.rng)
     expect(await store.get('save-damaged')).toBeUndefined()
   })
+  it('upgrades a version 1 life inside a version 2 file', async () => {
+    const { people: _p, memories: _m, interest: _i, pendingEvents: _e, seenEvents: _s, spentWith: _w, ...rest } = testLife({ age: 15 })
+    const file = { version: 2, active: { ...rest, version: 1 }, past: [testLife({ id: 'old' })] }
+    const store = memoryStore()
+    await store.set('save', { checksum: checksumOf(file), file })
+    const loaded = await createSaves(store).load()
+    expect(loaded.active!.version).toBe(2)
+    expect(loaded.active!.people.length).toBeGreaterThan(0)
+    expect(loaded.active!.spentWith).toEqual([])
+    expect(loaded.past).toEqual([testLife({ id: 'old' })])
+  })
   it('starts fresh and keeps the bad data aside when a save is damaged or from a newer version', async () => {
     const bads = [{ checksum: 'wrong', file: { version: 2, active: testLife(), past: [] } }, 'not a save', { checksum: checksumOf({ version: 99 }), file: { version: 99 } }]
     for (const bad of bads) {

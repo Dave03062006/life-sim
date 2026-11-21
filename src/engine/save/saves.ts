@@ -42,7 +42,7 @@ export function createSaves(store: KeyValueStore): Saves {
       try {
         const raw = await store.get<unknown>('save')
         if (raw === undefined) return EMPTY_SAVE
-        if (isValid(raw)) return raw.file.version === 2 ? (raw.file as unknown as SaveFile) : upgrade(raw.file)
+        if (isValid(raw)) return upgrade(raw.file) // always: a version 2 file may still hold a version 1 life
         await store.set('save-damaged', raw)
       } catch {
         // An unreadable store means starting fresh.
