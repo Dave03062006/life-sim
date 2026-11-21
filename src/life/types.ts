@@ -4,9 +4,14 @@ export type StageId = 'baby' | 'small-child' | 'child' | 'early-teen' | 'late-te
 export type CategoryId = 'school' | 'mind' | 'body' | 'health' | 'people' | 'money' | 'fun' | 'rest'
 export type Gender = 'female' | 'male'
 export interface Change { key: StatKey | 'money' | 'energy'; delta: number }
-export interface JournalEntry { age: number; kind: 'milestone' | 'activity'; text: string; changes: Change[] }
+export type Relation = 'mother' | 'father' | 'sibling' | 'grandparent' | 'friend' | 'crush' | 'partner'
+export interface Person { id: string; name: string; relation: Relation; gender: Gender; age: number; closeness: number }
+export interface Memory { id: string; age: number; text: string; people: string[] }   // people = person ids
+export type Interest = 'women' | 'men' | 'both' | 'none'
+export interface PendingEvent { eventId: string; cast: Record<string, string> }       // role -> person id
+export interface JournalEntry { age: number; kind: 'milestone' | 'activity' | 'event' | 'memory'; text: string; changes: Change[] }
 export interface Life {
-  version: 1
+  version: 2
   id: string
   rng: number               // the seeded generator's position
   country: 'indonesia'
@@ -20,4 +25,10 @@ export interface Life {
   restsThisYear: number
   doneThisYear: Record<string, number>
   journal: JournalEntry[]
+  people: Person[]
+  memories: Memory[]
+  interest: Interest | null       // null until the romance question is answered
+  pendingEvents: PendingEvent[]
+  seenEvents: string[]            // event ids already drawn in this life
+  spentWith: string[]             // person ids you spent time with this year
 }

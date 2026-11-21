@@ -107,7 +107,7 @@ it('does nothing out of turn while a mini-game is playing', async () => {
 })
 it('keeps past lives when it saves', async () => {
   const saves = createSaves(memoryStore())
-  await saves.store({ version: 1, active: testLife({ age: 15 }), past: [testLife({ id: 'old' })] })
+  await saves.store({ version: 2, active: testLife({ age: 15 }), past: [testLife({ id: 'old' })] })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
   useApp.getState().begin('clothes')

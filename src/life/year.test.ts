@@ -16,6 +16,15 @@ describe('year', () => {
     expect(newLife({ seed: 7 }).age).toBe(0)
   })
 
+  it('gives a new life a family, and a friend from age 12', () => {
+    const young = newLife({ seed: 7 }).people
+    expect(young.map((p) => p.relation)).toEqual(expect.arrayContaining(['mother', 'father']))
+    expect(young.some((p) => p.relation === 'friend')).toBe(false)
+    const teen = newLife({ seed: 7, startAge: 15, gender: 'female' }).people
+    expect(teen.at(-1)).toMatchObject({ relation: 'friend', gender: 'female', age: 15 })
+    expect(newLife({ seed: 7, startAge: 15 }).stats).toEqual(newLife({ seed: 7 }).stats)
+  })
+
   it('ages up with the yearly changes and a clean year', () => {
     const pack = packFor('indonesia')
     const next = ageUp(testLife({ energySpent: 7, restsThisYear: 2, doneThisYear: { jog: 1 } }), pack)

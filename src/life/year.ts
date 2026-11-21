@@ -1,5 +1,7 @@
+import { NAMES } from '../content/countries/indonesia/names'
 import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
+import { startingPeople, yearlyPeople } from './people'
 import { applyChanges, roundAway } from './stats'
 import type { Change, Gender, Life } from './types'
 
@@ -13,8 +15,9 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
   const smarts = roll(20, 90)
   const looks = roll(20, 90)
   const stress = roll(0, 20)
+  const people = startingPeople(rng, startAge, gender, name, NAMES)
   return {
-    version: 1,
+    version: 2,
     id: `life-${seed}`,
     rng: rng.state,
     country: 'indonesia',
@@ -28,6 +31,12 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
     restsThisYear: 0,
     doneThisYear: {},
     journal: [],
+    people,
+    memories: [],
+    interest: null,
+    pendingEvents: [],
+    seenEvents: [],
+    spentWith: [],
   }
 }
 
@@ -44,12 +53,12 @@ export function ageUp(life: Life, pack: ContentPack): Life {
     { key: 'looks', delta: age >= 40 ? -1 : 0 },
   ]
   const text = pack.milestones[age]
-  return {
+  return yearlyPeople({
     ...applyChanges(life, changes),
     age,
     energySpent: 0,
     restsThisYear: 0,
     doneThisYear: {},
     journal: text ? [...life.journal, { age, kind: 'milestone', text, changes: [] }] : life.journal,
-  }
+  })
 }

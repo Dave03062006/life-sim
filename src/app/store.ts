@@ -34,7 +34,7 @@ let saves: Saves | null = null
 let booting: Promise<void> | null = null
 let loading = false
 let past: Life[] = []
-const persist = (life: Life) => void saves?.store({ version: 1, active: life, past }).catch(() => {}) // a failed save must not break the game
+const persist = (life: Life) => void saves?.store({ version: 2, active: life, past }).catch(() => {}) // a failed save must not break the game
 const localSaves = (): Saves => {
   try {
     return createSaves(indexedDbStore('life-sim', 'saves'))

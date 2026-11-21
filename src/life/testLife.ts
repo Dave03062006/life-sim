@@ -2,7 +2,7 @@ import type { Life } from './types'
 
 export function testLife(overrides: Partial<Life> = {}): Life {
   return {
-    version: 1,
+    version: 2,
     id: 'life-test',
     rng: 1,
     country: 'indonesia',
@@ -16,6 +16,16 @@ export function testLife(overrides: Partial<Life> = {}): Life {
     restsThisYear: 0,
     doneThisYear: {},
     journal: [],
+    people: [
+      { id: 'p-1', name: 'Siti', relation: 'mother', gender: 'female', age: 42, closeness: 70 },
+      { id: 'p-2', name: 'Budi', relation: 'father', gender: 'male', age: 45, closeness: 70 },
+      { id: 'p-3', name: 'Dimas', relation: 'friend', gender: 'male', age: 16, closeness: 60 },
+    ],
+    memories: [],
+    interest: null,
+    pendingEvents: [],
+    seenEvents: [],
+    spentWith: [],
     ...overrides,
   }
 }
