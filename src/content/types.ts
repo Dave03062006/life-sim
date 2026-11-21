@@ -1,4 +1,4 @@
-import type { CategoryId, Life, StageId, StatKey } from '../life/types'
+import type { CategoryId, Life, Relation, StageId, StatKey } from '../life/types'
 
 export type MinigameType = 'timing' | 'tapping' | 'memory' | 'quiz' | 'catch' | 'typing'
 export type ResultTier = 'fail' | 'weak' | 'good' | 'great'
@@ -26,4 +26,42 @@ export interface ContentPack {
   id: Life['country']
   activities: ActivityDef[]
   milestones: Record<number, string>
+  events: EventDef[]
+}
+
+export type Condition =
+  | { kind: 'stat'; key: StatKey; min?: number; max?: number }
+  | { kind: 'memory'; id: string } // you have this memory
+  | { kind: 'no-memory'; id: string }
+  | { kind: 'money'; min: number }
+export interface Outcome {
+  text: string // may use {role} placeholders, e.g. {friend}
+  effects?: Partial<Record<StatKey, number>>
+  money?: number
+  closeness?: Partial<Record<string, number>> // role -> change
+  memory?: { id: string; text: string } // recorded with the cast's people
+}
+export type MannerKind = 'calm' | 'blunt' | 'joke'
+export interface EventAction {
+  id: string
+  label: string
+  chance: number // 0-100
+  open?: { condition: Condition; note: string } // shown only when met; the note says why ("Open to you: your choice at 15")
+  romance?: boolean // needs the romance question answered first
+  outcomes: Record<'success' | 'mixed' | 'fail', Outcome>
+}
+export interface EventDef {
+  id: string
+  kind: 'choice' | 'news'
+  stages: StageId[]
+  weight: number
+  big?: boolean
+  when?: Condition[]
+  cast?: Record<string, Relation> // roles to fill, e.g. { friend: 'friend' }
+  title: string
+  text: string
+  recall?: { memory: string; text: string } // a "Remembered" line added when you have the memory
+  actions?: EventAction[] // choice events, 2-5
+  manners?: { id: string; label: string; kind: MannerKind }[] // default: Calmly / Bluntly / With a joke
+  news?: Outcome // news events
 }
