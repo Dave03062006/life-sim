@@ -27,3 +27,9 @@
 .vlevel{position:absolute;left:0;right:0;bottom:0;background:var(--ink);opacity:.55}
 .timeleft{height:8px;width:100%;border-radius:99px;background:var(--track);overflow:hidden}
 .timeleft>div{height:100%;background:var(--happy)}
+.memgame{display:flex;flex-direction:column;align-items:center;gap:8px;margin:14px auto 0;width:min(100%,420px)}
+.pads{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.pad{position:relative;height:84px;border-radius:var(--r2);background:var(--track);color:var(--ink);font-weight:700;border:2px solid transparent}
+.pad.lit{background:var(--happy);border-color:var(--ink)}
+.pad kbd{position:absolute;top:4px;left:6px;font-size:11px;opacity:.6}
+.memstatus{margin:0;font-weight:600}
