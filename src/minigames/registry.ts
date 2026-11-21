@@ -3,6 +3,8 @@ import type { ActivityDef, MinigameType } from '../content/types'
 import type { GameInput, GameRules } from './framework'
 import { memory } from './memory/rules'
 import { MemoryView } from './memory/View'
+import { quiz } from './quiz/rules'
+import { QuizView } from './quiz/View'
 import { tapping } from './tapping/rules'
 import { TappingView } from './tapping/View'
 import { timing } from './timing/rules'
@@ -24,7 +26,7 @@ export const GAMES: Record<MinigameType, GameEntry> = {
   timing: TIMING,
   tapping: { rules: tapping, View: TappingView, instruction: 'Tap to keep the meter inside the band until time runs out.', verb: 'Tap' },
   memory: { rules: memory, View: MemoryView, instruction: 'Watch the order the pads light up, then repeat it.' },
-  quiz: TIMING,
+  quiz: { rules: quiz, View: QuizView, instruction: 'Answer five questions before time runs out. Press 1 to 4 or click.' },
   catch: TIMING,
   typing: TIMING,
 }

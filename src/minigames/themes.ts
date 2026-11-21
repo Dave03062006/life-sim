@@ -1,4 +1,5 @@
 import type { ResultTier } from '../content/types'
+import type { QuizSource } from './quiz/questions'
 
 export interface Theme {
   words?: Partial<Record<ResultTier, string>>
@@ -10,6 +11,8 @@ export interface Theme {
   instruction?: string
   /** Labels on Memory's four pads; default 1 to 4. */
   pads?: [string, string, string, string]
+  /** Where Quiz draws its questions; default the general bank. */
+  quiz?: QuizSource
 }
 
 const WORDS: Record<ResultTier, string> = { great: 'Perfect!', good: 'Nice!', weak: 'Close', fail: 'Missed' }
@@ -22,6 +25,11 @@ export const THEMES: Record<string, Theme> = {
   silat: { pads: ['Block', 'Strike', 'Kick', 'Sweep'] },
   'warung-shift': { pads: ['Nasi', 'Soto', 'Es teh', 'Kerupuk'] },
   comics: { pads: ['Hero', 'Villain', 'Panel', 'Speech'] },
+  'study-exam': { quiz: { kind: 'bank', subjects: ['maths', 'science', 'english', 'indonesia'] } },
+  bimbel: { quiz: { kind: 'bank', subjects: ['maths', 'english'] } },
+  'new-friend': { quiz: { kind: 'bank', subjects: ['chat'] } },
+  'sell-snacks': { quiz: { kind: 'change' } },
+  tutor: { quiz: { kind: 'arithmetic' } },
 }
 
 export const wordFor = (theme: string, tier: ResultTier): string => THEMES[theme]?.words?.[tier] ?? WORDS[tier]
