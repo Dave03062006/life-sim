@@ -84,3 +84,16 @@ describe('catch', () => {
     expect(catchGame.score(s)).toBe(0)
   })
 })
+describe('catch move modifier', () => {
+  it('slows the basket but not the falling items', () => {
+    const run = (move: number) => {
+      let s = catchGame.start({ ...NO_MODIFIERS, move }, 5)
+      for (let i = 0; i < 30; i++) s = catchGame.step(s, i === 0 ? [{ kind: 'key', key: 'right', down: true }] : [])
+      return { x: catchGame.view(s).x, ys: catchGame.view(s).items.map((it) => it.y) }
+    }
+    const slow = run(0.85)
+    const normal = run(1)
+    expect(slow.x - 0.5).toBeLessThan(normal.x - 0.5)
+    expect(slow.ys).toEqual(normal.ys)
+  })
+})

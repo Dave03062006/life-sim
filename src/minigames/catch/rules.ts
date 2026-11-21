@@ -27,7 +27,7 @@ export const catchGame: GameRules<CatchState, CatchView> = {
         if (i.down) target = null
       } else if (i.kind === 'pointer' && i.phase !== 'up') target = i.x
     }
-    const reach = 0.9 * mods.speed * STEP
+    const reach = 0.9 * mods.speed * mods.move * STEP
     const dir = Number(right) - Number(left)
     const half = widthOf(mods) / 2
     let x = state.x

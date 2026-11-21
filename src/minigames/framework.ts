@@ -8,12 +8,13 @@ export type GameInput =
   | { kind: 'choose'; option: number } // 0-based; keys 1–4 or a click on a choice
   | { kind: 'text'; text: string } // one character, or '\b' for Backspace
 export interface Modifiers {
+  move: number // how fast the player's own piece moves (Catch's basket); 1 normal
   wobble: number; speed: number; window: number; time: number
   drain: number // how fast meters fall; 1 normal
   preview: number // multiplies quiz time and memory preview time; 1 normal
   eliminate: boolean // the quiz removes one wrong answer
 }
-export const NO_MODIFIERS: Modifiers = { wobble: 0, speed: 1, window: 1, time: 1, drain: 1, preview: 1, eliminate: false }
+export const NO_MODIFIERS: Modifiers = { move: 1, wobble: 0, speed: 1, window: 1, time: 1, drain: 1, preview: 1, eliminate: false }
 export interface GameRules<State, View> {
   type: MinigameType
   input: 'keys' | 'text' // 'text' sends printable keys as text inputs instead of shortcuts
