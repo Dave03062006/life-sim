@@ -35,6 +35,7 @@ function fits(life: Life, p: Person, relation: Person['relation']): boolean {
 function castFor(life: Life, ev: EventDef, rng: Rng | null): Record<string, string> | null {
   const cast: Record<string, string> = {}
   // memories this event leans on: the people cast must be the ones in them
+  // a held memory restricts every cast role to the memory's people, so an event that references a memory should cast only that memory's relation
   const ids = [...(ev.when ?? []), ...(ev.actions ?? []).flatMap((a) => (a.open ? [a.open.condition] : []))]
     .flatMap((c) => (c.kind === 'memory' ? [c.id] : []))
   if (ev.recall) ids.push(ev.recall.memory)

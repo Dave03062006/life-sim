@@ -379,7 +379,7 @@ const choices: EventDef[] = [
   {
     id: 'exam-nerves', kind: 'choice', stages: LATE, weight: 2,
     title: 'The night before the exam',
-    text: 'Tomorrow is the semester exam. The lights are on in every window on your street, and you cannot sleep.',
+    text: 'Tomorrow is the semester exam, and you cannot sleep.',
     actions: [
       act('cram', 'Study till late', 60, [
         o('You went in with a head full of facts, and it paid off.', { effects: { smarts: 4, stress: 3 } }),
