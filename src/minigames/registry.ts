@@ -1,6 +1,8 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { ActivityDef, MinigameType } from '../content/types'
 import type { GameInput, GameRules } from './framework'
+import { tapping } from './tapping/rules'
+import { TappingView } from './tapping/View'
 import { timing } from './timing/rules'
 import { TimingView } from './timing/View'
 
@@ -18,7 +20,7 @@ const TIMING: GameEntry = { rules: timing, View: TimingView, instruction: 'Stop 
 // Types not built yet play as Timing until Tasks 2–6 give them their own entries.
 export const GAMES: Record<MinigameType, GameEntry> = {
   timing: TIMING,
-  tapping: TIMING,
+  tapping: { rules: tapping, View: TappingView, instruction: 'Tap to keep the meter inside the band until time runs out.', verb: 'Tap' },
   memory: TIMING,
   quiz: TIMING,
   catch: TIMING,
