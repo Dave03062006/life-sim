@@ -49,17 +49,19 @@ export function startingPeople(rng: Rng, age: number, gender: Gender, name: stri
   return friend ? [...family, friend] : family
 }
 
+const clamp = (n: number) => Math.min(100, Math.max(0, n))
+
 export function addPerson(life: Life, person: Person): Life {
-  const people = [...life.people, { ...person, id: nextId(life.people) }]
-  const friends = people.filter((p) => p.relation === 'friend')
-  if (friends.length <= MAX_FRIENDS) return { ...life, people }
+  const people = [...life.people, { ...person, id: nextId(life.people), closeness: clamp(person.closeness) }]
+  const friends = life.people.filter((p) => p.relation === 'friend') // the newcomer never drifts away
+  if (person.relation !== 'friend' || friends.length < MAX_FRIENDS) return { ...life, people }
   const least = friends.reduce((a, b) => (b.closeness < a.closeness ? b : a))
   return { ...life, people: people.filter((p) => p !== least) }
 }
 
 export function changeCloseness(life: Life, personId: string, delta: number): Life {
   if (!personById(life, personId)) return life
-  return { ...life, people: life.people.map((p) => (p.id === personId ? { ...p, closeness: Math.min(100, Math.max(0, p.closeness + delta)) } : p)) }
+  return { ...life, people: life.people.map((p) => (p.id === personId ? { ...p, closeness: clamp(p.closeness + delta) } : p)) }
 }
 
 export const personById = (life: Life, id: string): Person | undefined => life.people.find((p) => p.id === id)

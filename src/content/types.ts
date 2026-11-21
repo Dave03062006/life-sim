@@ -20,6 +20,9 @@ export interface ActivityDef {
   effects: Partial<Record<StatKey, number>> // benefits scale with the result; costs do not
   failPenalty?: Partial<Record<StatKey, number>>
   requires?: Requirement[]
+  with?: Relation // one person of this relation joins (a woman first, so a grandmother before a grandfather); blocked when there is none
+  together?: Relation[] // everyone of these relations joins, closeness +2 each
+  makes?: 'friend' // a Good or Great result adds a new same-age friend of your gender
   lines: string | Record<ResultTier, string> // journal text
 }
 export interface ContentPack {

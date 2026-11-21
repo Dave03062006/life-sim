@@ -69,4 +69,34 @@ describe('activities', () => {
   it('never words a fail as a success', () => {
     expect(finishActivity(testLife(), act('study-exam'), 0.1).entry.text).toBe('Study for the exam: it did not go well this time.')
   })
+
+  it('makes a new friend on a good result, named in the journal', () => {
+    const made = finishActivity(testLife(), act('new-friend'), 0.9)
+    const friend = made.life.people.at(-1)!
+    expect(friend).toMatchObject({ id: 'p-4', relation: 'friend', gender: 'male', age: 16, closeness: 40 })
+    expect(testLife().people.some((p) => p.name === friend.name)).toBe(false)
+    expect(made.entry.text).toBe(`You made a new friend: ${friend.name}.`)
+    expect(made.life.rng).not.toBe(testLife().rng)
+    for (const score of [0.1, 0.3]) expect(finishActivity(testLife(), act('new-friend'), score).life.people).toHaveLength(3)
+  })
+  it('cooks with your mother and calls a grandmother first', () => {
+    const cooked = finishActivity(testLife(), act('cook'), 0.6)
+    expect(cooked.life.people[0]!.closeness).toBe(74)
+    expect(cooked.life.spentWith).toEqual(['p-1'])
+    expect(cooked.entry.people).toEqual([{ id: 'p-1', delta: 4 }])
+    expect(finishActivity(testLife(), act('cook'), 0.1).life.people[0]!.closeness).toBe(68)
+    expect(offer(testLife({ people: testLife().people.slice(1) }), 'cook').blocked).toBe('You have no mother.')
+    expect(offer(testLife(), 'call-nenek').blocked).toBe('You have no grandparents.')
+    const grand = (id: string, gender: 'female' | 'male') => ({ id, name: id, relation: 'grandparent' as const, gender, age: 70, closeness: 50 })
+    const called = finishActivity(testLife({ people: [grand('p-8', 'male'), grand('p-9', 'female')] }), act('call-nenek'), GOOD_SCORE)
+    expect(called.entry.people).toEqual([{ id: 'p-9', delta: 4 }])
+    expect(called.life.spentWith).toEqual(['p-9'])
+  })
+  it('brings the family to dinner', () => {
+    const sis = { id: 'p-4', name: 'Rina', relation: 'sibling' as const, gender: 'female' as const, age: 12, closeness: 50 }
+    const ate = finishActivity(testLife({ people: [...testLife().people, sis] }), act('family-dinner'), GOOD_SCORE)
+    expect(ate.entry.people).toEqual([{ id: 'p-1', delta: 2 }, { id: 'p-2', delta: 2 }, { id: 'p-4', delta: 2 }])
+    expect(ate.life.spentWith).toEqual(['p-1', 'p-2', 'p-4'])
+    expect(ate.life.people[2]!.closeness).toBe(60) // a friend is not family
+  })
 })

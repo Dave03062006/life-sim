@@ -1,10 +1,12 @@
+import { NAMES } from '../content/countries/indonesia/names'
 import type { ActivityDef, ContentPack, ResultTier } from '../content/types'
+import { createRng } from '../engine/random'
 import { OVERWORK_HEALTH, OVERWORK_STRESS, overworkPoints, repeatScale, restGain } from './energy'
 import { formatRupiah } from './format'
-import { nudgeCloseness } from './people'
+import { addPerson, nudgeCloseness } from './people'
 import { stageOf } from './stages'
 import { applyChanges, isBenefit, roundAway } from './stats'
-import type { CategoryId, Change, JournalEntry, Life, StatKey } from './types'
+import type { CategoryId, Change, JournalEntry, Life, Person, Relation, StatKey } from './types'
 
 export const GOOD_SCORE = 0.6
 export const SKIP_SCORE = 0.3
@@ -23,9 +25,16 @@ export interface ActivityOffer {
   overwork: boolean
 }
 
+/** Who joins a `with` activity: a woman first, so a grandmother before a grandfather. */
+function companion(life: Life, relation: Relation): Person | undefined {
+  const fit = life.people.filter((p) => p.relation === relation)
+  return fit.find((p) => p.gender === 'female') ?? fit[0]
+}
+
 function check(life: Life, def: ActivityDef): { blocked: string | null; openNote: string | null } {
   const reqs = def.requires ?? []
   for (const r of reqs) if (r.kind === 'min-age' && life.age < r.age) return { blocked: r.reason, openNote: null }
+  if (def.with && !companion(life, def.with)) return { blocked: `You have no ${def.with === 'grandparent' ? 'grandparents' : def.with}.`, openNote: null }
   let openNote: string | null = null
   for (const r of reqs) {
     if (r.kind !== 'stat') continue
@@ -57,6 +66,10 @@ export interface ActivityOutcome { life: Life; tier: ResultTier; entry: JournalE
 
 export const TIME_CLOSENESS = 8
 export const TIME_FAIL_CLOSENESS = -3
+export const WITH_CLOSENESS = 4
+export const WITH_FAIL_CLOSENESS = -2
+export const TOGETHER_CLOSENESS = 2
+export const NEW_FRIEND_CLOSENESS = 40
 
 export function finishActivity(life: Life, def: ActivityDef, score: number, personId?: string): ActivityOutcome {
   const { blocked } = check(life, def)
@@ -93,17 +106,42 @@ export function finishActivity(life: Life, def: ActivityDef, score: number, pers
   if (over > 0) text += ' You were already worn out.'
   if (def.rest !== undefined && gain === 0) text += life.energySpent === 0 ? ' You were already rested.' : ' Rest is not helping any more this year.'
 
-  // time with a person: closeness scales like a benefit, and they count as seen this year
-  const together = personId
-    ? nudgeCloseness(next, personId, tier === 'fail' ? TIME_FAIL_CLOSENESS : Math.max(1, roundAway(TIME_CLOSENESS * scale)))
-    : null
-  const entry: JournalEntry = { age: life.age, kind: 'activity', text, changes, ...(together && { people: together.moved }) }
+  // time with people: closeness scales like a benefit, and they count as seen this year
+  const nudge = (base: number, fail: number) => (tier === 'fail' ? fail : Math.max(1, roundAway(base * scale)))
+  const withId = def.with && companion(life, def.with)?.id
+  const company: [string, number][] = personId
+    ? [[personId, nudge(TIME_CLOSENESS, TIME_FAIL_CLOSENESS)]]
+    : [
+        ...(withId ? [[withId, nudge(WITH_CLOSENESS, WITH_FAIL_CLOSENESS)] as [string, number]] : []),
+        ...life.people.filter((p) => def.together?.includes(p.relation)).map((p): [string, number] => [p.id, nudge(TOGETHER_CLOSENESS, 0)]),
+      ]
+  let after = next
+  const moved: { id: string; delta: number }[] = []
+  for (const [id, delta] of company) {
+    const nudged = nudgeCloseness(after, id, delta)
+    after = nudged.life
+    moved.push(...nudged.moved)
+  }
+  const ids = company.map(([id]) => id)
+
+  let rng = life.rng
+  if (def.makes === 'friend' && (tier === 'good' || tier === 'great')) {
+    const r = createRng(life.rng)
+    const taken = new Set([...life.name.split(' '), ...life.people.map((p) => p.name)])
+    const name = r.pick(NAMES[life.gender].filter((n) => !taken.has(n)))
+    after = addPerson(after, { id: '', name, relation: 'friend', gender: life.gender, age: life.age, closeness: NEW_FRIEND_CLOSENESS })
+    text = text.replace('{name}', name)
+    rng = r.state
+  }
+
+  const entry: JournalEntry = { age: life.age, kind: 'activity', text, changes, ...(company.length > 0 && { people: moved }) }
   return {
     tier,
     entry,
     life: {
-      ...(together?.life ?? next),
-      spentWith: personId && !life.spentWith.includes(personId) ? [...life.spentWith, personId] : life.spentWith,
+      ...after,
+      rng,
+      spentWith: [...life.spentWith, ...ids.filter((id) => !life.spentWith.includes(id))],
       energySpent,
       restsThisYear: life.restsThisYear + (def.rest !== undefined ? 1 : 0),
       doneThisYear: { ...life.doneThisYear, [def.id]: timesDone + 1 },

@@ -9,8 +9,8 @@ const pack = packFor('indonesia')
 const lateTeen = pack.activities.filter((a) => a.stages.includes('late-teen'))
 
 describe('indonesia content', () => {
-  it('offers 46 late-teen activities, at least four in every category', () => {
-    expect(lateTeen).toHaveLength(46)
+  it('offers 44 late-teen activities, at least four in every category', () => {
+    expect(lateTeen).toHaveLength(44)
     for (const c of stageOf(16).categories) {
       expect({ c, ok: lateTeen.filter((a) => a.category === c).length >= 4 }).toEqual({ c, ok: true })
     }

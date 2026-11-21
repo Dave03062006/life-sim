@@ -2,7 +2,7 @@ import type { CategoryId, StatKey } from '../../../life/types'
 import type { ActivityDef, MinigameType, Requirement } from '../../types'
 
 type Fx = Partial<Record<StatKey, number>>
-type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines'>>
+type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes'>>
 
 const FAIL: Partial<Record<CategoryId, Fx>> = {
   body: { health: -3 },
@@ -66,12 +66,18 @@ export const activities: ActivityDef[] = [
   a('dentist', 'health', 'See the dentist', 'A cleaning and a filling. Health and Looks.', '', 1, -120000, { health: 2, looks: 2 }, 'The dentist fixed a cavity.'),
   a('eat-better', 'health', 'Eat better this year', 'More vegetables, less fried food. Slow, steady Health.', 'catch', 1, 0, { health: 4, happiness: -1 }, 'You ate better this year. You miss gorengan.', { failPenalty: { happiness: -2 } }),
   a('counsellor', 'health', 'Talk to the counsellor', 'The school counsellor listens. Lowers Stress a lot.', '', 1, 0, { stress: -8, happiness: 2 }, 'You talked things through with the school counsellor.'),
-  a('hang-out', 'people', 'Hang out with Dimas', 'Your best friend since SMP.', 'tapping', 1, 0, { happiness: 4, stress: -2 }, 'You and Dimas wasted a perfect afternoon together.'),
-  a('cook', 'people', 'Help Ibu cook', 'Chop, stir, taste. Time with your mother.', 'catch', 1, 0, { happiness: 2, stress: -1 }, 'You helped Ibu cook dinner.'),
-  a('family-dinner', 'people', 'Family dinner', 'Everyone at the table, for once.', '', 1, 0, { happiness: 3 }, 'The whole family ate dinner together.'),
-  a('call-nenek', 'people', 'Call Nenek', 'Your grandmother loves hearing from you.', '', 0, 0, { happiness: 2 }, 'You called Nenek. She talked for an hour.'),
-  a('new-friend', 'people', 'Make a new friend', 'Talk to someone outside your circle.', 'quiz', 1, 0, { reputation: 3, happiness: 2 }, 'You made a new friend: Sari from kelas 11 IPA 2.'),
-  a('crush', 'people', 'Confess to your crush', 'Tell Putri how you feel. It could go either way.', 'timing', 1, 0, { happiness: 5, stress: 3 }, 'You told Putri how you feel. She smiled.'),
+  a('cook', 'people', 'Help Ibu cook', 'Chop, stir, taste. Time with your mother.', 'catch', 1, 0, { happiness: 2, stress: -1 }, 'You helped Ibu cook dinner.', { with: 'mother' }),
+  a('family-dinner', 'people', 'Family dinner', 'Everyone at the table, for once.', '', 1, 0, { happiness: 3 }, 'The whole family ate dinner together.', { together: ['mother', 'father', 'sibling'] }),
+  a('call-nenek', 'people', 'Call Nenek', 'Your grandmother loves hearing from you.', '', 0, 0, { happiness: 2 }, 'You called Nenek. She talked for an hour.', { with: 'grandparent' }),
+  a('new-friend', 'people', 'Make a new friend', 'Talk to someone outside your circle.', 'quiz', 1, 0, { reputation: 3, happiness: 2 }, '', {
+    makes: 'friend',
+    lines: {
+      fail: 'You tried to make a new friend. The conversation died on the spot.',
+      weak: 'You chatted with someone new. It did not quite click.',
+      good: 'You made a new friend: {name}.',
+      great: 'You made a new friend: {name}.',
+    },
+  }),
   a('warung-shift', 'money', 'Shift at the warung', 'Serve customers at Bu Yanti’s food stall.', 'memory', 2, 60000, { stress: 2 }, 'You worked shifts at the warung.'),
   a('sell-snacks', 'money', 'Sell snacks at school', 'Buy kue in bulk and sell it at break time.', 'quiz', 1, 35000, { reputation: 1 }, 'You sold snacks at break time.'),
   a('tutor', 'money', 'Tutor a neighbour’s kid', 'Teach maths to a primary-school kid.', 'quiz', 2, 75000, { smarts: 1, reputation: 1 }, 'You tutored a neighbour’s kid in maths.', { requires: [stat('smarts', 'Smarts')] }),

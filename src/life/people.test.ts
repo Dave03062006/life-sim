@@ -27,13 +27,19 @@ describe('people', () => {
     expect(startingFriend(createRng(1), 12, NAMES, 'female', [{ ...friend(1), id: 'p-4' }])).toMatchObject({ id: 'p-5', relation: 'friend', gender: 'female', age: 12, closeness: 60 })
   })
 
-  it('keeps at most eight friends, dropping the least close', () => {
+  it('keeps at most eight friends, letting the least close existing one drift away', () => {
     let life = testLife({ people: [] })
-    for (let c = 10; c <= 90; c += 10) life = addPerson(life, friend(c))
+    for (let c = 20; c <= 90; c += 10) life = addPerson(life, friend(c))
+    life = addPerson(life, friend(5)) // the newcomer is the least close, yet stays
     const friends = life.people.filter((p) => p.relation === 'friend')
     expect(friends).toHaveLength(MAX_FRIENDS)
-    expect(friends.some((p) => p.closeness === 10)).toBe(false)
+    expect(friends.map((p) => p.closeness)).toEqual([30, 40, 50, 60, 70, 80, 90, 5])
     expect(new Set(life.people.map((p) => p.id)).size).toBe(MAX_FRIENDS)
+  })
+
+  it('clamps the closeness of someone new', () => {
+    expect(addPerson(testLife(), friend(150)).people.at(-1)!.closeness).toBe(100)
+    expect(addPerson(testLife(), friend(-5)).people.at(-1)!.closeness).toBe(0)
   })
 
   it('numbers a new person one past the highest id', () => {
