@@ -10,11 +10,17 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
 2. **You are not boxed in.** Choices are built from a "what" and a "how", more options open up because of who you have become, every limit states its reason, and there is no single correct path through life.
 3. **You feel what you do.** Your stats change how the mini-games play, your character and surroundings change, old choices come back years later, and every result lands with motion and sound.
 
-## What is playable today (Plan 1)
+## What is playable today (Plans 1 and 2)
 
 - Start a life. In this first plan you start at 15.
 - 46 late-teen activities in eight categories.
-- The Timing mini-game (Futsal practice and other Timing activities). Activities whose mini-game type is not built yet also play as Timing for now.
+- Six mini-game types, and every activity plays one:
+  - Timing: stop the marker in the green (Futsal practice).
+  - Tapping: tap to hold the meter in the band (Run for OSIS).
+  - Memory: repeat the order the pads light up (Chess club).
+  - Quiz: answer five questions against the clock (Study for the exam).
+  - Catch: move to catch the good and dodge the bad (Eat better this year).
+  - Typing: type the words shown (Learn to code). It needs a physical keyboard for now.
 - Energy, overwork, rest and repeats.
 - Ageing up, with the KTP milestone at 17.
 - Two art styles, switchable at any time.

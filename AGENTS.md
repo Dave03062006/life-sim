@@ -15,7 +15,7 @@ src/
   engine/     clock, randomness, saves, settings (input and motion come later)
   life/       the rules of a life, as plain TypeScript with no React
   content/    typed data: countries/indonesia/ (diseases/ and quiz/ come later)
-  minigames/  framework.ts, then one folder per type (today: timing/)
+  minigames/  framework.ts, then one folder per type (timing, tapping, memory, quiz, catch, typing)
   styles/     the two skins' tokens, the art manifest, sprite helpers
   screens/    TopBar, SettingsDialog, year/ (Title, NewLife, Summary, PastLives come later)
   ui/         shared parts: bar, icon, changes list, reduced-motion hook
@@ -60,7 +60,17 @@ Run `npm run check`, `npm test` and `npm run build` before committing.
 2. The helper sets the icon id to `act-<id>` (for example `act-futsal`). That id needs an entry in `tools/art/names.json` and a drawn icon. For a new icon, update the source sheet and rerun `python tools/art/build.py` (see `tools/art/README.md`). The display falls back to the category icon only when art is missing at runtime; that does not make the content test pass.
 3. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry, including that its icon exists.
 
-Adding events, conditions or mini-game types: those systems come in later plans.
+Adding events or conditions: those systems come in later plans.
+
+## How to add a mini-game type
+
+1. Add the id to `MinigameType` in `src/content/types.ts`.
+2. Write the rules in `src/minigames/<type>/rules.ts` against `GameRules` in `framework.ts`, with tests beside them.
+3. Write the view in `src/minigames/<type>/View.tsx`.
+4. Add an entry to `GAMES` in `src/minigames/registry.ts`: rules, view, an instruction and, if the game has a play button, its verb. `rulesFor` reads from there. `src/minigames/index.test.ts` checks every type has its own entry.
+5. Add any new per-activity fields to `Theme` in `src/minigames/themes.ts` (existing ones: words, verb, instruction, pads, quiz, catchItems, typingWords) and give activities their theme under their id.
+6. Clickable controls inside a game must not steal focus from the game: call `preventDefault` on `pointerdown` and set `tabIndex={-1}`.
+7. Typing needs a physical keyboard today; there is no on-screen keyboard.
 
 ## Tone rules for writers
 

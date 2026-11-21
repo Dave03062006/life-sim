@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { stageOf } from '../life/stages'
 import { hasIcon } from '../styles/art'
+import { GAMES } from '../minigames/registry'
+import { THEMES } from '../minigames/themes'
 import { packFor } from './index'
 
 const pack = packFor('indonesia')
@@ -24,6 +26,17 @@ describe('indonesia content', () => {
       for (const r of a.requires ?? []) expect({ id: a.id, ok: r.reason.length > 9 }).toEqual({ id: a.id, ok: true })
       expect({ id: a.id, ok: !a.rest || a.energy === 0 }).toEqual({ id: a.id, ok: true })
       expect({ id: a.id, ok: !a.minigame || Object.keys(a.failPenalty ?? {}).length > 0 }).toEqual({ id: a.id, ok: true })
+    }
+  })
+  it('gives every mini-game activity a game that is built', () => {
+    for (const a of pack.activities.filter((x) => x.minigame)) {
+      const type = a.minigame!.type
+      expect({ id: a.id, built: GAMES[type].rules.type }).toEqual({ id: a.id, built: type })
+    }
+  })
+  it('gives every quiz activity a question source', () => {
+    for (const a of pack.activities.filter((x) => x.minigame?.type === 'quiz')) {
+      expect({ id: a.id, has: !!THEMES[a.id]?.quiz }).toEqual({ id: a.id, has: true })
     }
   })
   it('marks the milestone at 17', () => {
