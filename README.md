@@ -1,4 +1,4 @@
-# Life Sim
+# Life-sim
 
 A life simulator that runs in the browser. You live one life, a year at a time. Each year you spend energy on activities, every activity is a short skill mini-game, and how well you play decides the result.
 
