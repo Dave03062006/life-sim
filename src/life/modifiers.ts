@@ -14,10 +14,18 @@ export function modifiersFor(life: Life, def: ActivityDef, relaxed: boolean): Mo
   if (energyLeft(life) < def.energy) m.window *= 0.9
   if (stage === 'small-child' || stage === 'child') m.window *= 1.25
   if (stage === 'senior') m.speed *= 0.85
+  if (life.stats.health < 40) {
+    m.drain *= 1.25
+    m.speed *= 0.85
+  }
+  m.preview = Math.min(1.25, Math.max(0.85, 1 + (life.stats.smarts - 50) / 200))
+  if (life.stats.smarts >= 80) m.eliminate = true
   if (relaxed) {
     m.window *= 1.3
     m.speed *= 0.8
     m.time *= 1.3
+    m.drain *= 0.8
+    m.preview *= 1.3
   }
   return m
 }

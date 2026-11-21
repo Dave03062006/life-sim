@@ -6,6 +6,8 @@ export interface Theme {
   ball?: boolean
   /** The play button's label. */
   verb?: string
+  /** Overrides the type's instruction. */
+  instruction?: string
 }
 
 const WORDS: Record<ResultTier, string> = { great: 'Perfect!', good: 'Nice!', weak: 'Close', fail: 'Missed' }

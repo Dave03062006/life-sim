@@ -3,15 +3,13 @@ import { RESULT_SOUND, play } from '../app/sound'
 import { useApp } from '../app/store'
 import type { ActivityDef, ResultTier } from '../content/types'
 import { gameClock } from '../engine/clock'
-import { randomSeed } from '../engine/random'
 import { useSettings } from '../engine/settings'
 import { SKIP_SCORE } from '../life/activities'
 import { Changes } from '../ui/Changes'
 import { useReducedMotion } from '../ui/useReducedMotion'
 import { type GameInput, type GameKey, type Modifiers, STEP } from './framework'
-import { rulesFor } from './index'
+import { GAMES } from './registry'
 import { THEMES, wordFor } from './themes'
-import { TimingView } from './timing/View'
 
 const KEYS: Partial<Record<string, GameKey>> = {
   Space: 'primary',
@@ -21,6 +19,19 @@ const KEYS: Partial<Record<string, GameKey>> = {
   ArrowRight: 'right',
   ArrowUp: 'up',
   ArrowDown: 'down',
+}
+/** A key press as the game's input; text games take printable keys as text. */
+function inputOf(e: KeyboardEvent, text: boolean): GameInput | undefined {
+  const down = e.type === 'keydown'
+  if (text) {
+    if (!down || e.ctrlKey || e.metaKey || e.altKey) return undefined
+    if (e.key === 'Backspace') return { kind: 'text', text: '\b' }
+    return e.key.length === 1 ? { kind: 'text', text: e.key } : undefined
+  }
+  const choice = /^(?:Digit|Numpad)([1-4])$/.exec(e.code)
+  if (choice) return down ? { kind: 'choose', option: Number(choice[1]) - 1 } : undefined
+  const key = KEYS[e.code]
+  return key && { kind: 'key', key, down }
 }
 /** Where the futsal ball ends up for each result, in % of the scene (from the mockup). */
 const BALL_TO: Record<ResultTier, [number, number]> = { great: [63, 33], good: [39, 43], weak: [50, 47], fail: [90, 12] }
@@ -42,14 +53,14 @@ const acceptsInput = (hold: { current: number }) => !gameClock.paused && gameClo
 /** The mini-game being played, over the year screen, and its result once it lands. */
 export function MinigameHost() {
   const playing = useApp((s) => s.playing)
-  return playing ? <Game def={playing.def} mods={playing.mods} /> : null
+  return playing ? <Game def={playing.def} mods={playing.mods} seed={playing.seed} /> : null
 }
 
-function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
+function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: number }) {
   const { type, theme } = def.minigame! // only activities with a mini-game are played
-  const [rules] = useState(() => rulesFor(type))
+  const [{ rules, View, ...entry }] = useState(() => GAMES[type])
   // the running game lives outside React state: the clock steps it, React only draws its view
-  const [initial] = useState(() => ({ state: rules.start(mods, randomSeed()), acc: 0, inputs: [] as GameInput[], over: false }))
+  const [initial] = useState(() => ({ state: rules.start(mods, seed, theme), acc: 0, inputs: [] as GameInput[], over: false }))
   const game = useRef(initial)
   const [view, setView] = useState(() => rules.view(initial.state))
   const [skipped, setSkipped] = useState(false)
@@ -57,12 +68,17 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
   const result = useApp((s) => s.lastResult)
   const settingsOpen = useApp((s) => s.settingsOpen)
   const hold = useRef(0)
+  /** Keys, the play button and the views' own controls all pass the same input-hold check. */
+  const send = (input: GameInput) => {
+    if (acceptsInput(hold)) game.current.inputs.push(input)
+  }
   const closeResult = useApp((s) => s.closeResult)
   const reduced = useReducedMotion()
   const modal = useRef<HTMLDivElement>(null)
-  const ball = useRef<HTMLElement>(null)
+  const ballEl = useRef<HTMLElement>(null)
   const back = useRef<HTMLButtonElement>(null)
-  const { ball: hasBall, verb = 'Stop' } = THEMES[theme] ?? {}
+  const { ball, instruction = entry.instruction, verb = entry.verb } = THEMES[theme] ?? {}
+  const hasBall = ball && type === 'timing' // the futsal ball belongs to Timing only
 
   useEffect(() => {
     const owner = !gameClock.running // nothing else uses the clock yet, so we stop it when we go
@@ -94,11 +110,11 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const key = KEYS[e.code]
+      const input = inputOf(e, rules.input === 'text')
       // a focused button (Skip, Back) answers its own keys
-      if (!key || game.current.over || e.target instanceof HTMLButtonElement) return
+      if (!input || game.current.over || e.target instanceof HTMLButtonElement) return
       e.preventDefault()
-      if (!e.repeat && acceptsInput(hold)) game.current.inputs.push({ kind: 'key', key, down: e.type === 'keydown' })
+      if (!e.repeat) send(input)
     }
     const pause = () => gameClock.pause()
     const resume = () => resumeClock(hold)
@@ -113,14 +129,14 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
       removeEventListener('focus', resume)
       gameClock.resume() // never leave the clock paused behind us
     }
-  }, [game])
+  }, [game, rules])
 
   useEffect(() => modal.current?.focus(), [])
 
   // The result lands when the ball does; the timer covers a tab that draws no frames.
   useEffect(() => {
     if (!result) return
-    const el = ball.current
+    const el = ballEl.current
     if (skipped || reduced || !el?.animate) {
       setLanded(true)
       return
@@ -147,14 +163,14 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
   }, [landed, result])
 
   const press = () => {
-    if (acceptsInput(hold)) game.current.inputs.push({ kind: 'key', key: 'primary', down: true }, { kind: 'key', key: 'primary', down: false })
+    send({ kind: 'key', key: 'primary', down: true })
+    send({ kind: 'key', key: 'primary', down: false })
   }
-  const pointer = (e: PointerEvent<HTMLDivElement>) => {
-    if (!acceptsInput(hold)) return
+  const pointer = (phase: 'down' | 'move') => (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const x = r.width ? clamp01((e.clientX - r.left) / r.width) : 0
     const y = r.height ? clamp01((e.clientY - r.top) / r.height) : 0
-    game.current.inputs.push({ kind: 'pointer', phase: 'down', x, y })
+    send({ kind: 'pointer', phase, x, y })
   }
   const skip = () => {
     game.current.over = true
@@ -171,12 +187,12 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
       <div role="dialog" aria-modal="true" aria-labelledby="game-title" ref={modal} tabIndex={-1} className={['card modal game', effects && (hit ? 'hit' : 'miss')].filter(Boolean).join(' ')}>
         <span className="label">Mini-game · {type}</span>
         <h2 id="game-title">{def.title}</h2>
-        <p>Stop the marker in the green to score. The gold centre is best.</p>
-        <div onPointerDown={shown || skipped ? undefined : pointer}>
-          <TimingView view={view} category={def.category} effects={effects && hit ? 'flash zoom' : undefined}>
-            {hasBall && <i className="ball" ref={ball} />}
+        <p>{instruction}</p>
+        <div onPointerDown={shown || skipped ? undefined : pointer('down')} onPointerMove={shown || skipped ? undefined : pointer('move')}>
+          <View view={view} def={def} send={send} effects={effects && hit ? 'flash zoom' : undefined}>
+            {hasBall && <i className="ball" ref={ballEl} />}
             {shown && !skipped && <div className={reduced ? 'shout shown' : 'shout on'}>{wordFor(theme, result.tier)}</div>}
-          </TimingView>
+          </View>
         </div>
         <div className="mf">
           <div className="res">
@@ -197,10 +213,12 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
                 <button className="ghost" onClick={skip}>
                   Skip for a weaker result
                 </button>
-                <button className="primary" onClick={press}>
-                  {verb}
-                  <kbd>Space</kbd>
-                </button>
+                {verb && (
+                  <button className="primary" onClick={press}>
+                    {verb}
+                    <kbd>Space</kbd>
+                  </button>
+                )}
               </>
             )
           )}

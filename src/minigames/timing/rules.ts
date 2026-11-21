@@ -16,10 +16,11 @@ function markerAt(steps: number, m: Modifiers): number {
 const zoneOf = (m: Modifiers): [number, number] => [CENTRE - 0.1 * m.window, CENTRE + 0.1 * m.window]
 const coreOf = (m: Modifiers): [number, number] => [CENTRE - 0.02 * m.window, CENTRE + 0.02 * m.window]
 const within = (x: number, [lo, hi]: [number, number], pad = 0) => x >= lo - pad && x <= hi + pad
-const isPress = (i: GameInput) => (i.kind === 'key' ? i.key === 'primary' && i.down : i.phase === 'down')
+const isPress = (i: GameInput) => (i.kind === 'key' ? i.key === 'primary' && i.down : i.kind === 'pointer' && i.phase === 'down')
 
 export const timing: GameRules<TimingState, TimingView> = {
   type: 'timing',
+  input: 'keys',
   start: (mods) => ({ mods, steps: 0, stoppedAt: null }),
   step(state, inputs) {
     if (state.stoppedAt !== null) return state

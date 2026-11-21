@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { CategoryId } from '../../life/types'
+import type { ActivityDef } from '../../content/types'
 import { gameScenePath } from '../../styles/art'
 import type { TimingView as Model } from './rules'
 
@@ -8,7 +8,7 @@ const band = ([lo, hi]: [number, number]) => ({ left: pct(lo), right: pct(1 - hi
 
 interface Props {
   view: Model
-  category: CategoryId
+  def: ActivityDef
   /** Effects on the scene, such as 'flash zoom'. */
   effects?: string
   /** Drawn over the scene: the ball and the result word. */
@@ -16,9 +16,9 @@ interface Props {
 }
 
 /** The category's scene (or a plain panel), and the bar with its zone, gold core and marker. */
-export function TimingView({ view, category, effects, children }: Props) {
-  const flat = gameScenePath(category, 'flat')
-  const pixel = gameScenePath(category, 'pixel')
+export function TimingView({ view, def, effects, children }: Props) {
+  const flat = gameScenePath(def.category, 'flat')
+  const pixel = gameScenePath(def.category, 'pixel')
   return (
     <>
       <div className={['pitch', !flat && !pixel && 'plain', effects].filter(Boolean).join(' ')}>

@@ -116,3 +116,18 @@ it('keeps past lives when it saves', async () => {
   expect(file.past.map((l) => l.id)).toEqual(['old'])
   expect(file.active!.journal).toHaveLength(1)
 })
+it('draws a different seed for each game from the life, and replays it', async () => {
+  await fresh()
+  const app = useApp.getState
+  app().startDemoLife(7)
+  const rng = app().life!.rng
+  app().begin('jog')
+  const first = app().playing!.seed
+  expect(app().life!.rng).not.toBe(rng)
+  app().finish(0.6); app().closeResult()
+  app().begin('jog')
+  expect(app().playing!.seed).not.toBe(first)
+  useApp.setState({ life: { ...app().life!, rng }, playing: null, lastResult: null })
+  app().begin('jog')
+  expect(app().playing!.seed).toBe(first)
+})

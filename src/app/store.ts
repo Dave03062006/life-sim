@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { packFor } from '../content'
 import type { ActivityDef, ResultTier } from '../content/types'
-import { randomSeed } from '../engine/random'
+import { createRng, randomSeed } from '../engine/random'
 import { createSaves, type Saves } from '../engine/save/saves'
 import { indexedDbStore, memoryStore } from '../engine/save/storage'
 import { useSettings } from '../engine/settings'
@@ -15,7 +15,7 @@ export interface AppState {
   ready: boolean
   life: Life | null
   openCategory: CategoryId | null
-  playing: { def: ActivityDef; mods: Modifiers } | null
+  playing: { def: ActivityDef; mods: Modifiers; seed: number } | null
   lastResult: { def: ActivityDef; tier: ResultTier; entry: JournalEntry } | null
   birthday: number | null
   settingsOpen: boolean
@@ -84,7 +84,9 @@ export const useApp = create<AppState>()((set, get) => ({
     const offer = offersFor(life, def.category, pack).find((o) => o.def.id === activityId)
     if (!offer || offer.blocked) return
     if (def.minigame) {
-      set({ playing: { def, mods: modifiersFor(life, def, useSettings.getState().relaxed) } })
+      const rng = createRng(life.rng)
+      const seed = rng.int(0, 2 ** 31)
+      set({ life: { ...life, rng: rng.state }, playing: { def, mods: modifiersFor(life, def, useSettings.getState().relaxed), seed } })
       return
     }
     const { life: next, tier, entry } = finishActivity(life, def, GOOD_SCORE)

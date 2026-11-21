@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { useApp } from '../app/store'
 import { gameClock } from '../engine/clock'
 import { createSaves } from '../engine/save/saves'
@@ -8,6 +8,8 @@ import { memoryStore } from '../engine/save/storage'
 import { useSettings } from '../engine/settings'
 import { testLife } from '../life/testLife'
 import { MinigameHost } from './Host'
+import { GAMES } from './registry'
+import { timing } from './timing/rules'
 
 const begin = async (id = 'futsal') => {
   useSettings.getState().update({ reducedMotion: 'on' })
@@ -85,4 +87,38 @@ it('stops the clock it started when the game closes', async () => {
   act(() => useApp.getState().finish(0.6))
   act(() => useApp.getState().closeResult())
   expect(gameClock.running).toBe(false)
+})
+it('sends 1–4 as choices and passes the seed and theme to the rules', async () => {
+  const spyRules = { ...timing, start: vi.fn<typeof timing.start>(timing.start), step: vi.fn<typeof timing.step>(timing.step) }
+  const real = GAMES.quiz
+  GAMES.quiz = { rules: spyRules, View: () => null, instruction: 'Test instruction here', verb: 'Go' }
+  try {
+    await begin('study-exam')
+    const { mods, seed } = useApp.getState().playing!
+    fireEvent.keyDown(window, { code: 'Digit2', key: '2' })
+    frame(0)
+    frame(20)
+    expect(spyRules.start).toHaveBeenCalledWith(mods, seed, 'study-exam')
+    expect(spyRules.step).toHaveBeenCalledWith(expect.anything(), [{ kind: 'choose', option: 1 }])
+  } finally {
+    GAMES.quiz = real
+  }
+})
+it('sends printable keys and Backspace as text in a text game', async () => {
+  const spyRules = { ...timing, input: 'text' as const, step: vi.fn<typeof timing.step>(timing.step) }
+  const real = GAMES.typing
+  GAMES.typing = { rules: spyRules, View: () => null, instruction: 'Test instruction here' }
+  try {
+    await begin('homework')
+    frame(0)
+    fireEvent.keyDown(window, { code: 'Digit1', key: '1' })
+    fireEvent.keyDown(window, { code: 'Space', key: ' ' })
+    fireEvent.keyDown(window, { code: 'Backspace', key: 'Backspace' })
+    fireEvent.keyDown(window, { code: 'ShiftLeft', key: 'Shift' })
+    frame(20)
+    expect(spyRules.step).toHaveBeenCalledWith(expect.anything(), ['1', ' ', '\b'].map((text) => ({ kind: 'text', text })))
+    expect(screen.queryByRole('button', { name: /Space/ })).toBeNull() // no verb, no play button
+  } finally {
+    GAMES.typing = real
+  }
 })
