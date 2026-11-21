@@ -25,7 +25,6 @@ export interface GameEntry {
 
 const TIMING: GameEntry = { rules: timing, View: TimingView, instruction: 'Stop the marker in the green to score. The gold centre is best.', verb: 'Stop' }
 
-// Types not built yet play as Timing until Tasks 2–6 give them their own entries.
 export const GAMES: Record<MinigameType, GameEntry> = {
   timing: TIMING,
   tapping: { rules: tapping, View: TappingView, instruction: 'Tap to keep the meter inside the band until time runs out.', verb: 'Tap' },

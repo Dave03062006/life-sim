@@ -72,6 +72,8 @@ Adding events or conditions: those systems come in later plans.
 6. Clickable controls inside a game must not steal focus from the game: call `preventDefault` on `pointerdown` and set `tabIndex={-1}`.
 7. Typing needs a physical keyboard today; there is no on-screen keyboard.
 
+A new type is a step toward the long-term goal below: a unique mini-game for every activity.
+
 ## Tone rules for writers
 
 Clean, funny, grounded. Everyday mischief is in (skipping class, a white lie, cheating on a test) with consequences. Crime, drugs, sex and gore are out until a dark-humour setting exists. Humour comes from recognisable life, not cruelty. No religion is assigned to the character; holidays are written neutrally.
