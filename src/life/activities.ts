@@ -77,17 +77,18 @@ export function finishActivity(life: Life, def: ActivityDef, score: number): Act
     add('health', OVERWORK_HEALTH * over)
   }
 
-  const changes: Change[] = [...merged].filter(([, d]) => d !== 0).map(([key, delta]) => ({ key, delta }))
   const m = def.money ?? 0
   const moneyDelta = m > 0 ? Math.round((m * scale) / 1000) * 1000 : m
+  const next = applyChanges(life, [...[...merged].map(([key, delta]): Change => ({ key, delta })), { key: 'money', delta: moneyDelta }])
+  // only what really moved: a stat already at 0 or 100 shows no change
+  const changes: Change[] = [...merged.keys()].map((key) => ({ key, delta: next.stats[key] - life.stats[key] })).filter((c) => c.delta !== 0)
   if (moneyDelta !== 0) changes.push({ key: 'money', delta: moneyDelta })
   if (gain > 0) changes.push({ key: 'energy', delta: gain })
 
-  let text = typeof def.lines === 'string' ? def.lines : def.lines[tier]
+  let text = typeof def.lines !== 'string' ? def.lines[tier] : tier === 'fail' ? `${def.title}: it did not go well this time.` : def.lines
   if (over > 0) text += ' You were already worn out.'
   if (def.rest !== undefined && gain === 0) text += life.energySpent === 0 ? ' You were already rested.' : ' Rest is not helping any more this year.'
 
-  const next = applyChanges(life, changes)
   const entry: JournalEntry = { age: life.age, kind: 'activity', text, changes }
   return {
     tier,

@@ -60,4 +60,13 @@ describe('activities', () => {
     expect(offer(testLife({ energySpent: 5, restsThisYear: 1 }), 'sleep-in').energyGain).toBe(2)
     expect(() => finishActivity(testLife(), act('bimbel'), 0.9)).toThrow(/You need/)
   })
+  it('records only the changes that really happened', () => {
+    const at = (stats: Partial<Life['stats']>) => finishActivity(testLife({ stats: { ...testLife().stats, ...stats } }), act('jog'), 0.6).entry.changes.map((c) => c.key)
+    expect(at({ stress: 0 })).not.toContain('stress')
+    expect(at({ health: 100 })).not.toContain('health')
+    expect(at({})).toEqual(['health', 'stress'])
+  })
+  it('never words a fail as a success', () => {
+    expect(finishActivity(testLife(), act('study-exam'), 0.1).entry.text).toBe('Study for the exam: it did not go well this time.')
+  })
 })
