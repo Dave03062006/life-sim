@@ -160,7 +160,7 @@ it('saves the advanced seed when a game starts', async () => {
 it('shows events after the birthday, one at a time, and saves them', async () => {
   const saves = await fresh(choice('e1'), choice('e2'), choice('e3'))
   const app = useApp.getState
-  app().startDemoLife(7)
+  useApp.setState({ life: testLife({ age: 15 }) }) // a demo life would draw its own first-year events
   app().ageUp()
   const queued = app().life!.pendingEvents
   expect(queued.length).toBeGreaterThanOrEqual(1)

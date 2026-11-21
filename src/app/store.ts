@@ -111,9 +111,8 @@ export const useApp = create<AppState>()((set, get) => {
       return booting
     },
     startDemoLife(seed = randomSeed()) {
-      const life = newLife({ seed, startAge: 15 })
-      set({ life })
-      persist(life)
+      const life = drawEvents(newLife({ seed, startAge: 15 }), packFor('indonesia'))
+      saveAndShow(life)
     },
     open: (openCategory) => set({ openCategory }),
     begin(activityId) {
