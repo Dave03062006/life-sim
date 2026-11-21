@@ -20,6 +20,8 @@ export function QuizView({ view, send, children }: Props) {
           // choices keep focus on the dialog, or the 1-4 keys would stop working
           <button key={choice} type="button" tabIndex={-1} className={`pad choice${mark(i)}`} onPointerDown={(e) => e.preventDefault()} onClick={() => send({ kind: 'choose', option: i })}>
             {choice}
+            {mark(i) === ' right' && <span className="quizmark"> Right</span>}
+            {mark(i) === ' wrong' && <span className="quizmark"> Your answer</span>}
             <kbd>{i + 1}</kbd>
           </button>
         ))}
