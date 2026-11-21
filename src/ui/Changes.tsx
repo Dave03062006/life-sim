@@ -1,6 +1,6 @@
 import { formatRupiah } from '../life/format'
 import { isBenefit, STAT_LABEL } from '../life/stats'
-import type { Change } from '../life/types'
+import type { Change, JournalEntry, Person } from '../life/types'
 
 function changeText({ key, delta }: Change): string {
   if (key === 'money') return `${delta > 0 ? '+' : ''}${formatRupiah(delta)}`
@@ -15,4 +15,16 @@ export function Changes({ changes }: { changes: readonly Change[] }) {
       {changeText(c)}
     </span>
   ))
+}
+
+/** One chip per closeness change, named; people no longer in this life are left out. */
+export function Closeness({ moved = [], people }: { moved?: JournalEntry['people']; people: readonly Person[] }) {
+  return moved.map(({ id, delta }) => {
+    const name = people.find((p) => p.id === id)?.name
+    return name && (
+      <span key={id} className={`chg ${delta > 0 ? 'up' : 'down'}`}>
+        {name} {delta > 0 ? '+' : '−'}{Math.abs(delta)}
+      </span>
+    )
+  })
 }

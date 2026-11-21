@@ -1,4 +1,4 @@
-/* Ported from design/mockup-v2/year-screen-v2.html. Illness card, event dialog and mini-game rules arrive with the tasks that build them. */
+/* Ported from design/mockup-v2/year-screen-v2.html. Illness card and mini-game rules arrive with the tasks that build them. */
 /* ---------- tokens shared by both skins ---------- */
 :root{--tile:64px;--rail:320px}
 
@@ -69,7 +69,7 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
 .life span{display:block;margin-top:7px;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .life .now::before{background:var(--accent)}.life .now span{color:var(--accent)}
 .life .ahead::before{background:repeating-linear-gradient(90deg,var(--ink3) 0 4px,transparent 4px 10px)}
-.life i{position:absolute;top:-3px;width:12px;height:12px;border-radius:var(--r);background:var(--solid);border:3px solid var(--happy);cursor:help}
+.life i{position:absolute;top:-3px;margin-left:-6px;width:12px;height:12px;border-radius:var(--r);background:var(--solid);border:3px solid var(--happy);cursor:help}
 .entries{overflow:auto;padding:4px 6px 22px 0;scrollbar-width:thin}
 .yr{display:flex;align-items:center;gap:12px;margin:16px 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
 .yr::after{content:"";flex:1;height:1px;background:var(--hair)}
@@ -128,6 +128,23 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
 .mf .res{flex:1;font-weight:600;line-height:1.7}
 .primary{padding:12px 22px;border-radius:16px;background:var(--ink);color:var(--solid);font-weight:800;font-size:15px;white-space:nowrap;transition:transform var(--dur) var(--ease)}
 .primary:active,.age:active,.act:active:not(:disabled){transform:scale(.97)}
+.ev{padding:0;width:min(760px,100%)}
+.banner{aspect-ratio:21/9;overflow:hidden}
+.banner img{width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+.evb{padding:18px 24px 22px;display:grid;gap:8px}
+.evb .label{margin-top:8px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{padding:9px 14px;border-radius:14px;background:var(--track);font-weight:700;font-size:14px;transition:background var(--dur),color var(--dur)}
+.opt small{display:block;font-size:11px;font-weight:700;color:var(--smarts)}
+.opt small.why{color:var(--warn)}
+.opt[aria-pressed=true]{background:var(--ink);color:var(--solid)}
+.opt[aria-pressed=true] small{color:var(--note-on)}
+.opt:disabled{cursor:not-allowed;color:var(--ink2)}
+.evb>.primary{justify-self:end;margin-top:8px}
+.people{grid-column:1/-1;display:grid;gap:10px;padding-bottom:6px;border-bottom:1px solid var(--hair)}
+.folks{display:flex;flex-wrap:wrap;gap:10px}
+.person{display:grid;gap:6px;min-width:132px}
+.people .done{display:block;font-weight:600;line-height:1.7}
 .turn{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:var(--accent);color:var(--on-accent);text-align:center;animation:turnbg 1.25s forwards}
 .turn small{font-size:15px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
 .turn b{display:block;font-size:min(46vh,340px);font-weight:800;letter-spacing:-.06em;line-height:.9;animation:turnnum 1.25s var(--ease) forwards}
@@ -172,3 +189,5 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
 .dialog{display:grid;gap:12px;padding:20px 24px;max-width:min(420px,calc(100vw - 32px));color:var(--ink)}
 .dialog h2{margin:0}
 .dialog .note{margin:0;font-size:13px;color:var(--ink2)}
+.dialog .field{display:grid;gap:4px}
+.dialog select{font:inherit;color:var(--ink);background:var(--track);border:1px solid var(--hair);border-radius:10px;padding:6px 10px}

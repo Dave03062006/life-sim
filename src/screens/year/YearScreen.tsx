@@ -9,13 +9,16 @@ import { TopBar } from '../TopBar'
 import { ActivitySheet } from './ActivitySheet'
 import { Birthday } from './Birthday'
 import { Dock } from './Dock'
+import { EventDialog } from './EventDialog'
+import { InterestDialog } from './InterestDialog'
 import { Journal } from './Journal'
 import { Rail } from './Rail'
 import { Result } from './Result'
 
 /** One year of a life: the character, the journal, and what you can do. */
 export function YearScreen({ life }: { life: Life }) {
-  const { openCategory, playing, lastResult, birthday, settingsOpen, open, begin, closeResult, ageUp, endBirthday } = useApp()
+  const { openCategory, playing, lastResult, birthday, settingsOpen, pendingEvent, lastEvent, askingInterest, open, begin, closeResult, ageUp, endBirthday } = useApp()
+  const asking = pendingEvent !== null || lastEvent !== null || askingInterest
   const [cover, setCover] = useState(0)
   const started = useRef<string | null>(null)
   const hadResult = useRef(false)
@@ -31,6 +34,16 @@ export function YearScreen({ life }: { life: Life }) {
     const card = (sel: string) => document.querySelector<HTMLButtonElement>(`.sheet .act${sel}:not(:disabled)`)
     ;(card(`[data-id="${started.current}"]`) ?? card('') ?? document.querySelector<HTMLButtonElement>('.dock .age'))?.focus()
   }, [lastResult])
+  // Once the last event or question closes, focus goes to the age button.
+  const wasAsking = useRef(false)
+  useEffect(() => {
+    if (asking || !wasAsking.current) {
+      wasAsking.current = asking
+      return
+    }
+    wasAsking.current = false
+    if (!useApp.getState().playing) document.querySelector<HTMLButtonElement>('.dock .age')?.focus() // a mini-game takes focus itself
+  }, [asking])
   const stage = stageOf(life.age)
   const toggle = (id: CategoryId) => {
     if (openCategory !== id) play('open')
@@ -50,7 +63,7 @@ export function YearScreen({ life }: { life: Life }) {
     <>
       <div className="amb" style={amb} aria-hidden="true" />
       <TopBar />
-      <div className="app" inert={Boolean(playing || lastResult || birthday !== null || settingsOpen)}>
+      <div className="app" inert={Boolean(playing || lastResult || birthday !== null || settingsOpen || asking)}>
         <Rail life={life} />
         <main className="main">
           <div className="stage">
@@ -62,6 +75,8 @@ export function YearScreen({ life }: { life: Life }) {
       </div>
       {lastResult && !playing && <Result def={lastResult.def} tier={lastResult.tier} entry={lastResult.entry} onClose={closeResult} />}
       <MinigameHost />
+      {(pendingEvent || lastEvent) && <EventDialog life={life} />}
+      {askingInterest && <InterestDialog />}
       {birthday !== null && <Birthday age={birthday} onDone={endBirthday} />}
     </>
   )

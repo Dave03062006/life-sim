@@ -1,4 +1,4 @@
-import type { CategoryId, StageId } from '../../life/types'
+import type { CategoryId, Interest, Person, StageId } from '../../life/types'
 
 export const CATEGORY: Record<CategoryId, { label: string; blurb: string }> = {
   school: { label: 'School', blurb: 'Classes, exams and clubs. This becomes Work once you leave school.' },
@@ -22,3 +22,19 @@ export const STAGE_LABEL: Record<StageId, string> = {
   adult: 'Adult',
   senior: 'Senior',
 }
+
+export function relationLabel({ relation, gender }: Person): string {
+  const female = gender === 'female'
+  switch (relation) {
+    case 'sibling': return female ? 'Sister' : 'Brother'
+    case 'grandparent': return female ? 'Grandmother' : 'Grandfather'
+    default: return relation[0]!.toUpperCase() + relation.slice(1)
+  }
+}
+
+export const INTEREST_LABEL: [Interest, string][] = [
+  ['women', 'Women'],
+  ['men', 'Men'],
+  ['both', 'Both'],
+  ['none', 'Nobody yet'],
+]

@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react'
+import { useApp } from '../app/store'
 import { useSettings } from '../engine/settings'
+import type { Interest } from '../life/types'
 import { useReducedMotion } from '../ui/useReducedMotion'
+import { INTEREST_LABEL } from './year/labels'
 
-/** Settings that belong to this device, plus the medical note. */
+/** Settings that belong to this device, the current life's romantic interest, and the medical note. */
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const { relaxed, update } = useSettings()
   const reduced = useReducedMotion()
+  const life = useApp((s) => s.life)
+  const setInterest = useApp((s) => s.setInterest)
   const ref = useRef<HTMLDivElement>(null)
 
   const latest = useRef(onClose)
@@ -39,6 +44,23 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         <label>
           <input type="checkbox" checked={relaxed} onChange={(e) => update({ relaxed: e.target.checked })} /> Relaxed mini-games
         </label>
+        {life && (
+          <label className="field">
+            Romantic interest
+            <select value={life.interest ?? ''} onChange={(e) => setInterest(e.target.value as Interest)}>
+              {life.interest === null && (
+                <option value="" disabled>
+                  Not asked yet
+                </option>
+              )}
+              {INTEREST_LABEL.map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <p className="note">This is a game. Its health figures are simplified from the sources it lists, and it is not medical advice.</p>
         <button className="primary" onClick={onClose}>
           Close

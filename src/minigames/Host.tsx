@@ -5,7 +5,7 @@ import type { ActivityDef, ResultTier } from '../content/types'
 import { gameClock } from '../engine/clock'
 import { useSettings } from '../engine/settings'
 import { SKIP_SCORE } from '../life/activities'
-import { Changes } from '../ui/Changes'
+import { Changes, Closeness } from '../ui/Changes'
 import { useReducedMotion } from '../ui/useReducedMotion'
 import { type GameInput, type GameKey, type Modifiers, STEP } from './framework'
 import { GAMES } from './registry'
@@ -66,6 +66,7 @@ function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: nu
   const [skipped, setSkipped] = useState(false)
   const [landed, setLanded] = useState(false)
   const result = useApp((s) => s.lastResult)
+  const life = useApp((s) => s.life)
   const settingsOpen = useApp((s) => s.settingsOpen)
   const hold = useRef(0)
   /** Keys, the play button and the views' own controls all pass the same input-hold check. */
@@ -207,6 +208,7 @@ function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: nu
               <>
                 {result.entry.text}
                 <Changes changes={result.entry.changes} />
+                <Closeness moved={result.entry.people} people={life?.people ?? []} />
               </>
             )}
           </div>

@@ -36,7 +36,7 @@ export interface AppState {
   setSettingsOpen(open: boolean): void
   decide(actionId: string, mannerId: string): void
   closeEvent(): void
-  setInterest(interest: Interest): void
+  setInterest(interest: Interest): void // answers the romance question, or changes the answer later
   personAction(personId: string, action: PersonActionId): void
 }
 
@@ -168,9 +168,10 @@ export const useApp = create<AppState>()((set, get) => {
     },
     setInterest(interest) {
       const { life, askingInterest } = get()
-      if (!life || !askingInterest) return
+      if (!life) return
       const next = { ...life, interest }
       persist(next)
+      if (!askingInterest) return set({ life: next }) // changed later, from Settings
       set({ life: next, askingInterest: false })
       const then = resume
       resume = null

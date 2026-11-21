@@ -2,7 +2,7 @@
 :root[data-style=flat]{--font:"Plus Jakarta Sans Variable",system-ui,sans-serif;--fs:15px;
   --ink:#252A5E;--ink2:#5F648C;--ink3:#A3A6C0;--page:#EDE4D8;--card:rgba(255,255,255,.76);--solid:#fff;
   --scrim:rgba(20,24,60,.45);--hair:rgba(37,42,94,.10);--track:rgba(37,42,94,.09);--accent:#D2432A;--on-accent:#fff;
-  --good:#14795D;--bad:#C43A30;--on-item:#fff;--good-item:#14795D;--bad-item:#C43A30;--warn:#96590A;--health:#F2674A;--happy:#F2B137;--smarts:#4D5AC7;--looks:#2F9C8C;--minor:#8B90B3;
+  --good:#14795D;--bad:#C43A30;--on-item:#fff;--good-item:#14795D;--bad-item:#C43A30;--warn:#96590A;--health:#F2674A;--happy:#F2B137;--smarts:#4D5AC7;--looks:#2F9C8C;--minor:#8B90B3;--note-on:var(--happy);
   --flash:#fff;--r:24px;--r2:18px;--ease:cubic-bezier(.2,.9,.25,1.15);--dur:.22s}
 
 /* the ambient art depends on the life stage, so the page sets --amb-flat on .amb */
@@ -27,3 +27,4 @@
 [data-style=flat] .shout{color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 40px rgba(0,0,0,.45)}
 [data-style=flat] .ball{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='%23fff' stroke='%23252A5E' stroke-width='2'/%3E%3Cpath d='M20 12l7 5-3 8h-8l-3-8z' fill='%23252A5E'/%3E%3Cpath d='M20 12V2M27 17l10-4M24 25l6 9M16 25l-6 9M13 17L3 13' stroke='%23252A5E' stroke-width='2'/%3E%3C/svg%3E")}
 [data-style=flat] .marker{border-radius:99px;box-shadow:0 0 0 2px #fff}
+[data-style=flat] .banner{border-radius:var(--r) var(--r) 0 0}

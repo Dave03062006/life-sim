@@ -47,3 +47,9 @@ export function gameScenePath(category: CategoryId, skin: Skin): string | null {
   const games: Pair = manifest.games
   return games[category]?.[skin] ?? null
 }
+
+/** An event's banner in both skins, or null when it has none. */
+export function eventArt(eventId: string): Record<Skin, string> | null {
+  const events: Pair = manifest.events
+  return events[eventId] ?? null
+}

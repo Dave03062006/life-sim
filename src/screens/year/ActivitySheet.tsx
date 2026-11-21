@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 import { play } from '../../app/sound'
 import { packFor } from '../../content'
 import { type ActivityOffer, offersFor } from '../../life/activities'
@@ -6,6 +6,7 @@ import { formatRupiah } from '../../life/format'
 import type { CategoryId, Life } from '../../life/types'
 import { Icon } from '../../ui/Icon'
 import { CATEGORY } from './labels'
+import { PeopleList } from './PeopleList'
 
 function chips(offer: ActivityOffer): { text: string; tone?: 'up' | 'down' }[] {
   const { def, energyGain, overwork, timesDone } = offer
@@ -66,9 +67,8 @@ export function ActivitySheet({ life, category, onBegin, onClose, onHeight }: Sh
   const offers = offersFor(life, category, packFor(life.country))
   const { label, blurb } = CATEGORY[category]
 
-  useLayoutEffect(() => {
-    onHeight(sheet.current?.offsetHeight ?? 0)
-  }, [category, offers.length, onHeight])
+  const measure = useCallback(() => onHeight(sheet.current?.offsetHeight ?? 0), [onHeight])
+  useLayoutEffect(() => measure(), [category, offers.length, measure])
   useLayoutEffect(() => () => onHeight(0), [onHeight])
 
   return (
@@ -83,6 +83,7 @@ export function ActivitySheet({ life, category, onBegin, onClose, onHeight }: Sh
         </button>
       </header>
       <div className="grid">
+        {category === 'people' && <PeopleList life={life} onLayout={measure} />}
         {offers.length === 0 && <p>Nothing to do here at this age yet.</p>}
         {offers.map((o) => (
           <Card key={o.def.id} offer={o} onBegin={onBegin} />
