@@ -3,7 +3,7 @@ import { packFor } from '../content'
 import type { ActivityDef, ResultTier } from '../content/types'
 import { randomSeed } from '../engine/random'
 import { createSaves, type Saves } from '../engine/save/saves'
-import { indexedDbStore } from '../engine/save/storage'
+import { indexedDbStore, memoryStore } from '../engine/save/storage'
 import { useSettings } from '../engine/settings'
 import { finishActivity, GOOD_SCORE, offersFor } from '../life/activities'
 import { modifiersFor } from '../life/modifiers'
@@ -18,6 +18,7 @@ export interface AppState {
   playing: { def: ActivityDef; mods: Modifiers } | null
   lastResult: { def: ActivityDef; tier: ResultTier; entry: JournalEntry } | null
   birthday: number | null
+  settingsOpen: boolean
   boot(saves?: Saves): Promise<void>
   startDemoLife(seed?: number): void // Plan 1 only; Plan 4 replaces it with the roll screen.
   open(category: CategoryId | null): void
@@ -26,12 +27,23 @@ export interface AppState {
   closeResult(): void
   ageUp(): void
   endBirthday(): void
+  setSettingsOpen(open: boolean): void
 }
 
 let saves: Saves | null = null
 let booting: Promise<void> | null = null
 let loading = false
-const persist = (life: Life) => void saves?.store({ version: 1, active: life, past: [] }).catch(() => {}) // a failed save must not break the game
+let past: Life[] = []
+const persist = (life: Life) => void saves?.store({ version: 1, active: life, past }).catch(() => {}) // a failed save must not break the game
+const localSaves = (): Saves => {
+  try {
+    return createSaves(indexedDbStore('life-sim', 'saves'))
+  } catch {
+    return createSaves(memoryStore()) // no browser storage: play on, unsaved
+  }
+}
+/** A dialog is up or a turn is under way: nothing else may start. */
+const busy = (s: AppState) => !s.life || s.playing !== null || s.lastResult !== null || s.birthday !== null
 
 export const useApp = create<AppState>()((set, get) => ({
   ready: false,
@@ -40,14 +52,18 @@ export const useApp = create<AppState>()((set, get) => ({
   playing: null,
   lastResult: null,
   birthday: null,
+  settingsOpen: false,
   boot(given) {
     // StrictMode runs the boot effect twice: share one load, never reload over newer play.
     if (booting && (loading || get().ready)) return booting
     loading = true
-    saves = given ?? createSaves(indexedDbStore('life-sim', 'saves'))
+    saves = given ?? localSaves()
     booting = saves
       .load()
-      .then((file) => set({ ready: true, life: file.active }))
+      .then((file) => {
+        past = file.past
+        set({ ready: true, life: file.active })
+      })
       .finally(() => {
         loading = false
       })
@@ -61,7 +77,7 @@ export const useApp = create<AppState>()((set, get) => ({
   open: (openCategory) => set({ openCategory }),
   begin(activityId) {
     const { life } = get()
-    if (!life) return
+    if (!life || busy(get())) return
     const pack = packFor(life.country)
     const def = pack.activities.find((a) => a.id === activityId)
     if (!def) return
@@ -85,10 +101,11 @@ export const useApp = create<AppState>()((set, get) => ({
   closeResult: () => set({ playing: null, lastResult: null }),
   ageUp() {
     const { life } = get()
-    if (!life) return
+    if (!life || busy(get())) return
     const next = ageUp(life, packFor(life.country))
     set({ life: next, birthday: next.age, openCategory: null })
     persist(next)
   },
   endBirthday: () => set({ birthday: null }),
+  setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
 }))

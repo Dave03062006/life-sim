@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest'
 import { createSaves } from '../engine/save/saves'
 import { memoryStore } from '../engine/save/storage'
+import { testLife } from '../life/testLife'
 import { useApp } from './store'
 
 const fresh = async () => {
@@ -92,4 +93,26 @@ it('lets only one of two overlapping boots load', async () => {
   await flush()
   await useApp.getState().boot(saves)
   expect(useApp.getState().life).toBe(life)
+})
+it('does nothing out of turn while a mini-game is playing', async () => {
+  await fresh()
+  const app = useApp.getState
+  app().startDemoLife(7)
+  app().begin('futsal')
+  const life = app().life
+  app().ageUp()
+  app().begin('clothes')
+  expect(app()).toMatchObject({ life, birthday: null, lastResult: null })
+  expect(app().playing!.def.id).toBe('futsal')
+})
+it('keeps past lives when it saves', async () => {
+  const saves = createSaves(memoryStore())
+  await saves.store({ version: 1, active: testLife({ age: 15 }), past: [testLife({ id: 'old' })] })
+  useApp.setState(useApp.getInitialState())
+  await useApp.getState().boot(saves)
+  useApp.getState().begin('clothes')
+  await flush()
+  const file = await saves.load()
+  expect(file.past.map((l) => l.id)).toEqual(['old'])
+  expect(file.active!.journal).toHaveLength(1)
 })

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { testLife } from '../../life/testLife'
+import { checksumOf } from './checksum'
 import { createSaves, EMPTY_SAVE, type SaveFile } from './saves'
 import { memoryStore } from './storage'
 
@@ -12,7 +13,7 @@ describe('saves', () => {
     expect(await saves.load()).toEqual(file)
   })
   it('starts fresh and keeps the bad data aside when a save is damaged or from a newer version', async () => {
-    const bads = [{ checksum: 'wrong', file: { version: 1, active: testLife(), past: [] } }, 'not a save', { checksum: 'x', file: { version: 99 } }]
+    const bads = [{ checksum: 'wrong', file: { version: 1, active: testLife(), past: [] } }, 'not a save', { checksum: checksumOf({ version: 99 }), file: { version: 99 } }]
     for (const bad of bads) {
       const store = memoryStore()
       await store.set('save', bad)
