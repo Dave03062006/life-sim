@@ -13,6 +13,8 @@ export interface Theme {
   pads?: [string, string, string, string]
   /** Where Quiz draws its questions; default the general bank. */
   quiz?: QuizSource
+  /** Labels on Catch's falling items; default Good and Bad. */
+  catchItems?: { good: string; bad: string }
 }
 
 const WORDS: Record<ResultTier, string> = { great: 'Perfect!', good: 'Nice!', weak: 'Close', fail: 'Missed' }
@@ -29,6 +31,8 @@ export const THEMES: Record<string, Theme> = {
   bimbel: { quiz: { kind: 'bank', subjects: ['maths', 'english'] } },
   'new-friend': { quiz: { kind: 'bank', subjects: ['chat'] } },
   'sell-snacks': { quiz: { kind: 'change' } },
+  'eat-better': { catchItems: { good: 'Sayur', bad: 'Gorengan' } },
+  cook: { catchItems: { good: 'Bawang', bad: 'Gosong' } },
   tutor: { quiz: { kind: 'arithmetic' } },
 }
 

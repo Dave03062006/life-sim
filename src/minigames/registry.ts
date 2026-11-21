@@ -1,6 +1,8 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { ActivityDef, MinigameType } from '../content/types'
 import type { GameInput, GameRules } from './framework'
+import { catchGame } from './catch/rules'
+import { CatchView } from './catch/View'
 import { memory } from './memory/rules'
 import { MemoryView } from './memory/View'
 import { quiz } from './quiz/rules'
@@ -27,6 +29,6 @@ export const GAMES: Record<MinigameType, GameEntry> = {
   tapping: { rules: tapping, View: TappingView, instruction: 'Tap to keep the meter inside the band until time runs out.', verb: 'Tap' },
   memory: { rules: memory, View: MemoryView, instruction: 'Watch the order the pads light up, then repeat it.' },
   quiz: { rules: quiz, View: QuizView, instruction: 'Answer five questions before time runs out. Press 1 to 4 or click.' },
-  catch: TIMING,
+  catch: { rules: catchGame, View: CatchView, instruction: 'Move with the arrow keys or the pointer. Catch the good, dodge the bad.' },
   typing: TIMING,
 }
