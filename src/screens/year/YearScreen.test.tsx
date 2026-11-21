@@ -66,3 +66,32 @@ it('shows the birthday for a moment, then the new year', async () => {
     vi.useRealTimers()
   }
 })
+
+it('locks the page behind a mini-game', async () => {
+  await start()
+  act(() => useApp.setState({ life: testLife() }))
+  expect(document.querySelector('.app')!.hasAttribute('inert')).toBe(false)
+  act(() => useApp.getState().begin('futsal'))
+  expect(document.querySelector('.app')!.hasAttribute('inert')).toBe(true)
+})
+
+it('gives focus back to the card that was pressed, and Escape closes a result', async () => {
+  await start()
+  act(() => useApp.setState({ life: testLife({ energySpent: 5 }) }))
+  await userEvent.click(screen.getByRole('button', { name: 'Rest' }))
+  const card = screen.getByRole('button', { name: /Sleep in/ })
+  await userEvent.click(card)
+  await userEvent.click(screen.getByRole('button', { name: 'Back to your year' }))
+  expect(document.activeElement).toBe(card)
+  await userEvent.click(card)
+  await userEvent.keyboard('{Escape}')
+  expect(useApp.getState().lastResult).toBeNull()
+  expect(document.activeElement).toBe(card)
+})
+
+it('says why a category is empty', async () => {
+  await start()
+  act(() => useApp.setState({ life: testLife({ age: 18 }) }))
+  await userEvent.click(screen.getByRole('button', { name: 'School' }))
+  expect(screen.getByText('Nothing to do here at this age yet.')).toBeTruthy()
+})

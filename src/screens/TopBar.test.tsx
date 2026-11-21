@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { App } from '../app/App'
 import { useApp } from '../app/store'
+import { gameClock } from '../engine/clock'
 import { createSaves } from '../engine/save/saves'
 import { memoryStore } from '../engine/save/storage'
 import { useSettings } from '../engine/settings'
@@ -85,4 +86,23 @@ it('keeps focus on the checkbox you just toggled', async () => {
   const box = screen.getByRole('checkbox', { name: 'Reduce motion' })
   await userEvent.click(box)
   expect(document.activeElement).toBe(box)
+})
+
+it('switches the art style during a mini-game, and pauses it while settings are open', async () => {
+  await start()
+  act(() => useApp.getState().begin('futsal'))
+  gameClock.stop() // the test drives the frames
+  act(() => gameClock.tick(0))
+  act(() => gameClock.tick(100))
+  const before = screen.getByTestId('marker').style.left
+  await userEvent.click(screen.getByRole('button', { name: 'Pixel' }))
+  expect(document.documentElement.dataset.style).toBe('pixel')
+  expect(screen.getByTestId('marker').style.left).toBe(before)
+  expect(useApp.getState().lastResult).toBeNull()
+  await userEvent.click(screen.getByRole('button', { name: 'Settings' }))
+  expect(gameClock.paused).toBe(true)
+  expect(document.querySelector('.top')!.hasAttribute('inert')).toBe(true)
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  expect(gameClock.paused).toBe(false)
+  expect(document.querySelector('.top')!.hasAttribute('inert')).toBe(false)
 })

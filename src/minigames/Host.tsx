@@ -28,6 +28,16 @@ const FLIGHT_MS = 430
 const LAND_FALLBACK_MS = 900
 const HITS: readonly ResultTier[] = ['great', 'good']
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x))
+/** Seconds of play after a pause in which input is ignored, so the click that brings the window back is not a shot. */
+const RESUME_GRACE = 0.25
+
+/** Resumes the clock unless settings still cover the game; returns the game time until which input is ignored. */
+function resumeClock(hold: { current: number }) {
+  if (!gameClock.paused || useApp.getState().settingsOpen) return
+  gameClock.resume()
+  hold.current = gameClock.time + RESUME_GRACE
+}
+const acceptsInput = (hold: { current: number }) => !gameClock.paused && gameClock.time >= hold.current
 
 /** The mini-game being played, over the year screen, and its result once it lands. */
 export function MinigameHost() {
@@ -45,6 +55,8 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
   const [skipped, setSkipped] = useState(false)
   const [landed, setLanded] = useState(false)
   const result = useApp((s) => s.lastResult)
+  const settingsOpen = useApp((s) => s.settingsOpen)
+  const hold = useRef(0)
   const closeResult = useApp((s) => s.closeResult)
   const reduced = useReducedMotion()
   const modal = useRef<HTMLDivElement>(null)
@@ -53,8 +65,9 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
   const { ball: hasBall, verb = 'Stop' } = THEMES[theme] ?? {}
 
   useEffect(() => {
-    if (!gameClock.running) gameClock.start()
-    return gameClock.subscribe(({ dt }) => {
+    const owner = !gameClock.running // nothing else uses the clock yet, so we stop it when we go
+    if (owner) gameClock.start()
+    const unsubscribe = gameClock.subscribe(({ dt }) => {
       if (game.current.over) return
       game.current.acc += dt
       let stepped = false
@@ -68,7 +81,16 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
       if (stepped) setView(rules.view(game.current.state))
       if (game.current.over) useApp.getState().finish(rules.score(game.current.state))
     })
+    return () => {
+      unsubscribe()
+      if (owner) gameClock.stop()
+    }
   }, [game, rules])
+
+  useEffect(() => {
+    if (settingsOpen) gameClock.pause()
+    else resumeClock(hold)
+  }, [settingsOpen])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -76,10 +98,10 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
       // a focused button (Skip, Back) answers its own keys
       if (!key || game.current.over || e.target instanceof HTMLButtonElement) return
       e.preventDefault()
-      if (!e.repeat) game.current.inputs.push({ kind: 'key', key, down: e.type === 'keydown' })
+      if (!e.repeat && acceptsInput(hold)) game.current.inputs.push({ kind: 'key', key, down: e.type === 'keydown' })
     }
     const pause = () => gameClock.pause()
-    const resume = () => gameClock.resume()
+    const resume = () => resumeClock(hold)
     addEventListener('keydown', onKey)
     addEventListener('keyup', onKey)
     addEventListener('blur', pause)
@@ -125,9 +147,10 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
   }, [landed, result])
 
   const press = () => {
-    game.current.inputs.push({ kind: 'key', key: 'primary', down: true }, { kind: 'key', key: 'primary', down: false })
+    if (acceptsInput(hold)) game.current.inputs.push({ kind: 'key', key: 'primary', down: true }, { kind: 'key', key: 'primary', down: false })
   }
   const pointer = (e: PointerEvent<HTMLDivElement>) => {
+    if (!acceptsInput(hold)) return
     const r = e.currentTarget.getBoundingClientRect()
     const x = r.width ? clamp01((e.clientX - r.left) / r.width) : 0
     const y = r.height ? clamp01((e.clientY - r.top) / r.height) : 0
@@ -143,7 +166,7 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
   const hit = shown && HITS.includes(result.tier)
   const effects = shown && !skipped && !reduced
   return (
-    <div className="veil">
+    <div className="veil" inert={settingsOpen}>
       {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- the mockup's veil and card, not the browser's dialog styling */}
       <div role="dialog" aria-modal="true" aria-labelledby="game-title" ref={modal} tabIndex={-1} className={['card modal game', effects && (hit ? 'hit' : 'miss')].filter(Boolean).join(' ')}>
         <span className="label">Mini-game · {type}</span>
@@ -156,7 +179,7 @@ function Game({ def, mods }: { def: ActivityDef; mods: Modifiers }) {
           </TimingView>
         </div>
         <div className="mf">
-          <div className="res" aria-live="polite">
+          <div className="res">
             {shown && (
               <>
                 {result.entry.text}

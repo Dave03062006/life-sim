@@ -23,7 +23,7 @@ function chips(offer: ActivityOffer): { text: string; tone?: 'up' | 'down' }[] {
 function Card({ offer, onBegin }: { offer: ActivityOffer; onBegin(id: string): void }) {
   const { def, blocked, openNote } = offer
   return (
-    <button className="act" disabled={blocked !== null} onClick={() => {
+    <button className="act" data-id={def.id} disabled={blocked !== null} onClick={() => {
         play('tap')
         onBegin(def.id)
       }}
@@ -83,6 +83,7 @@ export function ActivitySheet({ life, category, onBegin, onClose, onHeight }: Sh
         </button>
       </header>
       <div className="grid">
+        {offers.length === 0 && <p>Nothing to do here at this age yet.</p>}
         {offers.map((o) => (
           <Card key={o.def.id} offer={o} onBegin={onBegin} />
         ))}
