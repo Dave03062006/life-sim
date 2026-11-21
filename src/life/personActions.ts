@@ -1,11 +1,12 @@
 import { packFor } from '../content'
 import type { ActivityDef, MinigameType } from '../content/types'
+import { OVERWORK_HEALTH, OVERWORK_STRESS, overworkPoints } from './energy'
 import type { EventTier } from './events'
 import { formatRupiah } from './format'
 import { nudgeCloseness, personById } from './people'
 import { STAGES } from './stages'
 import { applyChanges } from './stats'
-import type { JournalEntry, Life, Person, Relation } from './types'
+import type { Change, JournalEntry, Life, Person, Relation } from './types'
 
 export type PersonActionId = 'time' | 'talk' | 'gift' | 'ask-out'
 export interface PersonAction { id: PersonActionId; label: string; blocked: string | null; detail: string }
@@ -13,6 +14,7 @@ export const GIFT_PRICE = 50_000
 export const GIFT_CLOSENESS = 10
 export const ASK_OUT_CLOSENESS = 50
 export const ASK_OUT_AGE = 15
+export const TALK_ENERGY = 1
 
 const GAMES: Record<Relation, { type: MinigameType; theme: string }> = {
   mother: { type: 'catch', theme: 'cook' },
@@ -33,13 +35,15 @@ export function actionsFor(life: Life, personId: string): PersonAction[] {
   const events = packFor(life.country).events
   const missing = (id: string) => (events.some((e) => e.id === id) ? null : 'Not available yet.')
   const { name } = person
+  const cost = (energy: number) => `${energy} energy${overworkPoints(life, energy) > 0 ? ' · overwork' : ''}. `
   const actions: PersonAction[] = [
-    { id: 'time', label: 'Spend time', blocked: null, detail: `Do something together with ${name}.` },
-    { id: 'talk', label: 'Talk', blocked: missing('talk'), detail: `See what is on ${name}'s mind.` },
+    { id: 'time', label: 'Spend time', blocked: null, detail: `${cost(timeActivity(person).energy)}Do something together with ${name}.` },
+    { id: 'talk', label: 'Talk', blocked: missing('talk'), detail: `${cost(TALK_ENERGY)}See what is on ${name}'s mind.` },
     { id: 'gift', label: 'Give a gift', blocked: giftBlocked(life), detail: `${formatRupiah(GIFT_PRICE)}. Closeness +${GIFT_CLOSENESS}.` },
   ]
   if (person.relation === 'crush') {
     const blocked = missing('ask-out') ?? (life.interest === 'none' ? 'You are not looking for romance.' : null) ??
+      (life.people.some((p) => p.relation === 'partner') ? 'You already have a partner.' : null) ??
       (life.age < ASK_OUT_AGE ? `You need to be ${ASK_OUT_AGE}.` : person.closeness < ASK_OUT_CLOSENESS ? 'You are not close enough yet.' : null)
     actions.push({ id: 'ask-out', label: 'Ask out', blocked, detail: `Ask ${name} to be your partner.` })
   }
@@ -74,7 +78,22 @@ export function giveGift(life: Life, personId: string): { life: Life; entry: Jou
   if (blocked) throw new Error(`Gift is blocked: ${blocked}`)
   const { life: next, moved } = nudgeCloseness(applyChanges(life, [{ key: 'money', delta: -GIFT_PRICE }]), personId, GIFT_CLOSENESS)
   const entry: JournalEntry = { age: life.age, kind: 'activity', text: `You gave ${person.name} a gift.`, changes: [{ key: 'money', delta: -GIFT_PRICE }], people: moved }
-  return { life: { ...next, journal: [...next.journal, entry] }, entry }
+  return { life: { ...next, journal: [...next.journal, entry], spentWith: together(next, personId) }, entry }
+}
+
+const together = (life: Life, personId: string) => (life.spentWith.includes(personId) ? life.spentWith : [...life.spentWith, personId])
+
+/** Talking costs energy (with the usual overwork) and counts as time together; the talk event follows. */
+export function talk(life: Life, personId: string): Life {
+  const over = overworkPoints(life, TALK_ENERGY)
+  let next: Life = { ...life, energySpent: life.energySpent + TALK_ENERGY, spentWith: together(life, personId) }
+  if (over > 0) {
+    const asked: { key: 'stress' | 'health'; delta: number }[] = [{ key: 'stress', delta: OVERWORK_STRESS * over }, { key: 'health', delta: OVERWORK_HEALTH * over }]
+    const worn = applyChanges(next, asked)
+    const changes: Change[] = asked.map((c) => ({ ...c, delta: worn.stats[c.key] - next.stats[c.key] })).filter((c) => c.delta !== 0)
+    next = { ...worn, journal: [...worn.journal, { age: life.age, kind: 'activity', text: 'You talked on no energy and felt worn out.', changes }] }
+  }
+  return queuePersonEvent(next, 'talk', personId)
 }
 
 /** Queues a built-in person event (`talk`, `ask-out`) with the person cast as `them`. */

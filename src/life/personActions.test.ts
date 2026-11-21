@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EventDef } from '../content/types'
 import { finishActivity } from './activities'
-import { actionsFor, afterEvent, GIFT_PRICE, giveGift, timeActivity } from './personActions'
+import { actionsFor, afterEvent, GIFT_PRICE, giveGift, talk, timeActivity } from './personActions'
 import { testLife } from './testLife'
-import type { Person } from './types'
+import type { Life, Person } from './types'
 
 const events = vi.hoisted(() => [] as EventDef[])
 vi.mock('../content', async (orig) => {
@@ -40,6 +40,8 @@ describe('person actions', () => {
     expect(blockedOf(withAyu(80, 14), 'p-4')['ask-out']).toBe('You need to be 15.')
     expect(blockedOf({ ...withAyu(80), interest: 'none' }, 'p-4')['ask-out']).toBe('You are not looking for romance.')
     expect(blockedOf({ ...withAyu(80), interest: 'men' }, 'p-4')['ask-out']).toBeNull()
+    const partner: Person = { ...ayu, id: 'p-5', name: 'Rafi', relation: 'partner' }
+    expect(blockedOf(testLife({ people: [...withAyu(80).people, partner] }), 'p-4')['ask-out']).toBe('You already have a partner.')
   })
   it('gives a gift only when you can pay', () => {
     expect(blockedOf(testLife({ money: 40000 })).gift).toBe('You need Rp 50.000. You have Rp 40.000.')
@@ -48,6 +50,7 @@ describe('person actions', () => {
     expect(life.people.find((p) => p.id === 'p-3')!.closeness).toBe(70)
     expect(entry).toEqual({ age: 16, kind: 'activity', text: 'You gave Dimas a gift.', changes: [{ key: 'money', delta: -GIFT_PRICE }], people: [{ id: 'p-3', delta: 10 }] })
     expect(life.journal.at(-1)).toEqual(entry)
+    expect(life.spentWith).toEqual(['p-3'])
     expect(() => giveGift(testLife({ money: 40000 }), 'p-3')).toThrow(/need Rp 50\.000/)
   })
   it('picks a mini-game suited to the relation', () => {
@@ -76,5 +79,20 @@ describe('person actions', () => {
     expect(afterEvent(life, 'ask-out', { them: 'p-4' }, 'success').people[3]!.relation).toBe('partner')
     expect(afterEvent(life, 'ask-out', { them: 'p-4' }, 'mixed')).toBe(life)
     expect(afterEvent(life, 'talk', { them: 'p-4' }, 'success')).toBe(life)
+  })
+  it('says what time and talking cost, and warns of overwork', () => {
+    const detail = (life: Life) => Object.fromEntries(actionsFor(life, 'p-3').map((a) => [a.id, a.detail]))
+    expect(detail(testLife())).toMatchObject({ time: expect.stringContaining('1 energy'), talk: expect.stringContaining('1 energy') })
+    expect(detail(testLife()).talk).not.toContain('overwork')
+    const tired = detail(testLife({ energySpent: 10 }))
+    expect([tired.time, tired.talk].every((d) => d!.includes('1 energy · overwork'))).toBe(true)
+  })
+  it('spends energy talking, counts it as time together and queues the talk', () => {
+    const life = talk(testLife(), 'p-3')
+    expect([life.energySpent, life.spentWith, life.pendingEvents]).toEqual([1, ['p-3'], [{ eventId: 'talk', cast: { them: 'p-3' } }]])
+    expect(life.stats).toEqual(testLife().stats)
+    const tired = talk(testLife({ energySpent: 10 }), 'p-3')
+    expect([tired.energySpent, tired.stats.stress, tired.stats.health]).toEqual([11, 39, 56])
+    expect(tired.journal.at(-1)).toMatchObject({ kind: 'activity', changes: [{ key: 'stress', delta: 4 }, { key: 'health', delta: -2 }] })
   })
 })

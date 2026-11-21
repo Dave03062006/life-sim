@@ -9,7 +9,7 @@ import { finishActivity, GOOD_SCORE, offersFor } from '../life/activities'
 import { drawEvents, dropStale, resolveEvent, type EventTier } from '../life/events'
 import { modifiersFor } from '../life/modifiers'
 import { personById } from '../life/people'
-import { actionsFor, afterEvent, giveGift, queuePersonEvent, timeActivity, type PersonActionId } from '../life/personActions'
+import { actionsFor, afterEvent, giveGift, queuePersonEvent, talk, timeActivity, type PersonActionId } from '../life/personActions'
 import type { CategoryId, Interest, JournalEntry, Life, PendingEvent } from '../life/types'
 import { ageUp, newLife } from '../life/year'
 import type { Modifiers } from '../minigames/framework'
@@ -195,7 +195,7 @@ export const useApp = create<AppState>()((set, get) => {
         resume = () => get().personAction(personId, action)
         return
       }
-      saveAndShow(queuePersonEvent(life, action, personId))
+      saveAndShow(action === 'talk' ? talk(life, personId) : queuePersonEvent(life, action, personId))
     },
   }
 })

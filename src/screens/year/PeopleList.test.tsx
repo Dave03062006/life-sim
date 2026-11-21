@@ -37,6 +37,7 @@ it('lists people with closeness and their actions', async () => {
   expect(people.getByRole('button', { name: /^Dimas/ }).getAttribute('aria-pressed')).toBe('true')
   for (const name of [/Spend time/, /Talk/, /Give a gift/]) expect(people.getByRole('button', { name })).toBeTruthy()
   expect(people.getByRole('button', { name: /Give a gift/ }).textContent).toContain('Rp 50.000')
+  for (const name of [/Spend time/, /Talk/]) expect(people.getByRole('button', { name }).textContent).toContain('1 energy')
   expect((people.getByRole('button', { name: /Talk/ }) as HTMLButtonElement).disabled).toBe(false) // the pack now has a talk event
   expect(people.queryByRole('button', { name: /Ask out/ })).toBeNull()
   await userEvent.click(people.getByRole('button', { name: /^Ayu/ }))
@@ -73,4 +74,11 @@ it('shows closeness won in a mini-game result', async () => {
   expect(useApp.getState().playing!.personId).toBe('p-3')
   act(() => useApp.getState().finish(0.9))
   expect(screen.getByText('Dimas +12', { selector: '.res .chg' }).className).toBe('chg up')
+})
+
+it('warns that spending time or talking will overwork you', async () => {
+  await start(testLife({ energySpent: 10 }))
+  const people = within(screen.getByRole('region', { name: 'Your people' }))
+  await userEvent.click(people.getByRole('button', { name: /^Dimas/ }))
+  for (const name of [/Spend time/, /Talk/]) expect(people.getByRole('button', { name }).textContent).toContain('1 energy · overwork')
 })

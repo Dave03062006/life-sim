@@ -258,6 +258,7 @@ it('talks with a person through the built-in event', async () => {
   useApp.setState({ life: testLife() })
   app().personAction('p-3', 'talk')
   expect(app().pendingEvent).toEqual({ eventId: 'talk', cast: { them: 'p-3' } })
+  expect([app().life!.energySpent, app().life!.spentWith]).toEqual([1, ['p-3']])
   app().decide('chat', 'blunt')
   expect(app().lastEvent!.entry).toMatchObject({ text: 'You talked with Dimas.', people: [{ id: 'p-3', delta: 8 }] })
   app().closeEvent()
@@ -298,6 +299,7 @@ it('asks who you are interested in once, before the first romance option', async
   app().decide('a', 'calm')
   expect(app().life!.people.find((p) => p.id === 'p-4')!.relation).toBe('partner')
   app().closeEvent()
+  useApp.setState({ life: { ...app().life!, people: app().life!.people.filter((p) => p.id !== 'p-4') } }) // one partner at a time
   app().personAction('p-5', 'ask-out')
   expect(app()).toMatchObject({ askingInterest: false, pendingEvent: { eventId: 'ask-out', cast: { them: 'p-5' } } })
 })
