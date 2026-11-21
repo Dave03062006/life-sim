@@ -15,6 +15,8 @@ export interface Theme {
   quiz?: QuizSource
   /** Labels on Catch's falling items; default Good and Bad. */
   catchItems?: { good: string; bad: string }
+  /** Plain lowercase words Typing draws from (at least 8); default a general list. `words` is taken by the result words. */
+  typingWords?: string[]
 }
 
 const WORDS: Record<ResultTier, string> = { great: 'Perfect!', good: 'Nice!', weak: 'Close', fail: 'Missed' }
@@ -33,6 +35,10 @@ export const THEMES: Record<string, Theme> = {
   'sell-snacks': { quiz: { kind: 'change' } },
   'eat-better': { catchItems: { good: 'Sayur', bad: 'Gorengan' } },
   cook: { catchItems: { good: 'Bawang', bad: 'Gosong' } },
+  homework: { typingWords: ['essay', 'chapter', 'answer', 'notes', 'lesson', 'teacher', 'pencil', 'homework'] },
+  english: { typingWords: ['because', 'friend', 'weather', 'morning', 'window', 'travel', 'question', 'kitchen'] },
+  code: { typingWords: ['const', 'return', 'true', 'false', 'function', 'array', 'string', 'import'] },
+  diary: { typingWords: ['happy', 'tired', 'proud', 'nervous', 'calm', 'excited', 'lonely', 'hopeful'] },
   tutor: { quiz: { kind: 'arithmetic' } },
 }
 

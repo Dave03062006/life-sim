@@ -9,6 +9,8 @@ import { quiz } from './quiz/rules'
 import { QuizView } from './quiz/View'
 import { tapping } from './tapping/rules'
 import { TappingView } from './tapping/View'
+import { typing } from './typing/rules'
+import { TypingView } from './typing/View'
 import { timing } from './timing/rules'
 import { TimingView } from './timing/View'
 
@@ -30,5 +32,5 @@ export const GAMES: Record<MinigameType, GameEntry> = {
   memory: { rules: memory, View: MemoryView, instruction: 'Watch the order the pads light up, then repeat it.' },
   quiz: { rules: quiz, View: QuizView, instruction: 'Answer five questions before time runs out. Press 1 to 4 or click.' },
   catch: { rules: catchGame, View: CatchView, instruction: 'Move with the arrow keys or the pointer. Catch the good, dodge the bad.' },
-  typing: TIMING,
+  typing: { rules: typing, View: TypingView, instruction: 'Type the words shown before time runs out.' },
 }

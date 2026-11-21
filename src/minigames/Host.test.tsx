@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
+import { installKeys } from '../app/keys'
 import { useApp } from '../app/store'
 import { gameClock } from '../engine/clock'
 import { createSaves } from '../engine/save/saves'
@@ -10,6 +11,7 @@ import { testLife } from '../life/testLife'
 import { MinigameHost } from './Host'
 import { GAMES } from './registry'
 import { timing } from './timing/rules'
+import { typing } from './typing/rules'
 
 const begin = async (id = 'futsal') => {
   useSettings.getState().update({ reducedMotion: 'on' })
@@ -119,6 +121,24 @@ it('sends printable keys and Backspace as text in a text game', async () => {
     expect(spyRules.step).toHaveBeenCalledWith(expect.anything(), ['1', ' ', '\b'].map((text) => ({ kind: 'text', text })))
     expect(screen.queryByRole('button', { name: /Space/ })).toBeNull() // no verb, no play button
   } finally {
+    GAMES.typing = real
+  }
+})
+it('sends Space and digits as text in Typing and keeps the year screen keys quiet', async () => {
+  const spyRules = { ...typing, step: vi.fn<typeof typing.step>(typing.step) }
+  const real = GAMES.typing
+  GAMES.typing = { ...real, rules: spyRules }
+  const remove = installKeys()
+  try {
+    await begin('homework')
+    frame(0)
+    fireEvent.keyDown(window, { code: 'Space', key: ' ' })
+    fireEvent.keyDown(window, { code: 'Digit3', key: '3' })
+    frame(20)
+    expect(spyRules.step).toHaveBeenCalledWith(expect.anything(), [' ', '3'].map((text) => ({ kind: 'text', text })))
+    expect(useApp.getState().openCategory).toBeNull()
+  } finally {
+    remove()
     GAMES.typing = real
   }
 })

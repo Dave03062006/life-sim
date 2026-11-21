@@ -46,3 +46,9 @@
 .citem.good{background:var(--good-item)}
 .citem.bad{background:var(--bad-item)}
 .basket{position:absolute;bottom:4%;height:10px;border-radius:var(--r2);background:var(--ink);border:2px solid var(--solid)}
+.typegame{display:flex;flex-direction:column;align-items:center;gap:12px;margin:14px auto 0;width:min(100%,520px)}
+.typetarget{margin:0;font-family:monospace;font-size:22px;line-height:1.6;white-space:pre-wrap;text-align:center;word-break:break-word}
+.tch{opacity:.55}
+.tch.right{opacity:1;color:var(--good)}
+.tch.wrong{opacity:1;color:var(--bad);text-decoration:line-through underline}
+.tch.caret{opacity:1;box-shadow:inset 2px 0 0 var(--ink)}
