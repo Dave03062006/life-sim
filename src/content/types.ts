@@ -34,6 +34,7 @@ export type Condition =
   | { kind: 'memory'; id: string } // you have this memory
   | { kind: 'no-memory'; id: string }
   | { kind: 'money'; min: number }
+  | { kind: 'age'; min?: number; max?: number }
 export interface Outcome {
   text: string // may use {role} placeholders, e.g. {friend}
   effects?: Partial<Record<StatKey, number>>
@@ -59,6 +60,7 @@ export interface EventDef {
   big?: boolean
   when?: Condition[]
   cast?: Record<string, Relation> // roles to fill, e.g. { friend: 'friend' }
+  art?: string // banner key in the art manifest; defaults to the event id
   title: string
   text: string
   recall?: { memory: string; text: string } // a "Remembered" line added when you have the memory

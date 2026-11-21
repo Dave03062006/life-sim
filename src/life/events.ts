@@ -20,6 +20,7 @@ function holds(life: Life, c: Condition): boolean {
     case 'memory': return life.memories.some((m) => m.id === c.id)
     case 'no-memory': return !life.memories.some((m) => m.id === c.id)
     case 'money': return life.money >= c.min
+    case 'age': return life.age >= (c.min ?? 0) && life.age <= (c.max ?? Infinity)
   }
 }
 
@@ -33,8 +34,14 @@ function fits(life: Life, p: Person, relation: Person['relation']): boolean {
 /** Each role picks uniformly among fitting people not already cast; null if any role cannot be filled. */
 function castFor(life: Life, ev: EventDef, rng: Rng | null): Record<string, string> | null {
   const cast: Record<string, string> = {}
+  // memories this event leans on: the people cast must be the ones in them
+  const ids = [...(ev.when ?? []), ...(ev.actions ?? []).flatMap((a) => (a.open ? [a.open.condition] : []))]
+    .flatMap((c) => (c.kind === 'memory' ? [c.id] : []))
+  if (ev.recall) ids.push(ev.recall.memory)
+  const held = life.memories.filter((m) => ids.includes(m.id))
   for (const [role, relation] of Object.entries(ev.cast ?? {})) {
-    const pool = life.people.filter((p) => fits(life, p, relation) && !Object.values(cast).includes(p.id))
+    const pool = life.people.filter((p) => fits(life, p, relation) && !Object.values(cast).includes(p.id) &&
+      held.every((m) => m.people.includes(p.id)))
     if (pool.length === 0) return null
     // without an rng (the eligibility check) take the first: pools are per relation, so any pick fills the same
     cast[role] = (rng ? rng.pick(pool) : pool[0]!).id

@@ -205,8 +205,32 @@ describe('adding a crush', () => {
     expect(crush).toMatchObject({ gender: 'female', closeness: 40 })
     expect(Math.abs(crush!.age - 16)).toBeLessThanOrEqual(1)
   })
+  it('matches men and both', () => {
+    expect(crushes(meetWith('men')).map((p) => p.gender)).toEqual(['male'])
+    expect(['female', 'male']).toContain(crushes(meetWith('both'))[0]!.gender)
+  })
   it('adds nobody when interest is null or none', () => {
     expect(crushes(meetWith(null))).toHaveLength(0)
     expect(crushes(meetWith('none'))).toHaveLength(0)
+  })
+})
+
+describe('memories and age gates', () => {
+  const friend = (id: string, name: string): Person => ({ id, name, relation: 'friend', gender: 'female', age: 16, closeness: 50 })
+  const two = [friend('p-8', 'Ayu'), friend('p-9', 'Dewi')]
+  const memory = { id: 'covered-friend', age: 15, text: 'You covered for Dewi.', people: ['p-9'] }
+  const remember = choice('remember', { cast: { friend: 'friend' }, recall: { memory: 'covered-friend', text: 'x' } })
+  it('casts the friend a memory names, and nobody if they are gone', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const life = testLife({ rng: seed, people: [...testLife().people, ...two], memories: [memory] })
+      expect(drawEvents(life, packOf([remember])).pendingEvents.map((p) => p.cast.friend)).toEqual(['p-9'])
+    }
+    const gone = testLife({ people: [...testLife().people, two[0]!], memories: [memory] })
+    expect(drawEvents(gone, packOf([remember])).pendingEvents).toEqual([])
+  })
+  it('checks the age condition', () => {
+    const gated = packOf([choice('only-15', { when: [{ kind: 'age', min: 15, max: 15 }] })])
+    expect(drawEvents(testLife({ age: 15 }), gated).seenEvents).toEqual(['only-15'])
+    expect(drawEvents(testLife({ age: 16 }), gated).seenEvents).toEqual([])
   })
 })

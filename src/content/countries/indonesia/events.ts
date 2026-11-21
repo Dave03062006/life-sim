@@ -9,7 +9,7 @@ const COVERED = { id: 'covered-friend', text: 'You covered for {friend} when the
 
 const choices: EventDef[] = [
   {
-    id: 'class-trip-money', kind: 'choice', stages: LATE, weight: 2, big: true, cast: { friend: 'friend' },
+    id: 'class-trip-money', kind: 'choice', stages: LATE, weight: 2, big: true, art: 'class-trip', when: [{ kind: 'age', min: 16 }], cast: { friend: 'friend' },
     title: 'The class trip money is missing',
     text: 'Rp 800.000 has gone from the class cash box, and people are looking at {friend}. You saw them near it yesterday.',
     actions: [
@@ -34,14 +34,14 @@ const choices: EventDef[] = [
         o('You lost your words halfway through and the class laughed.', { effects: { reputation: -2, happiness: -3 } }),
       ], { open: { condition: { kind: 'stat', key: 'reputation', min: 60 }, note: 'Open to you: Reputation 60+' } }),
       act('remind', 'Remind {friend} what they owe you', 70, [
-        o('You reminded {friend} that you covered for them, and they came clean and returned the money quietly.', { effects: { reputation: 2, stress: -2 }, closeness: { friend: 4 } }),
+        o('{friend} remembered who took the box home to count it, and the money turned up.', { effects: { stress: -2 }, closeness: { friend: 4 } }),
         o('{friend} sighed and agreed to help sort it out, though it was awkward.', { effects: { stress: 2 }, closeness: { friend: -2 } }),
         o('{friend} said that favour was a long time ago. That stung.', { effects: { happiness: -4 }, closeness: { friend: -8 } }),
       ], { open: { condition: { kind: 'memory', id: 'covered-friend' }, note: 'Open to you: your choice at 15' } }),
     ],
   },
   {
-    id: 'cover-for-friend', kind: 'choice', stages: LATE, weight: 3, cast: { friend: 'friend' }, when: [{ kind: 'no-memory', id: 'covered-friend' }],
+    id: 'cover-for-friend', kind: 'choice', stages: LATE, weight: 3, cast: { friend: 'friend' }, when: [{ kind: 'age', min: 15, max: 15 }, { kind: 'no-memory', id: 'covered-friend' }],
     title: '{friend} skipped class',
     text: 'The bell rang and {friend} is still at the kantin. Pak Hadi is taking attendance and looks your way.',
     actions: [
@@ -86,7 +86,7 @@ const choices: EventDef[] = [
     ],
   },
   {
-    id: 'new-face-in-class', kind: 'choice', stages: LATE, weight: 2, cast: { friend: 'friend' },
+    id: 'new-face-in-class', kind: 'choice', stages: LATE, weight: 2,
     title: 'Someone new in class',
     text: 'A student from another school has joined your kelas. Everyone keeps glancing at the seat by the window, and so do you.',
     actions: [
@@ -100,10 +100,10 @@ const choices: EventDef[] = [
         o('They took the notes politely and left it at that.', { effects: { smarts: 1 }, addPerson: { relation: 'crush' } }),
         o('Your handwriting was too messy and they could not read it.', { effects: { happiness: -2 } }),
       ], { romance: true }),
-      act('friend', 'Gossip about it with {friend}', 75, [
-        o('You and {friend} made up three backstories. All of them were wrong, and all were funny.', { effects: { happiness: 3 }, closeness: { friend: 5 } }),
-        o('{friend} laughed, but others heard.', { effects: { happiness: 1 }, closeness: { friend: 3 } }),
-        o('{friend} was more interested in the kantin menu.', { effects: { stress: 1 }, closeness: { friend: 1 } }),
+      act('friend', 'Gossip about it with a friend', 75, [
+        o('You and a friend made up three backstories. All of them were wrong, and all were funny.', { effects: { happiness: 3 } }),
+        o('Your friend laughed, but others heard.', { effects: { happiness: 1 } }),
+        o('Your friend was more interested in the kantin menu.', { effects: { stress: 1 } }),
       ]),
       act('study', 'Focus on the lesson', 75, [
         o('Bu Ratna praised your full notes.', { effects: { smarts: 3, reputation: 1 } }),
@@ -122,7 +122,7 @@ const choices: EventDef[] = [
         o('You met at the gate and it was a little awkward, but nice.', { effects: { happiness: 3 }, closeness: { crush: 5 } }),
         o('You waited at the gate and {crush} had to leave early.', { effects: { happiness: -3 }, closeness: { crush: -2 } }),
       ], { romance: true }),
-      act('tease', 'Joke back and pass it to the next row', 65, [
+      act('tease', 'Write a joke back', 65, [
         o('The whole row giggled. {crush} just smiled.', { effects: { happiness: 3, reputation: 1 }, closeness: { crush: 3 } }),
         o("It ended up in Pak Doni's hands, and he read it aloud, kindly.", { effects: { stress: 3, reputation: -1 } }),
         o('The joke fell flat and the note was never mentioned again.', { effects: { happiness: -2 } }),
@@ -195,7 +195,7 @@ const choices: EventDef[] = [
       ]),
       act('refuse', 'Say you never promised', 55, [
         o('{friend} shrugged and paid their own tab.', { closeness: { friend: -2 } }),
-        o('{friend} was upset, but paid it back slowly.', { effects: { stress: 2 }, closeness: { friend: -5 } }),
+        o('{friend} was upset, but paid Ibu Kantin back slowly.', { effects: { stress: 2 }, closeness: { friend: -5 } }),
         o('Ibu Kantin wrote both of your names in the notebook.', { effects: { reputation: -2, stress: 3 }, closeness: { friend: -8 } }),
       ]),
     ],
@@ -203,7 +203,7 @@ const choices: EventDef[] = [
   {
     id: 'angkot-wallet', kind: 'choice', stages: LATE, weight: 2,
     title: 'A wallet on the angkot',
-    text: 'After the angkot driver pulls away, you notice a brown wallet on the seat. It has a few notes and a student card.',
+    text: 'As you climb out of the angkot, you spot a brown wallet on the seat. It has a few notes and a student card.',
     actions: [
       act('driver', 'Give it back to the driver', 80, [
         o('The driver recognised the owner and thanked you. He gave you a free ride the next day.', { effects: { reputation: 2, happiness: 3 }, money: 10_000 }),
@@ -290,8 +290,8 @@ const choices: EventDef[] = [
   },
   {
     id: 'forgotten-pr', kind: 'choice', stages: LATE, weight: 3,
-    title: 'The forgotten PR',
-    text: 'Pak Doni is collecting homework. You open your bag and the PR is not there. It is sitting on your desk at home.',
+    title: 'The forgotten homework',
+    text: 'Pak Doni is collecting homework. You open your bag and your homework is not there. It is sitting on your desk at home.',
     actions: [
       act('honest', 'Admit you forgot it', 75, [
         o('Pak Doni respected your honesty and let you bring it tomorrow.', { effects: { reputation: 2, stress: -1 } }),
@@ -323,7 +323,7 @@ const choices: EventDef[] = [
       act('kerupuk', 'Enter the kerupuk eating contest', 60, [
         o('Eaten in record time. Your stomach regrets nothing.', { effects: { happiness: 4, reputation: 2 } }),
         o('You came second. Your friend said you chewed too slowly.', { effects: { happiness: 2 } }),
-        o('You choked, laughed, and got the sympathy prize.', { effects: { happiness: 1, reputation: -1 } }),
+        o('Coughed crumbs everywhere, laughed, and got the sympathy prize.', { effects: { happiness: 1, reputation: -1 } }),
       ]),
       act('cheer', 'Cheer from the side', 80, [
         o('You cheered so loudly you lost your voice.', { effects: { happiness: 3 }, closeness: { friend: 3 } }),
@@ -404,8 +404,8 @@ const newsItem = (id: string, title: string, text: string, news: Partial<Outcome
   ({ id, kind: 'news', stages: LATE, weight: 2, title, text, news: { text, ...news } })
 
 const news: EventDef[] = [
-  newsItem('news-roof-leak', 'The roof leaks', 'The rainy season found a hole in the roof. Your family spent a weekend patching it and paying for tiles.', { effects: { stress: 3 }, money: -150_000 }),
-  newsItem('news-aunt-gift', 'A gift from your aunt', 'Your aunt visited from Surabaya and slipped some money into your hand, "for books".', { effects: { happiness: 3 }, money: 100_000 }),
+  newsItem('news-roof-leak', 'The roof leaks', 'The rainy season found a hole in the roof. You chipped in your savings for the tiles.', { effects: { stress: 3 }, money: -150_000 }),
+  newsItem('news-aunt-gift', 'A gift from your aunt', 'Your aunt visited from out of town and slipped some money into your hand, "for books".', { effects: { happiness: 3 }, money: 100_000 }),
   newsItem('news-flu', 'A bad flu', 'The weather changed and so did your nose. You spent a week under a blanket with tea.', { effects: { health: -5, happiness: -2 } }),
   newsItem('news-sports-day', 'Sports day', 'The whole school ran around the field for the annual sports day. You were sore but happy.', { effects: { health: 3, happiness: 3 } }),
   newsItem('news-teacher-praise', 'Praise from Bu Ratna', 'Bu Ratna read your essay out loud to the class. You went red, but you are proud.', { effects: { smarts: 2, reputation: 3, happiness: 3 } }),
@@ -438,7 +438,7 @@ const people: EventDef[] = [
       o('{them} said you should figure it out on your own.', { effects: { happiness: -2 }, closeness: { them: -1 } }),
     ]),
   ]),
-  person('ask-out', 'Asking {them} out', 'You take a deep breath. You want to ask {them} to be your partner.', [
+  person('ask-out', 'Asking {them} out', 'You take a deep breath. You want to ask {them} to go out with you.', [
     act('direct', 'Ask directly', 55, [
       o('{them} smiled and said yes. You are a couple now.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
       o('{them} said they need time, but they were not unkind about it.', { effects: { happiness: 1, stress: 2 }, closeness: { them: 5 } }),
@@ -447,7 +447,7 @@ const people: EventDef[] = [
     act('note', 'Write a note', 60, [
       o('{them} read the note twice, then wrote "yes" at the bottom.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
       o('{them} replied that they would think about it.', { effects: { happiness: 1, stress: 2 }, closeness: { them: 4 } }),
-      o('The note got passed around the class before {them} saw it.', { effects: { happiness: -6, reputation: -2 }, closeness: { them: -8 } }),
+      o('The note got passed around before {them} saw it.', { effects: { happiness: -6, reputation: -2 }, closeness: { them: -8 } }),
     ]),
     act('friend', 'Ask through a friend', 45, [
       o('Your friend delivered the message well, and {them} said yes.', { effects: { happiness: 7 }, closeness: { them: 9 } }),

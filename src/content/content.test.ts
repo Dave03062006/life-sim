@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { stageOf } from '../life/stages'
-import { hasIcon } from '../styles/art'
+import { eventArt, hasIcon } from '../styles/art'
 import { GAMES } from '../minigames/registry'
 import { THEMES } from '../minigames/themes'
 import { packFor } from './index'
@@ -50,7 +50,7 @@ describe('indonesia events', () => {
   const choices = events.filter((e) => e.kind === 'choice')
   const actions = choices.flatMap((e) => (e.actions ?? []).map((a) => ({ e, a })))
   const outcomes = actions.flatMap(({ e, a }) => (['success', 'mixed', 'fail'] as const).map((t) => ({ e, a, t, o: a.outcomes[t] })))
-  const roles = (e: (typeof events)[number]) => ['name', 'them', ...Object.keys(e.cast ?? {})]
+  const roles = (e: (typeof events)[number]) => ['name', ...(e.id === 'talk' || e.id === 'ask-out' ? ['them'] : []), ...Object.keys(e.cast ?? {})]
   const texts = (e: (typeof events)[number]) => [e.title, e.text, e.recall?.text ?? '', e.news?.text ?? '',
     ...(e.actions ?? []).flatMap((a) => [a.label, a.open?.note ?? '', ...Object.values(a.outcomes).flatMap((o) => [o.text, o.memory?.text ?? ''])])]
   const unknownRoles = events.flatMap((e) => texts(e).flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((m) => m[1]!)).filter((r) => !roles(e).includes(r)))
@@ -100,6 +100,15 @@ describe('indonesia events', () => {
     const newsEvents = events.filter((e) => e.kind === 'news')
     expect(newsEvents.filter((e) => (e.news?.money ?? 0) !== 0)).not.toHaveLength(0)
     expect(newsEvents.filter((e) => (e.news?.effects?.health ?? 0) !== 0)).not.toHaveLength(0)
+  })
+  it('uses only banners that exist, and gates the story events by age', () => {
+    expect(events.filter((e) => e.art && !eventArt(e.art))).toEqual([])
+    expect(eventArt(events.find((e) => e.id === 'class-trip-money')!.art ?? 'class-trip-money')).not.toBeNull()
+    expect(events.find((e) => e.id === 'cover-for-friend')!.when).toContainEqual({ kind: 'age', min: 15, max: 15 })
+    expect(events.find((e) => e.id === 'class-trip-money')!.when).toContainEqual({ kind: 'age', min: 16 })
+  })
+  it('uses {them} only in talk and ask-out', () => {
+    expect(events.filter((e) => e.id !== 'talk' && e.id !== 'ask-out' && texts(e).some((t) => t.includes('{them}')))).toEqual([])
   })
   it('defines talk and ask-out for use from 12', () => {
     const built = events.filter((e) => e.id === 'talk' || e.id === 'ask-out')

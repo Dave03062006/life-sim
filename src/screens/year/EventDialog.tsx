@@ -20,7 +20,7 @@ export function EventDialog({ life }: { life: Life }) {
   if (pending && pending.cast !== cast) setCast(pending.cast)
   const def = last?.def ?? (pending && packFor(life.country).events.find((e) => e.id === pending.eventId))
   if (!def) return null
-  const art = eventArt(def.id)
+  const art = eventArt(def.art ?? def.id)
   return (
     <div className="veil" inert={settingsOpen}>
       {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- the mockup's veil and card, not the browser's dialog styling */}
