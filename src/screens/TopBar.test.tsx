@@ -106,3 +106,18 @@ it('switches the art style during a mini-game, and pauses it while settings are 
   expect(gameClock.paused).toBe(false)
   expect(document.querySelector('.top')!.hasAttribute('inert')).toBe(false)
 })
+
+it('gives focus back to the game, not the Settings button, after closing Settings mid-game', async () => {
+  await start()
+  act(() => useApp.getState().begin('futsal'))
+  gameClock.stop() // the test drives the frames
+  act(() => gameClock.tick(0))
+  await userEvent.click(screen.getByRole('button', { name: 'Settings' }))
+  await userEvent.keyboard('{Escape}')
+  const game = screen.getByRole('dialog', { name: 'Futsal practice' })
+  expect(game.contains(document.activeElement)).toBe(true)
+  for (const ms of [100, 200, 300, 400]) act(() => gameClock.tick(ms)) // past the grace after resuming
+  await userEvent.keyboard(' ')
+  act(() => gameClock.tick(410))
+  expect(useApp.getState().lastResult).not.toBeNull()
+})

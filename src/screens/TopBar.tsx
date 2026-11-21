@@ -19,7 +19,9 @@ export function TopBar() {
   const opener = useRef<HTMLButtonElement>(null)
   const close = () => {
     flushSync(() => setSettings(false)) // drop inert before moving focus back
-    opener.current?.focus()
+    // mid-game, focus goes to the game: a focused button would swallow Space and Enter
+    const game = useApp.getState().playing && document.querySelector<HTMLElement>('.modal.game')
+    ;(game || opener.current)?.focus()
   }
   return (
     <>
