@@ -48,7 +48,7 @@ function resumeClock(hold: { current: number }) {
   gameClock.resume()
   hold.current = gameClock.time + RESUME_GRACE
 }
-const acceptsInput = (hold: { current: number }) => !gameClock.paused && gameClock.time >= hold.current
+const acceptsInput = (hold: { current: number }, text = false) => !gameClock.paused && (text || gameClock.time >= hold.current)
 
 /** The mini-game being played, over the year screen, and its result once it lands. */
 export function MinigameHost() {
@@ -70,7 +70,8 @@ function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: nu
   const hold = useRef(0)
   /** Keys, the play button and the views' own controls all pass the same input-hold check. */
   const send = (input: GameInput) => {
-    if (acceptsInput(hold)) game.current.inputs.push(input)
+    // key-ups always pass, or a key released during a pause would stay held; typed text skips the resume grace
+    if (acceptsInput(hold, input.kind === 'text') || (input.kind === 'key' && !input.down)) game.current.inputs.push(input)
   }
   const closeResult = useApp((s) => s.closeResult)
   const reduced = useReducedMotion()
@@ -110,13 +111,18 @@ function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: nu
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (useApp.getState().settingsOpen) return // Settings' own controls answer their keys
       const input = inputOf(e, rules.input === 'text')
       // a focused button (Skip, Back) answers its own keys
       if (!input || game.current.over || e.target instanceof HTMLButtonElement) return
       e.preventDefault()
       if (!e.repeat) send(input)
     }
-    const pause = () => gameClock.pause()
+    const pause = () => {
+      gameClock.pause()
+      // release every held key, since the key-up may happen in another window
+      for (const key of ['left', 'right', 'up', 'down'] as const) game.current.inputs.push({ kind: 'key', key, down: false })
+    }
     const resume = () => resumeClock(hold)
     addEventListener('keydown', onKey)
     addEventListener('keyup', onKey)

@@ -86,7 +86,9 @@ export const useApp = create<AppState>()((set, get) => ({
     if (def.minigame) {
       const rng = createRng(life.rng)
       const seed = rng.int(0, 2 ** 31)
-      set({ life: { ...life, rng: rng.state }, playing: { def, mods: modifiersFor(life, def, useSettings.getState().relaxed), seed } })
+      const advanced = { ...life, rng: rng.state }
+      persist(advanced) // a reload mid-game must not replay the same seed
+      set({ life: advanced, playing: { def, mods: modifiersFor(life, def, useSettings.getState().relaxed), seed } })
       return
     }
     const { life: next, tier, entry } = finishActivity(life, def, GOOD_SCORE)

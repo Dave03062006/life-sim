@@ -131,3 +131,10 @@ it('draws a different seed for each game from the life, and replays it', async (
   app().begin('jog')
   expect(app().playing!.seed).toBe(first)
 })
+it('saves the advanced seed when a game starts', async () => {
+  const saves = await fresh()
+  useApp.getState().startDemoLife(7)
+  useApp.getState().begin('jog')
+  await flush()
+  expect((await saves.load()).active!.rng).toBe(useApp.getState().life!.rng)
+})

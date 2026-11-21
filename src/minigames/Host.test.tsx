@@ -156,3 +156,28 @@ it('measures the pointer over the pitch, not the wider wrapper', async () => {
   expect(xs).toEqual([0, 1])
   step.mockRestore()
 })
+it('releases held keys when the window blurs, even if the key-up happens elsewhere', async () => {
+  await begin('eat-better')
+  const x = () => screen.getByTestId('basket').style.left
+  frame(0)
+  fireEvent.keyDown(window, { code: 'ArrowRight' })
+  frame(50)
+  frame(50)
+  fireEvent.blur(window)
+  fireEvent.focus(window)
+  frame(100)
+  frame(300) // past the resume grace
+  const rest = x()
+  frame(100)
+  frame(100)
+  expect(x()).toBe(rest)
+})
+it('leaves keys to Settings controls while Settings is open', async () => {
+  await begin('eat-better')
+  frame(0)
+  act(() => useApp.getState().setSettingsOpen(true))
+  const box = document.body.appendChild(document.createElement('input'))
+  box.type = 'checkbox'
+  expect(fireEvent.keyDown(box, { code: 'Space', key: ' ' })).toBe(true) // true = not default-prevented
+  box.remove()
+})
