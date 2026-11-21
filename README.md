@@ -10,7 +10,7 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
 2. **You are not boxed in.** Choices are built from a "what" and a "how", more options open up because of who you have become, every limit states its reason, and there is no single correct path through life.
 3. **You feel what you do.** Your stats change how the mini-games play, your character and surroundings change, old choices come back years later, and every result lands with motion and sound.
 
-## What is playable today (Plans 1 and 2)
+## What is playable today (Plans 1 to 3)
 
 - Start a life. In this first plan you start at 15.
 - 46 late-teen activities in eight categories.
@@ -23,6 +23,10 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
   - Typing: type the words shown (Learn to code). It needs a physical keyboard for now.
 - Energy, overwork, rest and repeats.
 - Ageing up, with the KTP milestone at 17.
+- Events when you age up. Pick what to do and how (calmly, bluntly, with a joke); the how and your luck shape the result.
+- Memories. Big moments leave a dot on the lifeline, open extra options to you later, and are quoted back in later events.
+- Your family and friends, each with a closeness. Spend time, talk, give a gift, or ask a crush out.
+- The romance question, asked once and changeable in Settings.
 - Two art styles, switchable at any time.
 - Settings: sound, reduce motion, relaxed mini-games.
 - Keys 1-8 and Esc.

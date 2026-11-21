@@ -60,7 +60,25 @@ Run `npm run check`, `npm test` and `npm run build` before committing.
 2. The helper sets the icon id to `act-<id>` (for example `act-futsal`). That id needs an entry in `tools/art/names.json` and a drawn icon. For a new icon, update the source sheet and rerun `python tools/art/build.py` (see `tools/art/README.md`). The display falls back to the category icon only when art is missing at runtime; that does not make the content test pass.
 3. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry, including that its icon exists.
 
-Adding events or conditions: those systems come in later plans.
+## How to add an event
+
+Add an `EventDef` to `src/content/countries/indonesia/events.ts` (type in `src/content/types.ts`). The content test checks it.
+
+- `id`, `kind` (`choice` or `news`), `stages`, `weight` (0 turns it off), `big` (at most one big event per age-up), `title`, `text`.
+- `cast`: roles to fill, such as `{ friend: 'friend' }`. Use `{friend}` in any text. A role picks among fitting people not already cast; if one cannot be filled the event does not fire.
+- `when`: conditions that must all hold. Kinds: `stat` (min/max), `memory`, `no-memory`, `money`, `age` (min/max).
+- Choice events have 2-5 `actions`, each with `label`, `chance` (0-100) and outcomes `success`, `mixed`, `fail`. An outcome has text, `effects`, `money`, `closeness` (role to change), `memory` (id and text, saved with the cast's people) and `addPerson` (a new crush, skipped when the romance question says none).
+- `open`: `{ condition, note }` shows an action only when the condition holds. The note says why, for example "Open to you: your choice at 15".
+- `romance: true` on an action needs the romance question answered first. Every choice event keeps at least two actions that are not romance, so nobody is boxed in.
+- `recall`: `{ memory, text }` adds a "Remembered" line when you hold that memory.
+- `art`: banner key in the art manifest; defaults to the event id.
+- `manners`: override the default Calmly / Bluntly / With a joke.
+- Memory casting: a held memory restricts every cast role to that memory's people, so an event that references a memory should cast only that memory's relation.
+- Tone: follow the tone rules below. Events are recognisable life, written plainly and with humour that is not cruel.
+
+## How people work
+
+`src/life/people.ts`. A `Person` has a relation (mother, father, sibling, grandparent, friend, crush, partner), age, gender and closeness from 0 to 100. Each age-up everyone ages one year and loses 3 closeness (not below 0), unless you spent time with them that year (`spentWith`, cleared at age-up). You can keep eight friends; a ninth pushes out the friend with the lowest closeness. Memories keep the ids of the people in them. `life.interest` is null until the romance question is answered, then women, men, both or none; new crushes match it, and none means no romance actions and no crushes. It can be changed in Settings.
 
 ## How to add a mini-game type
 
