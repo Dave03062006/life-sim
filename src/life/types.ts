@@ -9,7 +9,7 @@ export interface Person { id: string; name: string; relation: Relation; gender: 
 export interface Memory { id: string; age: number; text: string; people: string[] }   // people = person ids
 export type Interest = 'women' | 'men' | 'both' | 'none'
 export interface PendingEvent { eventId: string; cast: Record<string, string> }       // role -> person id
-export interface JournalEntry { age: number; kind: 'milestone' | 'activity' | 'event' | 'memory'; text: string; changes: Change[] }
+export interface JournalEntry { age: number; kind: 'milestone' | 'activity' | 'event' | 'memory'; text: string; changes: Change[]; people?: { id: string; delta: number }[] } // people: real closeness changes
 export interface Life {
   version: 2
   id: string

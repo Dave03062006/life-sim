@@ -68,3 +68,11 @@ export function yearlyPeople(life: Life): Life {
   const people = life.people.map((p) => ({ ...p, age: p.age + 1, closeness: life.spentWith.includes(p.id) ? p.closeness : Math.max(0, p.closeness - 3) }))
   return { ...life, people, spentWith: [] }
 }
+
+/** changeCloseness plus the real change (none when capped or gone), for the journal. */
+export function nudgeCloseness(life: Life, personId: string, delta: number): { life: Life; moved: { id: string; delta: number }[] } {
+  const before = personById(life, personId)?.closeness ?? 0
+  const next = changeCloseness(life, personId, delta)
+  const moved = (personById(next, personId)?.closeness ?? 0) - before
+  return { life: next, moved: moved ? [{ id: personId, delta: moved }] : [] }
+}

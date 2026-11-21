@@ -1,6 +1,6 @@
 import type { Condition, ContentPack, EventAction, EventDef, MannerKind, Outcome } from '../content/types'
 import { createRng, type Rng } from '../engine/random'
-import { changeCloseness, personById } from './people'
+import { nudgeCloseness, personById } from './people'
 import { stageOf } from './stages'
 import { applyChanges, roundAway } from './stats'
 import type { Change, JournalEntry, Life, Person, StatKey } from './types'
@@ -11,6 +11,7 @@ export const DEFAULT_MANNERS: { id: string; label: string; kind: MannerKind }[] 
   { id: 'joke', label: 'With a joke', kind: 'joke' },
 ]
 export type EventTier = 'success' | 'mixed' | 'fail'
+export const MOMENT_PASSED = 'The moment passed.' // a cast person has gone; nothing happens
 
 function holds(life: Life, c: Condition): boolean {
   switch (c.kind) {
@@ -57,15 +58,19 @@ function applyOutcome(life: Life, outcome: Outcome, cast: Record<string, string>
   let next = applyChanges(life, [...[...deltas].map(([key, delta]): Change => ({ key, delta })), { key: 'money', delta: money }])
   const changes: Change[] = [...deltas.keys()].map((key) => ({ key, delta: next.stats[key] - life.stats[key] })).filter((c) => c.delta !== 0)
   if (money !== 0) changes.push({ key: 'money', delta: money })
+  const people: JournalEntry['people'] = []
   for (const [role, delta] of Object.entries(outcome.closeness ?? {})) {
     const id = cast[role]
-    if (id && delta) next = changeCloseness(next, id, roundAway(delta * scale))
+    if (!id || !delta) continue
+    const nudged = nudgeCloseness(next, id, roundAway(delta * scale))
+    next = nudged.life
+    people.push(...nudged.moved)
   }
   const memory = outcome.memory
   if (memory && !next.memories.some((m) => m.id === memory.id)) {
     next = { ...next, memories: [...next.memories, { id: memory.id, age: life.age, text: fill(memory.text, life, cast), people: Object.values(cast) }] }
   }
-  const entry: JournalEntry = { age: life.age, kind: 'event', text: fill(outcome.text, life, cast), changes }
+  const entry: JournalEntry = { age: life.age, kind: 'event', text: fill(outcome.text, life, cast), changes, people }
   return { life: { ...next, journal: [...next.journal, entry] }, entry }
 }
 
@@ -115,7 +120,7 @@ export function resolveEvent(life: Life, pack: ContentPack, actionId: string, ma
   const ev = pack.events.find((e) => e.id === pending.eventId)
   if (!ev) throw new Error(`Unknown event ${pending.eventId}`)
   if (Object.values(pending.cast).some((id) => !personById(life, id))) {
-    return { life: { ...life, pendingEvents: rest }, tier: 'mixed', entry: { age: life.age, kind: 'event', text: 'The moment passed.', changes: [] } }
+    return { life: { ...life, pendingEvents: rest }, tier: 'mixed', entry: { age: life.age, kind: 'event', text: MOMENT_PASSED, changes: [] } }
   }
   const action = availableActions(life, ev, pending.cast).find((o) => o.action.id === actionId)?.action
   if (!action) throw new Error(`Action ${actionId} is not available in ${ev.id}`)

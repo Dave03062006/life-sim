@@ -1,6 +1,7 @@
 import type { ActivityDef, ContentPack, ResultTier } from '../content/types'
 import { OVERWORK_HEALTH, OVERWORK_STRESS, overworkPoints, repeatScale, restGain } from './energy'
 import { formatRupiah } from './format'
+import { nudgeCloseness } from './people'
 import { stageOf } from './stages'
 import { applyChanges, isBenefit, roundAway } from './stats'
 import type { CategoryId, Change, JournalEntry, Life, StatKey } from './types'
@@ -54,7 +55,10 @@ export function offersFor(life: Life, category: CategoryId, pack: ContentPack): 
 
 export interface ActivityOutcome { life: Life; tier: ResultTier; entry: JournalEntry }
 
-export function finishActivity(life: Life, def: ActivityDef, score: number): ActivityOutcome {
+export const TIME_CLOSENESS = 8
+export const TIME_FAIL_CLOSENESS = -3
+
+export function finishActivity(life: Life, def: ActivityDef, score: number, personId?: string): ActivityOutcome {
   const { blocked } = check(life, def)
   if (blocked) throw new Error(`${def.id} is blocked: ${blocked}`)
   const tier = tierOf(score)
@@ -89,12 +93,17 @@ export function finishActivity(life: Life, def: ActivityDef, score: number): Act
   if (over > 0) text += ' You were already worn out.'
   if (def.rest !== undefined && gain === 0) text += life.energySpent === 0 ? ' You were already rested.' : ' Rest is not helping any more this year.'
 
-  const entry: JournalEntry = { age: life.age, kind: 'activity', text, changes }
+  // time with a person: closeness scales like a benefit, and they count as seen this year
+  const together = personId
+    ? nudgeCloseness(next, personId, tier === 'fail' ? TIME_FAIL_CLOSENESS : Math.max(1, roundAway(TIME_CLOSENESS * scale)))
+    : null
+  const entry: JournalEntry = { age: life.age, kind: 'activity', text, changes, ...(together && { people: together.moved }) }
   return {
     tier,
     entry,
     life: {
-      ...next,
+      ...(together?.life ?? next),
+      spentWith: personId && !life.spentWith.includes(personId) ? [...life.spentWith, personId] : life.spentWith,
       energySpent,
       restsThisYear: life.restsThisYear + (def.rest !== undefined ? 1 : 0),
       doneThisYear: { ...life.doneThisYear, [def.id]: timesDone + 1 },

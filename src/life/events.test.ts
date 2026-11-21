@@ -89,7 +89,7 @@ describe('drawing events', () => {
     expect(life.stats.stress).toBe(40)
     expect(life.money).toBe(220000)
     expect(life.people.find((p) => p.id === 'p-1')!.closeness).toBe(60)
-    expect(life.journal).toEqual([{ age: 16, kind: 'event', text: 'Siti shouted.', changes: [{ key: 'stress', delta: 5 }, { key: 'money', delta: 5000 }] }])
+    expect(life.journal).toEqual([{ age: 16, kind: 'event', text: 'Siti shouted.', changes: [{ key: 'stress', delta: 5 }, { key: 'money', delta: 5000 }], people: [{ id: 'p-1', delta: -10 }] }])
     expect(life.pendingEvents).toEqual([])
     const queued = drawEvents(testLife(), packOf([coverFriend]))
     expect(queued.pendingEvents).toEqual(pending('cover-friend', { friend: 'p-3' }))
@@ -126,7 +126,7 @@ describe('resolving events', () => {
     const calm = resolveEvent(life, pack, 'cover', 'calm')
     expect([calm.life.stats.happiness, calm.life.stats.stress, calm.life.money]).toEqual([74, 35, 205000])
     expect(calm.life.people.find((p) => p.id === 'p-3')!.closeness).toBe(75)
-    expect(calm.entry).toEqual({ age: 16, kind: 'event', text: 'You covered for Dimas.', changes: [{ key: 'happiness', delta: 3 }, { key: 'money', delta: -10000 }] })
+    expect(calm.entry).toEqual({ age: 16, kind: 'event', text: 'You covered for Dimas.', changes: [{ key: 'happiness', delta: 3 }, { key: 'money', delta: -10000 }], people: [{ id: 'p-3', delta: 15 }] })
     expect(calm.life.journal.at(-1)).toEqual(calm.entry)
     expect(calm.life.pendingEvents).toEqual([])
 
@@ -139,6 +139,8 @@ describe('resolving events', () => {
     expect(capped.life.stats.happiness).toBe(100)
     expect(capped.entry.changes).toContainEqual({ key: 'happiness', delta: 1 })
     expect(capped.life.people.find((p) => p.id === 'p-3')!.closeness).toBe(100)
+    expect(capped.entry.people).toEqual([{ id: 'p-3', delta: 5 }])
+    expect(resolveEvent({ ...full, people: full.people.map((p) => ({ ...p, closeness: 100 })) }, pack, 'cover', 'blunt').entry.people).toEqual([])
 
     const joke = resolveEvent(testLife({ pendingEvents: pending('bad-day') }), pack, 'a', 'joke')
     expect(joke.tier).toBe('fail')
