@@ -3,7 +3,7 @@
 Life Sim is a browser life simulator (Vite, React 19, TypeScript, Zustand, Vitest). Read the spec and plans before changing anything:
 
 - Design: `docs/superpowers/specs/2026-11-16-life-sim-design.md`
-- Plans: `docs/superpowers/plans/` (seven plans; only Plan 1 exists so far)
+- Plans: `docs/superpowers/plans/` (seven plans; Plans 1 to 3 are done)
 
 ## Folder map
 
@@ -13,11 +13,13 @@ Folders marked (later) are in the spec but do not exist yet.
 src/
   app/        the store, which screen is showing, sound, address options
   engine/     clock, randomness, saves, settings (input and motion come later)
-  life/       the rules of a life, as plain TypeScript with no React
+  life/       the rules of a life, as plain TypeScript with no React; events.ts (drawing and resolving events),
+              people.ts (family, friends, closeness), personActions.ts (Spend time, Talk, Give a gift, Ask out)
   content/    typed data: countries/indonesia/ (diseases/ and quiz/ come later)
   minigames/  framework.ts, then one folder per type (timing, tapping, memory, quiz, catch, typing)
   styles/     the two skins' tokens, the art manifest, sprite helpers
-  screens/    TopBar, SettingsDialog, year/ (Title, NewLife, Summary, PastLives come later)
+  screens/    TopBar, SettingsDialog, year/ (EventDialog, InterestDialog, PeopleList and the rest of the year screen;
+              Title, NewLife, Summary, PastLives come later)
   ui/         shared parts: bar, icon, changes list, reduced-motion hook
   dev/        (later) the life simulator used by tests, and a frame meter
 tools/art/    the Python conversion scripts
@@ -58,7 +60,8 @@ Run `npm run check`, `npm test` and `npm run build` before committing.
 
 1. Add an entry in `src/content/countries/indonesia/activities.ts` through the `a(...)` helper. The fields are defined in `src/content/types.ts`.
 2. The helper sets the icon id to `act-<id>` (for example `act-futsal`). That id needs an entry in `tools/art/names.json` and a drawn icon. For a new icon, update the source sheet and rerun `python tools/art/build.py` (see `tools/art/README.md`). The display falls back to the category icon only when art is missing at runtime; that does not make the content test pass.
-3. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry, including that its icon exists.
+3. People activities can involve real people. `with: 'mother'` (or another relation) needs one such person, or the activity says "You have no mother."; a woman is picked first, so `with: 'grandparent'` calls a grandmother before a grandfather. It nudges their closeness +4 (scaled like a benefit, -2 on a fail) and counts as time together. `together: ['mother', 'father', 'sibling']` nudges everyone of those relations +2. `makes: 'friend'` adds a new same-age friend of the player's gender, closeness 40, on a Good or Great result; use `{name}` in its Good and Great lines.
+4. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry, including that its icon exists.
 
 ## How to add an event
 
@@ -67,7 +70,7 @@ Add an `EventDef` to `src/content/countries/indonesia/events.ts` (type in `src/c
 - `id`, `kind` (`choice` or `news`), `stages`, `weight` (0 turns it off), `big` (at most one big event per age-up), `title`, `text`.
 - `cast`: roles to fill, such as `{ friend: 'friend' }`. Use `{friend}` in any text. A role picks among fitting people not already cast; if one cannot be filled the event does not fire.
 - `when`: conditions that must all hold. Kinds: `stat` (min/max), `memory`, `no-memory`, `money`, `age` (min/max).
-- Choice events have 2-5 `actions`, each with `label`, `chance` (0-100) and outcomes `success`, `mixed`, `fail`. An outcome has text, `effects`, `money`, `closeness` (role to change), `memory` (id and text, saved with the cast's people) and `addPerson` (a new crush, skipped when the romance question says none).
+- Choice events have 2-5 `actions`, each with `label`, `chance` (0-100) and outcomes `success`, `mixed`, `fail`. An outcome has text, `effects`, `money`, `closeness` (role to change), `memory` (id and text, saved with the cast's people) and `addPerson` (a new crush, skipped when the romance question is unanswered or says none).
 - `open`: `{ condition, note }` shows an action only when the condition holds. The note says why, for example "Open to you: your choice at 15".
 - `romance: true` on an action needs the romance question answered first. Every choice event keeps at least two actions that are not romance, so nobody is boxed in.
 - `recall`: `{ memory, text }` adds a "Remembered" line when you hold that memory.
@@ -78,7 +81,7 @@ Add an `EventDef` to `src/content/countries/indonesia/events.ts` (type in `src/c
 
 ## How people work
 
-`src/life/people.ts`. A `Person` has a relation (mother, father, sibling, grandparent, friend, crush, partner), age, gender and closeness from 0 to 100. Each age-up everyone ages one year and loses 3 closeness (not below 0), unless you spent time with them that year (`spentWith`, cleared at age-up). You can keep eight friends; a ninth pushes out the friend with the lowest closeness. Memories keep the ids of the people in them. `life.interest` is null until the romance question is answered, then women, men, both or none; new crushes match it, and none means no romance actions and no crushes. It can be changed in Settings.
+`src/life/people.ts`. A `Person` has a relation (mother, father, sibling, grandparent, friend, crush, partner), age, gender and closeness from 0 to 100. Each age-up everyone ages one year and loses 3 closeness (not below 0), unless you spent time with them that year (`spentWith`, cleared at age-up). You can keep eight friends; when a ninth arrives the least close of the existing eight drifts away (never the newcomer). Spending time, talking (1 energy) and giving a gift all count as time together. You can have one partner at a time. Memories keep the ids of the people in them. `life.interest` is null until the romance question is answered, then women, men, both or none; new crushes match it, and none means no romance actions and no crushes. It can be changed in Settings.
 
 ## How to add a mini-game type
 

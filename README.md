@@ -12,8 +12,8 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
 
 ## What is playable today (Plans 1 to 3)
 
-- Start a life. In this first plan you start at 15.
-- 46 late-teen activities in eight categories.
+- Start a life. For now you start at 15.
+- 44 late-teen activities in eight categories.
 - Six mini-game types, and every activity plays one:
   - Timing: stop the marker in the green (Futsal practice).
   - Tapping: tap to hold the meter in the band (Run for OSIS).
@@ -36,9 +36,9 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
 
 Milestone 1 is built as seven plans:
 
-1. Foundation and the playable year (this is what exists now).
+1. Foundation and the playable year.
 2. Five more mini-games: Tapping, Memory, Quiz with a starter question bank, Catch, Typing.
-3. Events, memories and people.
+3. Events, memories and people (done: Plans 1 to 3 are what exists now).
 4. A whole lifespan: eight stages, the new-life roll, school, work, money, death, the life summary, past lives, export and import.
 5. Health and disease.
 6. Content and art for every stage, including the staged 60 images.
