@@ -122,3 +122,17 @@ it('sends printable keys and Backspace as text in a text game', async () => {
     GAMES.typing = real
   }
 })
+it('measures the pointer over the pitch, not the wider wrapper', async () => {
+  await begin()
+  frame(0)
+  const step = vi.spyOn(timing, 'step')
+  const wrapper = screen.getByRole('dialog').querySelector(':scope > div')!
+  wrapper.querySelector('.pitch')!.getBoundingClientRect = () => ({ left: 100, width: 200, top: 0, height: 100 }) as DOMRect
+  wrapper.getBoundingClientRect = () => ({ left: 0, width: 400, top: 0, height: 100 }) as DOMRect
+  fireEvent.pointerDown(wrapper, { clientX: 100, clientY: 0 })
+  fireEvent.pointerMove(wrapper, { clientX: 300, clientY: 0 })
+  frame(20)
+  const xs = step.mock.calls.flatMap(([, inputs]) => inputs.flatMap((i) => (i.kind === 'pointer' ? [i.x] : [])))
+  expect(xs).toEqual([0, 1])
+  step.mockRestore()
+})

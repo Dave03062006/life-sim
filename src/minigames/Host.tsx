@@ -167,7 +167,8 @@ function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: nu
     send({ kind: 'key', key: 'primary', down: false })
   }
   const pointer = (phase: 'down' | 'move') => (e: PointerEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect()
+    // the pitch is narrower than this wrapper, so measure it
+    const r = (e.currentTarget.querySelector<HTMLElement>('.pitch') ?? e.currentTarget).getBoundingClientRect()
     const x = r.width ? clamp01((e.clientX - r.left) / r.width) : 0
     const y = r.height ? clamp01((e.clientY - r.top) / r.height) : 0
     send({ kind: 'pointer', phase, x, y })

@@ -2,7 +2,7 @@
 :root[data-style=pixel]{--font:"Pixelify Sans Variable",ui-monospace,monospace;--fs:17px;
   --ink:#EEF2FF;--ink2:#A9B8E8;--ink3:#5F73BA;--page:#030A22;--card:#0B1E57;--solid:#0B1E57;--slot:#01123E;
   --scrim:rgba(1,8,28,.7);--hair:rgba(169,184,232,.2);--track:#01123E;--line:#DCE4FF;--edge:#01081C;--accent:#FFC533;--on-accent:#1A1206;
-  --good:#57D37A;--bad:#FF7A7A;--good-item:#17753B;--bad-item:#B3261E;--warn:#FFC533;--health:#FF6B5E;--happy:#FFD23F;--smarts:#6FA8FF;--looks:#3FE0C5;--minor:#8C9DD6;
+  --good:#57D37A;--bad:#FF7A7A;--on-item:#fff;--good-item:#17753B;--bad-item:#B3261E;--warn:#FFC533;--health:#FF6B5E;--happy:#FFD23F;--smarts:#6FA8FF;--looks:#3FE0C5;--minor:#8C9DD6;
   --flash:#fff;--r:0px;--r2:0px;--ease:steps(4,end);--dur:.12s}
 
 [data-style=pixel] *{image-rendering:pixelated}

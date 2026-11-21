@@ -40,8 +40,9 @@
 .pad.choice{height:auto;min-height:64px;padding:18px 10px 10px}
 .pad.right{background:var(--good);border-color:var(--ink)}
 .pad.wrong{background:var(--bad);border-color:var(--ink)}
-.catchplay{position:absolute;inset:0;overflow:hidden}
-.citem{position:absolute;transform:translate(-50%,-50%);padding:4px 8px;border-radius:99px;border:2px solid var(--ink);color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
+.catchplay{position:absolute;inset:0;overflow:hidden;touch-action:none}
+.pitch:has(.catchplay){touch-action:none}
+.citem{position:absolute;transform:translate(-50%,-50%);padding:4px 8px;border-radius:99px;border:2px solid var(--ink);color:var(--on-item);font-size:12px;font-weight:700;white-space:nowrap}
 .citem.good{background:var(--good-item)}
 .citem.bad{background:var(--bad-item)}
 .basket{position:absolute;bottom:4%;height:10px;border-radius:var(--r2);background:var(--ink);border:2px solid var(--solid)}

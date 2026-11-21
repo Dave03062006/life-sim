@@ -71,6 +71,10 @@ describe('catch', () => {
     s = catchGame.step(s, [])
     expect(catchGame.view(s).x).toBe(x)
   })
+  it('subtracts hits from catches', () => {
+    const s = { ...catchGame.start(NO_MODIFIERS, 5), caught: 2, hit: 1, goodSpawned: 4 }
+    expect(catchGame.score(s)).toBe(0.25)
+  })
   it('ends by itself after 15 seconds', () => {
     let s = catchGame.start(NO_MODIFIERS, 5)
     for (let i = 0; i < 15 * 120 - 1; i++) s = catchGame.step(s, [])
