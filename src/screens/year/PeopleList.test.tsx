@@ -37,8 +37,7 @@ it('lists people with closeness and their actions', async () => {
   expect(people.getByRole('button', { name: /^Dimas/ }).getAttribute('aria-pressed')).toBe('true')
   for (const name of [/Spend time/, /Talk/, /Give a gift/]) expect(people.getByRole('button', { name })).toBeTruthy()
   expect(people.getByRole('button', { name: /Give a gift/ }).textContent).toContain('Rp 50.000')
-  expect((people.getByRole('button', { name: /Talk/ }) as HTMLButtonElement).disabled).toBe(true) // the pack has no talk event yet
-  expect(people.getByRole('button', { name: /Talk/ }).textContent).toContain('Not available yet.')
+  expect((people.getByRole('button', { name: /Talk/ }) as HTMLButtonElement).disabled).toBe(false) // the pack now has a talk event
   expect(people.queryByRole('button', { name: /Ask out/ })).toBeNull()
   await userEvent.click(people.getByRole('button', { name: /^Ayu/ }))
   expect(people.getByRole('button', { name: /Ask out/ })).toBeTruthy()

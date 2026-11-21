@@ -1,6 +1,7 @@
 import type { Condition, ContentPack, EventAction, EventDef, MannerKind, Outcome } from '../content/types'
 import { createRng, type Rng } from '../engine/random'
-import { nudgeCloseness, personById } from './people'
+import { NAMES } from '../content/countries/indonesia/names'
+import { addPerson, nudgeCloseness, personById } from './people'
 import { stageOf } from './stages'
 import { applyChanges, roundAway } from './stats'
 import type { Change, JournalEntry, Life, Person, StatKey } from './types'
@@ -50,7 +51,7 @@ export function fill(text: string, life: Life, cast: Record<string, string>): st
 }
 
 /** Applies an outcome scaled by `scale`, plus `stress`; returns the life with its journal entry added. */
-function applyOutcome(life: Life, outcome: Outcome, cast: Record<string, string>, scale: number, stress: number): { life: Life; entry: JournalEntry } {
+function applyOutcome(life: Life, outcome: Outcome, cast: Record<string, string>, scale: number, stress: number, rng: Rng): { life: Life; entry: JournalEntry } {
   const deltas = new Map<StatKey, number>()
   for (const [key, delta] of Object.entries(outcome.effects ?? {}) as [StatKey, number][]) deltas.set(key, roundAway(delta * scale))
   if (stress) deltas.set('stress', (deltas.get('stress') ?? 0) + stress)
@@ -65,6 +66,13 @@ function applyOutcome(life: Life, outcome: Outcome, cast: Record<string, string>
     const nudged = nudgeCloseness(next, id, roundAway(delta * scale))
     next = nudged.life
     people.push(...nudged.moved)
+  }
+  const genders = CRUSH_GENDER[life.interest ?? 'none']
+  if (outcome.addPerson && genders.length > 0) {
+    const gender = rng.pick([...genders])
+    const taken = new Set([life.name, ...next.people.map((p) => p.name)])
+    const name = rng.pick(NAMES[gender].filter((n) => !taken.has(n)))
+    next = addPerson(next, { id: '', name, relation: 'crush', gender, age: life.age + rng.int(-1, 2), closeness: 40 })
   }
   const memory = outcome.memory
   if (memory && !next.memories.some((m) => m.id === memory.id)) {
@@ -90,7 +98,7 @@ export function drawEvents(life: Life, pack: ContentPack): Life {
     const cast = castFor(next, ev, rng)!
     bigDrawn ||= !!ev.big
     next = { ...next, seenEvents: [...next.seenEvents, ev.id] }
-    if (ev.kind === 'news') next = applyOutcome(next, ev.news ?? { text: ev.text }, cast, 1, 0).life
+    if (ev.kind === 'news') next = applyOutcome(next, ev.news ?? { text: ev.text }, cast, 1, 0, rng).life
     else next = { ...next, pendingEvents: [...next.pendingEvents, { eventId: ev.id, cast }] }
   }
   return { ...next, rng: rng.state }
@@ -142,6 +150,6 @@ export function resolveEvent(life: Life, pack: ContentPack, actionId: string, ma
   if (recall && life.memories.some((m) => m.id === recall.memory)) {
     next = { ...next, journal: [...next.journal, { age: life.age, kind: 'memory', text: fill(recall.text, life, pending.cast), changes: [] }] }
   }
-  const done = applyOutcome(next, action.outcomes[tier], pending.cast, MANNER_SCALE[manner.kind](tier), manner.kind === 'calm' ? -2 : 0)
+  const done = applyOutcome(next, action.outcomes[tier], pending.cast, MANNER_SCALE[manner.kind](tier), manner.kind === 'calm' ? -2 : 0, rng)
   return { life: done.life, tier, entry: done.entry, skipped: false }
 }

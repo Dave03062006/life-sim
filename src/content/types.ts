@@ -40,6 +40,7 @@ export interface Outcome {
   money?: number
   closeness?: Partial<Record<string, number>> // role -> change
   memory?: { id: string; text: string } // recorded with the cast's people
+  addPerson?: { relation: 'crush' } // a new crush matching life.interest; skipped when interest is null or none
 }
 export type MannerKind = 'calm' | 'blunt' | 'joke'
 export interface EventAction {

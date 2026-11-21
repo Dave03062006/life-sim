@@ -191,3 +191,22 @@ describe('resolving events', () => {
     expect(() => resolveEvent(lowRep, pack, 'cover', 'shout')).toThrow(/unknown manner/i)
   })
 })
+
+describe('adding a crush', () => {
+  const meet = choice('meet', { actions: [{ id: 'a', label: 'Say hello', chance: 100, outcomes: same(say('You met someone.', { addPerson: { relation: 'crush' } })) }] })
+  const crushes = (life: Life) => life.people.filter((p) => p.relation === 'crush')
+  const meetWith = (interest: Life['interest'], age = 16) => {
+    const life = testLife({ interest, age, pendingEvents: pending('meet') })
+    return resolveEvent(life, packOf([meet]), 'a', 'calm').life
+  }
+  it('adds one crush that matches the interest, near the player in age, at closeness 40', () => {
+    const [crush] = crushes(meetWith('women'))
+    expect(crushes(meetWith('women'))).toHaveLength(1)
+    expect(crush).toMatchObject({ gender: 'female', closeness: 40 })
+    expect(Math.abs(crush!.age - 16)).toBeLessThanOrEqual(1)
+  })
+  it('adds nobody when interest is null or none', () => {
+    expect(crushes(meetWith(null))).toHaveLength(0)
+    expect(crushes(meetWith('none'))).toHaveLength(0)
+  })
+})
