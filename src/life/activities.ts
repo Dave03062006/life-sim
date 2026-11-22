@@ -45,16 +45,16 @@ function check(life: Life, def: ActivityDef): { blocked: string | null; openNote
   }
   if (def.buys && life.belongings.includes(def.buys)) return { blocked: 'You already have one.', openNote: null }
   const price = -(def.money ?? 0)
-  if (price > life.money) return { blocked: `You need ${formatRupiah(price)}. You have ${formatRupiah(life.money)}.`, openNote: null }
+  if (price > 0 && price > life.money) return { blocked: `You need ${formatRupiah(price)}. You have ${formatRupiah(life.money)}.`, openNote: null }
   return { blocked: null, openNote }
 }
 
 const gainOf = (life: Life, def: ActivityDef): number =>
   def.rest !== undefined ? restGain(life, def.rest) : Math.min(def.energyBack ?? 0, life.energySpent)
 
-/** Study activities show only while enrolled; work activities only once you have left school, from 15. */
+/** Study activities show only while enrolled; work activities to anyone with a job, and (closed, with the job reason) to anyone 15+ not enrolled. */
 const onTrack = (life: Life, def: ActivityDef): boolean =>
-  def.track === 'enrolled' ? life.school.at !== null : def.track === 'work' ? life.school.at === null && life.age >= 15 : true
+  def.track === 'enrolled' ? life.school.at !== null : def.track === 'work' ? life.job !== null || (life.school.at === null && life.age >= 15) : true
 
 export function offersFor(life: Life, category: CategoryId, pack: ContentPack): ActivityOffer[] {
   const stage = stageOf(life.age).id

@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { play } from '../../app/sound'
 import { useApp } from '../../app/store'
 import { packFor } from '../../content'
@@ -13,10 +14,12 @@ export function PathPanel({ life, onLayout }: { life: Life; onLayout(): void }) 
   const moves = pathActions(life, packFor(life.country))
   const open = moves.filter((m) => !m.blocked)
   const closed = moves.filter((m) => m.blocked)
-  const status = schoolLabel(life) ?? jobLabel(life) ?? (life.age >= 15 ? 'No job yet' : null)
+  const job = jobLabel(life)
+  const status = schoolLabel(life) ?? (job ? `${job} · performance ${life.job!.performance}` : life.age >= 25 ? 'No job' : life.age >= 15 ? 'No job yet' : null)
+  const heading = useRef<HTMLParagraphElement>(null)
   return (
     <section className="people" aria-label="Your path">
-      {status && <p className="status"><b>{status}</b></p>}
+      {status && <p ref={heading} tabIndex={-1} className="status"><b>{status}</b></p>}
       <div className="opts">
         {open.map((m) => (
           <button
@@ -25,6 +28,7 @@ export function PathPanel({ life, onLayout }: { life: Life; onLayout(): void }) 
             onClick={() => {
               play('tap')
               takePath(m.id)
+              heading.current?.focus() // the pressed button is about to vanish
             }}
           >
             {m.label}

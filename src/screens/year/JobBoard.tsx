@@ -18,7 +18,7 @@ export function JobBoard({ life }: { life: Life }) {
   })
   useEffect(() => {
     ref.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && latest.current()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !asking && latest.current()
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
   }, [asking])

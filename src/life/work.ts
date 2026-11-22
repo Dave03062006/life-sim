@@ -67,7 +67,7 @@ export function workMoves(life: Life, pack: ContentPack): PathAction[] {
   const has = heldIn(life, pack) !== null
   return [
     { id: 'quit', label: 'Quit your job', detail: 'Leave work. You can apply again later.', blocked: has ? null : NO_JOB },
-    { id: 'retire', label: 'Retire', detail: 'Stop working for good.', blocked: life.age < RETIRE_AGE ? `You can retire from ${RETIRE_AGE}.` : has ? null : NO_JOB },
+    { id: 'retire', label: 'Retire', detail: 'Stop working. You can still take a job later.', blocked: life.age < RETIRE_AGE ? `You can retire from ${RETIRE_AGE}.` : has ? null : NO_JOB },
   ]
 }
 
@@ -114,7 +114,7 @@ export function closeWorkYear(life: Life, pack: ContentPack): Life {
     return { ...next, pendingEvents: [...next.pendingEvents, { eventId: 'promotion', cast: {} }] }
   }
   if (job.performance < LET_GO_BELOW) {
-    const text = `You were let go from your job as ${held.step.title}.`
+    const text = `You were let go from your job as ${held.step.title}. Your performance fell too low.`
     const memories = next.memories.some((m) => m.id === 'let-go') ? next.memories : [...next.memories, { id: 'let-go', age: life.age, text, people: [] }]
     return { ...note(next, text), job: null, memories }
   }

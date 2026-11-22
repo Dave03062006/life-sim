@@ -57,4 +57,8 @@ describe('year', () => {
     expect(ageUp(testLife({ age: 39 }), pack).stats.looks).toBe(base.looks - 1)
     expect(ageUp(testLife({ age: 20 }), pack).stats.looks).toBe(base.looks)
   })
+  it('lets you choose a lifestyle during the year you turn 25', () => {
+    const life = ageUp(testLife({ age: 24, ownWay: false }), packFor('indonesia'))
+    expect([life.age, life.ownWay]).toEqual([25, true])
+  })
 })

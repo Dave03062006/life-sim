@@ -161,7 +161,7 @@ export const useApp = create<AppState>()((set, get) => {
     goTitle() {
       const s = get()
       if (s.screen === 'year' && busy(s)) return
-      set({ screen: 'title', roll: null, confirmAbandon: false, openCategory: null })
+      set({ screen: 'title', roll: null, confirmAbandon: false, openCategory: null, jobBoardOpen: false })
     },
     newRoll(seed) {
       let next = seed ?? randomSeed()

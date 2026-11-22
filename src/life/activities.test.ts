@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { packFor } from '../content'
 import { finishActivity, GOOD_SCORE, offersFor, tierOf } from './activities'
 import { testLife } from './testLife'
+import { ageUp } from './year'
 import type { Life } from './types'
 
 const pack = packFor('indonesia')
@@ -116,5 +117,26 @@ describe('activities', () => {
     expect(offer(testLife({ age: 17 }), 'entrance-test').blocked).toBeNull()
     expect(offer(testLife({ age: 16 }), 'entrance-test').blocked).toBe('From age 17.')
     expect(offer(testLife({ age: 19, school: { ...testLife().school, at: null, done: ['tk', 'sd', 'smp'] } }), 'entrance-test').blocked).toBe('Needs SMA, SMK or Paket C.')
+  })
+  it('never blocks a free or earning activity for debt, and keeps them open through years of debt', () => {
+    const debt = testLife({ money: -5_000_000 })
+    for (const id of ['sleep-in', 'warung-shift', 'save-bank', 'join-bpjs']) expect(offer({ ...debt, age: 30 }, id).blocked).toBeNull()
+    expect(offer(debt, 'bimbel').blocked).toBe('You need Rp 250.000. You have −Rp 5.000.000.')
+    let life: Life = { ...debt, age: 30 }
+    for (let i = 0; i < 2; i++) {
+      life = ageUp({ ...life, money: Math.min(life.money, -1000) }, pack)
+      expect(life.money).toBeLessThan(0)
+      expect(offer(life, 'sleep-in').blocked).toBeNull()
+      expect(offer(life, 'warung-shift').blocked).toBeNull()
+    }
+    const free = offersFor({ ...debt, age: 30 }, 'money', pack).filter((o) => (o.def.money ?? 0) >= 0)
+    expect(free.every((o) => !o.blocked?.startsWith('You need'))).toBe(true)
+  })
+  it('shows work activities to a student who holds a job, and closed to a school-leaver without one', () => {
+    const uni = testLife({ age: 19, school: { ...testLife().school, at: 'uni', year: 0, field: 'business', funding: 'self' }, job: { careerId: 'shop', step: 0, performance: 50, years: 0 } })
+    expect(offer(uni, 'extra-hours').blocked).toBeNull()
+    const jobless = testLife({ age: 22, school: { ...testLife().school, at: null } })
+    expect(offer(jobless, 'extra-hours').blocked).toBeTruthy()
+    expect(offersFor({ ...uni, job: null }, 'school', pack).some((o) => o.def.id === 'extra-hours')).toBe(false)
   })
 })

@@ -11,15 +11,19 @@ describe('family', () => {
     const life = testLife({ age: 26, people: [...testLife().people, rani] })
     const wed = marry(life, 'p-4')
     expect(spouse(wed)).toMatchObject({ id: 'p-4', relation: 'spouse', since: 26 })
-    expect(wed.memories).toEqual([{ id: 'married', age: 26, text: 'You married Rani.', people: ['p-4'] }])
+    expect(wed.memories).toEqual([{ id: 'married-p-4', age: 26, text: 'You married Rani.', people: ['p-4'] }])
     expect(spouse(life)).toBeUndefined()
   })
-  it('keeps one married memory and clears no-kids on a new marriage', () => {
-    const old = { id: 'married', age: 20, text: 'You married Tia.', people: ['p-9'] }
+  it('clears no-kids on a new marriage', () => {
+    const old = { id: 'married-p-9', age: 20, text: 'You married Tia.', people: ['p-9'] }
     const life = testLife({ age: 40, memories: [old, { id: 'no-kids', age: 22, text: 'x', people: ['p-9'] }], people: [...testLife().people, rani] })
     const wed = marry(life, 'p-4')
-    expect(wed.memories.map((m) => m.id)).toEqual(['married'])
-    expect(wed.memories[0]).toMatchObject({ age: 40, people: ['p-4'] })
+    expect(wed.memories.map((m) => m.id)).toEqual(['married-p-9', 'married-p-4'])
+  })
+  it('gives a widowed player two marriage memories', () => {
+    const old = { id: 'married-p-9', age: 20, text: 'You married Tia.', people: ['p-9'] }
+    const wed = marry(testLife({ age: 40, memories: [old], people: [...testLife().people, rani] }), 'p-4')
+    expect(wed.memories.map((m) => m.id)).toEqual(['married-p-9', 'married-p-4'])
   })
   it('leaves anyone who is not a partner alone', () => {
     const life = testLife()

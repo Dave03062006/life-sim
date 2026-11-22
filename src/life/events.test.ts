@@ -279,4 +279,12 @@ describe('family events', () => {
     const life = testLife({ pendingEvents: pending('wedding', { them: 'p-4' }) })
     expect(dropStale(life, packOf(real)).pendingEvents).toEqual([])
   })
+  it('gates the paid weddings on money, but always lets you sign the papers', () => {
+    const wedding = real.find((e) => e.id === 'wedding')!
+    const partner = { id: 'p-4', name: 'Rani', relation: 'partner' as const, gender: 'female' as const, age: 25, closeness: 80 }
+    const ids = (money: number) => availableActions(testLife({ age: 26, money, people: [...testLife().people, partner] }), wedding, { them: 'p-4' }).map((o) => o.action.id)
+    expect(ids(1_000_000)).toEqual(['papers'])
+    expect(ids(20_000_000)).toEqual(['small', 'papers'])
+    expect(ids(90_000_000)).toEqual(['small', 'big', 'papers'])
+  })
 })

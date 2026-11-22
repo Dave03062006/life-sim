@@ -47,7 +47,7 @@ describe('work', () => {
   it('lets you go below 20, with the memory', () => {
     const out = closeWorkYear(working({ performance: 25 }), pack) // drifts to 15
     expect(out.job).toBeNull()
-    expect(out.journal.at(-1)?.text).toBe('You were let go from your job as Office clerk.')
+    expect(out.journal.at(-1)?.text).toBe('You were let go from your job as Office clerk. Your performance fell too low.')
     expect(out.memories.map((m) => m.id)).toContain('let-go')
   })
 
@@ -95,5 +95,8 @@ describe('work', () => {
     expect(finishActivity(working(), def('extra-hours'), 0.7).life.job?.performance).toBe(58)
     expect(finishActivity(working(), def('extra-hours'), 0.1).life.job?.performance).toBe(50)
     expect(finishActivity(working(), def('slack-off'), 0.1).life.job?.performance).toBe(45)
+  })
+  it('words the retire move honestly', () => {
+    expect(findMove(working({}, { age: 60 }), 'retire', pack)!.detail).toBe('Stop working. You can still take a job later.')
   })
 })

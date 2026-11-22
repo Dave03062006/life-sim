@@ -4,7 +4,7 @@ import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
 import { deathCause } from './death'
 import { openSchoolYear, closeSchoolYear } from './school'
-import { closeMoneyYear } from './money'
+import { closeMoneyYear, OWN_WAY_AGE } from './money'
 import { closeWorkYear, currentStep } from './work'
 import { peopleDeaths, startingPeople, yearlyPeople } from './people'
 import { applyChanges, roundAway } from './stats'
@@ -81,7 +81,7 @@ export function openYear(life: Life, pack: ContentPack): Life {
     doneThisYear: {},
     journal: text ? [...life.journal, { age, kind: 'milestone', text, changes: [] }] : life.journal,
   })
-  return openSchoolYear({ ...peopleDeaths(aged, rng), rng: rng.state }, pack)
+  return openSchoolYear({ ...peopleDeaths(aged, rng), rng: rng.state, ownWay: life.ownWay || age >= OWN_WAY_AGE }, pack)
 }
 
 export function ageUp(life: Life, pack: ContentPack): Life {

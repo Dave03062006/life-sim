@@ -64,3 +64,34 @@ it('keeps the sheet on Escape and ignores number keys while the board is open, t
   expect(useApp.getState().openCategory).toBe('school')
   expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Job board/ }))
 })
+
+it('shows job performance, and "No job" for an adult without one', async () => {
+  await start(adult({ job: { careerId: 'office', step: 0, performance: 30, years: 0 } }), 'Work')
+  expect(screen.getByText('Office clerk · performance 30')).toBeTruthy()
+  act(() => useApp.setState({ life: adult({ age: 30 }) }))
+  expect(screen.getByText('No job')).toBeTruthy()
+})
+
+it('moves focus to the status line after taking a move', async () => {
+  await start(adult(), 'Work')
+  await userEvent.click(screen.getByRole('button', { name: /^Job board/ }))
+  await userEvent.click(within(screen.getByRole('dialog', { name: /^Job board/ })).getByRole('button', { name: /Shop work/ }))
+  await userEvent.click(within(screen.getByRole('region', { name: 'Your path' })).getByRole('button', { name: /Quit your job/ }))
+  expect(document.activeElement).toBe(within(screen.getByRole('region', { name: 'Your path' })).getByText('No job yet').closest('p'))
+})
+
+it('closes only the confirm on Escape, not the whole job board', async () => {
+  await start(adult({ job: { careerId: 'shop', step: 0, performance: 50, years: 0 } }), 'Work')
+  await userEvent.click(screen.getByRole('button', { name: /^Job board/ }))
+  await userEvent.click(within(screen.getByRole('dialog', { name: /^Job board/ })).getByRole('button', { name: /Office/ }))
+  await userEvent.keyboard('{Escape}')
+  expect(useApp.getState().jobBoardOpen).toBe(true)
+  expect(useApp.getState().life!.job?.careerId).toBe('shop')
+})
+
+it('does not bring the job board back after Title and Continue', async () => {
+  await start(adult(), 'Work')
+  await userEvent.click(screen.getByRole('button', { name: /^Job board/ }))
+  act(() => useApp.getState().goTitle())
+  expect(useApp.getState().jobBoardOpen).toBe(false)
+})

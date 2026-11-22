@@ -665,8 +665,8 @@ const wedding = (text: string, money: number, effects: Outcome['effects']): Tier
 ]
 const weddingEvent: EventDef = {
   ...person('wedding', 'Your wedding with {them}', 'You and {them} are getting married. How do you want to celebrate?', [
-    act('small', 'A small family wedding', 85, wedding('You and {them} held a small family wedding, with warm tea and a lot of aunties.', -15_000_000, { happiness: 6 })),
-    act('big', 'A big wedding for the whole neighbourhood', 85, wedding('You and {them} held a big wedding for the whole neighbourhood, with music and far too much food.', -80_000_000, { happiness: 8, reputation: 5 })),
+    act('small', 'A small family wedding', 85, wedding('You and {them} held a small family wedding, with warm tea and a lot of aunties.', -15_000_000, { happiness: 6 }), { open: { condition: { kind: 'money', min: 15_000_000 }, note: 'Open to you: you have the money saved' } }),
+    act('big', 'A big wedding for the whole neighbourhood', 85, wedding('You and {them} held a big wedding for the whole neighbourhood, with music and far too much food.', -80_000_000, { happiness: 8, reputation: 5 }), { open: { condition: { kind: 'money', min: 80_000_000 }, note: 'Open to you: you have the money saved' } }),
     act('papers', 'Just sign the papers', 85, wedding('You and {them} signed the papers on a quiet morning. It felt exactly right.', 0, { happiness: 3 })),
   ]),
   stages: ['young-adult', 'adult', 'senior'],
@@ -751,8 +751,8 @@ const family: EventDef[] = [
   },
   {
     id: 'child-funny', kind: 'news', stages: FAMILY_STAGES, weight: 2, cast: { child: 'child' },
-    title: '{child} is funny', text: 'Something {child} said today is going to be told at every family dinner.',
-    news: { text: '{child} told a joke at dinner that had the whole table laughing, even the aunties.', effects: { happiness: 2 }, closeness: { child: 3 } },
+    title: '{child} is funny', text: 'Something {child} did today is going to be told at every family dinner.',
+    news: { text: '{child} made the whole table laugh at dinner, even the aunties.', effects: { happiness: 2 }, closeness: { child: 3 } },
   },
 ]
 

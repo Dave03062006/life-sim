@@ -13,7 +13,7 @@ import { ageUp, newLife } from '../life/year'
 const MAX_AGE = 130
 const MAX_PLAYS = 50 // zero-cost activities (skip class, save at the bank) never spend energy; stop a year that only finds those
 
-export interface SimLife { life: Life; jobAt30: boolean; moneyAt40: number | null; offered: Set<string> }
+export interface SimLife { life: Life; jobAt30: boolean; moneyAt40: number | null; offered: Set<string>; stuck: string[] }
 
 /** Plays one random life from birth to death: the balance guard for the death odds and the content. */
 export function simulateLife(seed: number, pack: ContentPack): SimLife {
@@ -21,6 +21,7 @@ export function simulateLife(seed: number, pack: ContentPack): SimLife {
   const { name, gender, city, wealth } = rollLife(seed)
   let life = drawEvents(newLife({ seed, name, gender, city, wealth, startAge: 0 }), pack)
   const offered = new Set<string>()
+  const stuck: string[] = []
   let jobAt30 = false
   let moneyAt40: number | null = null
   while (!life.death) {
@@ -47,6 +48,7 @@ export function simulateLife(seed: number, pack: ContentPack): SimLife {
     }
     if (life.age >= 60 && life.job && rng.next() < 0.3 && !findMove(life, 'retire', pack)!.blocked) life = takePath(life, 'retire', pack)
     for (const c of stageOf(life.age).categories) for (const o of offersFor(life, c, pack)) if (!o.blocked) offered.add(o.def.id)
+    if (!stageOf(life.age).categories.some((c) => offersFor(life, c, pack).some((o) => !o.blocked))) stuck.push(`seed ${seed} age ${life.age}`) // the game must never leave nothing to do
     if (life.age === 30) jobAt30 = life.job !== null
     if (life.age === 40) moneyAt40 = life.money
     for (let plays = 0; plays < MAX_PLAYS && energyLeft(life) > 0; plays++) {
@@ -59,5 +61,5 @@ export function simulateLife(seed: number, pack: ContentPack): SimLife {
     life = ageUp(life, pack)
     if (!life.death) life = drawEvents(life, pack)
   }
-  return { life, jobAt30, moneyAt40, offered }
+  return { life, jobAt30, moneyAt40, offered, stuck }
 }
