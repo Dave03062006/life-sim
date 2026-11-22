@@ -5,8 +5,10 @@ import type { Gender, Life, Person } from './types'
 
 export const MAX_FRIENDS = 8
 
-const idNumber = (p: Person) => Number(p.id.slice(2))
-const nextId = (people: Person[]) => `p-${Math.max(0, ...people.map(idNumber)) + 1}`
+const nextId = (ids: string[]) => `p-${Math.max(0, ...ids.map((id) => Number(id.slice(2)))) + 1}`
+const ids = (people: Person[]) => people.map((p) => p.id)
+/** Every id this life has used: the living, plus the dead and gone still named in memories and the journal. */
+const usedIds = (life: Life) => [...ids(life.people), ...life.memories.flatMap((m) => m.people), ...life.journal.flatMap((e) => e.people?.map((p) => p.id) ?? [])]
 
 export function newFamily(rng: Rng, playerAge: number, names: NameLists, playerName = ''): Person[] {
   const taken = new Set(playerName.split(' '))
@@ -15,7 +17,7 @@ export function newFamily(rng: Rng, playerAge: number, names: NameLists, playerN
     const free = names[gender].filter((n) => !taken.has(n))
     const name = rng.pick(free)
     taken.add(name)
-    people.push({ id: nextId(people), name, relation, gender, age, closeness })
+    people.push({ id: nextId(ids(people)), name, relation, gender, age, closeness })
     return age
   }
   const roll = (min: number, max: number) => rng.int(min, max + 1)
@@ -40,7 +42,7 @@ export function startingFriend(rng: Rng, playerAge: number, names: NameLists, ge
   if (playerAge < 12) return null
   const taken = new Set([...playerName.split(' '), ...existing.map((p) => p.name)])
   const name = rng.pick(names[gender].filter((n) => !taken.has(n)))
-  return { id: nextId(existing), name, relation: 'friend', gender, age: playerAge, closeness: 60 }
+  return { id: nextId(ids(existing)), name, relation: 'friend', gender, age: playerAge, closeness: 60 }
 }
 
 /** The family, plus a first friend from age 12; the draws that follow the stat rolls. */
@@ -53,7 +55,7 @@ export function startingPeople(rng: Rng, age: number, gender: Gender, name: stri
 const clamp = (n: number) => Math.min(100, Math.max(0, n))
 
 export function addPerson(life: Life, person: Person): Life {
-  const people = [...life.people, { ...person, id: nextId(life.people), closeness: clamp(person.closeness) }]
+  const people = [...life.people, { ...person, id: nextId(usedIds(life)), closeness: clamp(person.closeness) }]
   const friends = life.people.filter((p) => p.relation === 'friend') // the newcomer never drifts away
   if (person.relation !== 'friend' || friends.length < MAX_FRIENDS) return { ...life, people }
   const least = friends.reduce((a, b) => (b.closeness < a.closeness ? b : a))

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { NAMES } from '../content/countries/indonesia/names'
 import { createRng } from '../engine/random'
-import { addPerson, changeCloseness, MAX_FRIENDS, newFamily, personById, startingFriend, yearlyPeople } from './people'
+import { addPerson, changeCloseness, MAX_FRIENDS, newFamily, peopleDeaths, personById, startingFriend, yearlyPeople } from './people'
 import { testLife } from './testLife'
 import type { Person } from './types'
 
@@ -44,6 +44,18 @@ describe('people', () => {
 
   it('numbers a new person one past the highest id', () => {
     expect(addPerson(testLife(), friend(50)).people.at(-1)!.id).toBe('p-4')
+  })
+
+  it('never reuses the id of someone who died', () => {
+    const sri: Person = { id: 'p-4', name: 'Sri', relation: 'grandparent', gender: 'female', age: 95, closeness: 60 }
+    // seed 7's first draw is 0.012, under the 0.3 odds at 95
+    let life = peopleDeaths(testLife({ people: [sri, ...testLife().people] }), createRng(7))
+    expect(personById(life, 'p-4')).toBeUndefined()
+    life = addPerson(life, friend(50))
+    expect(life.people.at(-1)!.id).toBe('p-5')
+    life = peopleDeaths({ ...life, people: [{ ...sri, id: 'p-5' }] }, createRng(7))
+    life = peopleDeaths(addPerson(life, { ...sri, id: '' }), createRng(7))
+    expect(life.memories.map((m) => m.id)).toEqual(['death-p-4', 'death-p-5', 'death-p-6'])
   })
 
   it('clamps closeness and ignores unknown people', () => {
