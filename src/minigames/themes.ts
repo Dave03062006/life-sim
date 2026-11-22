@@ -13,6 +13,8 @@ export interface Theme {
   pads?: [string, string, string, string]
   /** Where Quiz draws its questions; default the general bank. */
   quiz?: QuizSource
+  /** How many questions Quiz asks; default 5. */
+  count?: number
   /** Labels on Catch's falling items; default Good and Bad. */
   catchItems?: { good: string; bad: string }
   /** Plain lowercase words Typing draws from (at least 8); default a general list. `words` is taken by the result words. */
@@ -44,6 +46,7 @@ export const THEMES: Record<string, Theme> = {
   'evening-class': { pads: ['Read', 'Note', 'Ask', 'Review'] },
   'read-ahead': { pads: ['Title', 'Page', 'Picture', 'Word'] },
   tutor: { quiz: { kind: 'arithmetic' } },
+  'entrance-test': { quiz: { kind: 'bank', subjects: ['maths', 'science', 'english', 'indonesia', 'general'] }, count: 10 },
 }
 
 export const wordFor = (theme: string, tier: ResultTier): string => THEMES[theme]?.words?.[tier] ?? WORDS[tier]

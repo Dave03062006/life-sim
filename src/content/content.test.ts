@@ -11,8 +11,19 @@ const pack = packFor('indonesia')
 const lateTeen = pack.activities.filter((a) => a.stages.includes('late-teen'))
 
 describe('indonesia content', () => {
-  it('offers 44 late-teen activities, at least four in every category', () => {
-    expect(lateTeen).toHaveLength(44)
+  it('defines the SMP fork and the entrance test', () => {
+    const fork = pack.events.find((e) => e.id === 'after-smp')!
+    expect(fork.weight).toBe(0)
+    expect(fork.actions!.map((a) => a.label)).toEqual(['Go on to SMA', 'Go on to SMK', 'Start working'])
+    const paths = fork.actions!.map((a) => [...new Set(Object.values(a.outcomes).map((o) => o.path))])
+    expect(paths).toEqual([['sma'], ['smk'], ['leave-school']])
+    const test = pack.activities.find((a) => a.id === 'entrance-test')!
+    expect(test).toMatchObject({ sets: 'passed-entrance', energy: 3, minigame: { type: 'quiz', theme: 'entrance-test' } })
+    expect(THEMES['entrance-test']?.count).toBe(10)
+    expect(questionsFor(THEMES['entrance-test']!.quiz!, 1, 10)).toHaveLength(10)
+  })
+  it('offers 45 late-teen activities, at least four in every category', () => {
+    expect(lateTeen).toHaveLength(45)
     for (const c of stageOf(16).categories) {
       expect({ c, ok: lateTeen.filter((a) => a.category === c).length >= 4 }).toEqual({ c, ok: true })
     }

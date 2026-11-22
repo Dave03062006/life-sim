@@ -2,7 +2,7 @@ import { energyBudget, energyLeft } from '../../life/energy'
 import { stageOf } from '../../life/stages'
 import type { CategoryId, Life } from '../../life/types'
 import { Icon } from '../../ui/Icon'
-import { CATEGORY } from './labels'
+import { categoryLabel } from './labels'
 
 const energyText = (left: number, budget: number) => (left > 0 ? `${left} of ${budget} left` : left === 0 ? 'None left' : `${-left} over`)
 
@@ -28,7 +28,7 @@ export function Dock({ life, open, onToggle, onAgeUp }: DockProps) {
   const cat = (id: CategoryId) => (
     <button key={id} className="cat" aria-pressed={open === id} onClick={() => onToggle(id)}>
       <Icon id={`cat-${id}`} fallback="cat-school" />
-      {CATEGORY[id].label}
+      {categoryLabel(life, id)}
     </button>
   )
   return (

@@ -2,7 +2,7 @@ import type { CategoryId, StageId, StatKey } from '../../../life/types'
 import type { ActivityDef, MinigameType, Requirement } from '../../types'
 
 type Fx = Partial<Record<StatKey, number>>
-type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages'>>
+type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages' | 'track' | 'sets'>>
 
 const FAIL: Partial<Record<CategoryId, Fx>> = {
   body: { health: -3 },
@@ -52,12 +52,16 @@ export const wider: Record<string, StageId[]> = {
 }
 
 const base: ActivityDef[] = [
-  a('study-exam', 'school', 'Study for the exam', 'Hit the books before semester exams. Builds Smarts.', 'quiz', 2, 0, { smarts: 5, stress: 3 }, 'You studied hard for the semester exam.'),
-  a('homework', 'school', 'Do your homework', 'Keep up with assignments. A little Smarts and a calmer head.', 'typing', 1, 0, { smarts: 2, stress: -1 }, 'You handed in your homework on time, for once.'),
-  a('osis', 'school', 'Run for OSIS', 'Campaign for a seat on the student council.', 'tapping', 2, 0, { reputation: 6, stress: 2 }, 'You campaigned for a seat on OSIS.', { requires: [stat('reputation', 'Reputation')] }),
-  a('group-project', 'school', 'Group project', 'Build a science poster with classmates. Smarts and friendships.', 'memory', 2, 0, { smarts: 3, happiness: 2 }, 'Your group finished the science project.'),
-  a('bimbel', 'school', 'Bimbel after school', 'Paid tutoring for the university entrance test. Big Smarts.', 'quiz', 2, -250000, { smarts: 8, stress: 4 }, 'You went to bimbel three evenings a week.'),
-  a('skip-class', 'school', 'Skip class', 'Slip out early. You get an hour back, and you might get caught.', 'timing', 0, 0, { happiness: 3, reputation: -3, smarts: -1 }, 'You skipped class. A teacher saw you at the gate.', { energyBack: 1 }),
+  a('study-exam', 'school', 'Study for the exam', 'Hit the books before semester exams. Builds Smarts.', 'quiz', 2, 0, { smarts: 5, stress: 3 }, 'You studied hard for the semester exam.', { track: 'enrolled' }),
+  a('homework', 'school', 'Do your homework', 'Keep up with assignments. A little Smarts and a calmer head.', 'typing', 1, 0, { smarts: 2, stress: -1 }, 'You handed in your homework on time, for once.', { track: 'enrolled' }),
+  a('osis', 'school', 'Run for OSIS', 'Campaign for a seat on the student council.', 'tapping', 2, 0, { reputation: 6, stress: 2 }, 'You campaigned for a seat on OSIS.', { requires: [stat('reputation', 'Reputation')], track: 'enrolled' }),
+  a('group-project', 'school', 'Group project', 'Build a science poster with classmates. Smarts and friendships.', 'memory', 2, 0, { smarts: 3, happiness: 2 }, 'Your group finished the science project.', { track: 'enrolled' }),
+  a('bimbel', 'school', 'Bimbel after school', 'Paid tutoring for the university entrance test. Big Smarts.', 'quiz', 2, -250000, { smarts: 8, stress: 4 }, 'You went to bimbel three evenings a week.', { track: 'enrolled' }),
+  a('skip-class', 'school', 'Skip class', 'Slip out early. You get an hour back, and you might get caught.', 'timing', 0, 0, { happiness: 3, reputation: -3, smarts: -1 }, 'You skipped class. A teacher saw you at the gate.', { energyBack: 1, track: 'enrolled' }),
+  a('entrance-test', 'school', 'Take the entrance test', 'The university entrance exam, ten questions. Pass it to apply for a place.', 'quiz', 3, 0, { smarts: 2 }, 'You sat the entrance test and walked out with a headache.', {
+    stages: [LT, YA, AD, SE], sets: 'passed-entrance',
+    requires: [{ kind: 'min-age', age: 17, reason: 'From age 17.' }, { kind: 'school', levels: ['sma', 'smk', 'paket-c'], reason: 'Needs SMA, SMK or Paket C.' }],
+  }),
   a('library', 'mind', 'Read at the library', 'Novels and history books from the city library.', 'memory', 1, 0, { smarts: 3, stress: -1 }, 'You spent quiet afternoons at the city library.'),
   a('english', 'mind', 'Practise English', 'Podcasts and subtitles. Opens better jobs later.', 'typing', 1, 0, { smarts: 3 }, 'Your English got noticeably better.'),
   a('code', 'mind', 'Learn to code', 'Free tutorials on an old laptop. Smarts, and a way into tech.', 'typing', 2, 0, { smarts: 5, stress: 2 }, 'You wrote your first working program.'),
@@ -133,8 +137,8 @@ const base: ActivityDef[] = [
   a('play-outside', 'fun', 'Play outside', 'Marbles, tag and muddy knees.', '', 1, 0, { happiness: 3, health: 1 }, 'You played outside until the call to come in.', { stages: [SC, CH] }),
   a('brush-teeth', 'health', 'Brush your teeth', 'Two minutes, morning and night.', '', 1, 0, { health: 2, looks: 1 }, 'You brushed your teeth without being asked. Once.', { stages: [SC, CH] }),
   // Children and early teens
-  a('class-test', 'school', 'Study for the class test', 'Revise the basics before the ulangan.', 'quiz', 2, 0, { smarts: 4, stress: 2 }, 'You studied for the class test.', { stages: [CH, ET] }),
-  a('read-ahead', 'school', 'Read ahead', 'Peek at next week’s chapter.', 'memory', 1, 0, { smarts: 2 }, 'You read ahead and felt very clever.', { stages: [CH, ET] }),
+  a('class-test', 'school', 'Study for the class test', 'Revise the basics before the ulangan.', 'quiz', 2, 0, { smarts: 4, stress: 2 }, 'You studied for the class test.', { stages: [CH, ET], track: 'enrolled' }),
+  a('read-ahead', 'school', 'Read ahead', 'Peek at next week’s chapter.', 'memory', 1, 0, { smarts: 2 }, 'You read ahead and felt very clever.', { stages: [CH, ET], track: 'enrolled' }),
   a('uks', 'health', 'Visit the school health room', 'A plaster, a rest and a cup of tea.', '', 1, 0, { health: 2, stress: -1 }, 'You visited the UKS and lay down for a while.', { stages: [CH, ET, LT] }),
   // Grown-ups
   a('evening-class', 'school', 'Take an evening class', 'Learn something new after work.', 'memory', 2, 0, { smarts: 3, stress: 1 }, 'You went to an evening class and kept up.', { stages: GROWN }),

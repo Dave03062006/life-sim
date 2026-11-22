@@ -51,10 +51,14 @@ function check(life: Life, def: ActivityDef): { blocked: string | null; openNote
 const gainOf = (life: Life, def: ActivityDef): number =>
   def.rest !== undefined ? restGain(life, def.rest) : Math.min(def.energyBack ?? 0, life.energySpent)
 
+/** Study activities show only while enrolled; work activities only once you have left school, from 15. */
+const onTrack = (life: Life, def: ActivityDef): boolean =>
+  def.track === 'enrolled' ? life.school.at !== null : def.track === 'work' ? life.school.at === null && life.age >= 15 : true
+
 export function offersFor(life: Life, category: CategoryId, pack: ContentPack): ActivityOffer[] {
   const stage = stageOf(life.age).id
   return pack.activities
-    .filter((d) => d.category === category && d.stages.includes(stage))
+    .filter((d) => d.category === category && d.stages.includes(stage) && onTrack(life, d))
     .map((def) => ({
       def,
       timesDone: life.doneThisYear[def.id] ?? 0,
@@ -118,6 +122,8 @@ export function finishActivity(life: Life, def: ActivityDef, score: number, pers
         ...life.people.filter((p) => def.together?.includes(p.relation)).map((p): [string, number] => [p.id, nudge(TOGETHER_CLOSENESS, 0)]),
       ]
   let after = next
+  if (def.sets && (tier === 'good' || tier === 'great') && !after.flags.includes(def.sets)) after = { ...after, flags: [...after.flags, def.sets] }
+  if (def.track === 'enrolled' && life.school.at !== null) after = { ...after, school: { ...after.school, effort: after.school.effort + TIER_SCALE[tier] } }
   const moved: { id: string; delta: number }[] = []
   for (const [id, delta] of company) {
     const nudged = nudgeCloseness(after, id, delta)

@@ -4,9 +4,8 @@ import { STEP, type GameRules, type Modifiers } from '../framework'
 import { THEMES } from '../themes'
 import { questionsFor } from './questions'
 
-const COUNT = 5
 const PAUSE = Math.round(0.6 / STEP)
-export interface QuizView { index: number; total: 5; prompt: string; choices: string[]; picked: number | null; correct: number; timeLeft: number; timeTotal: number; done: boolean }
+export interface QuizView { index: number; total: number; prompt: string; choices: string[]; picked: number | null; correct: number; timeLeft: number; timeTotal: number; done: boolean }
 export interface QuizState {
   mods: Modifiers
   questions: QuizQuestion[]
@@ -16,18 +15,20 @@ export interface QuizState {
   pause: number // steps left in the pause after an answer
 }
 
-const totalSteps = (m: Modifiers) => Math.round((20 * m.time * m.preview) / STEP)
-const isDone = (s: QuizState) => s.answers.length >= COUNT || s.steps >= totalSteps(s.mods)
-const showingAnswer = (s: QuizState) => s.pause > 0 || s.answers.length >= COUNT
-const current = (s: QuizState) => (showingAnswer(s) ? s.answers.length - 1 : Math.min(s.answers.length, COUNT - 1))
+const count = (s: QuizState) => s.questions.length
+// four seconds a question: 20 for the usual five
+const totalSteps = (s: QuizState) => Math.round((4 * count(s) * s.mods.time * s.mods.preview) / STEP)
+const isDone = (s: QuizState) => s.answers.length >= count(s) || s.steps >= totalSteps(s)
+const showingAnswer = (s: QuizState) => s.pause > 0 || s.answers.length >= count(s)
+const current = (s: QuizState) => (showingAnswer(s) ? s.answers.length - 1 : Math.min(s.answers.length, count(s) - 1))
 const correctAt = (s: QuizState, i: number) => s.shown[i]!.indexOf(s.questions[i]!.answer)
-const left = (s: QuizState) => Math.max(0, totalSteps(s.mods) - s.steps)
+const left = (s: QuizState) => Math.max(0, totalSteps(s) - s.steps)
 
 export const quiz: GameRules<QuizState, QuizView> = {
   type: 'quiz',
   input: 'keys',
   start(mods, seed, theme = '') {
-    const questions = questionsFor(THEMES[theme]?.quiz ?? { kind: 'bank', subjects: ['general'] }, seed, COUNT)
+    const questions = questionsFor(THEMES[theme]?.quiz ?? { kind: 'bank', subjects: ['general'] }, seed, THEMES[theme]?.count ?? 5)
     const rng = createRng(seed ^ 0x9e3779b9) // a stream apart from the one that drew the questions
     const shown = questions.map((q) => {
       const all = [0, 1, 2, 3]
@@ -55,19 +56,19 @@ export const quiz: GameRules<QuizState, QuizView> = {
     const q = s.questions[i]!
     return {
       index: i,
-      total: COUNT,
+      total: count(s),
       prompt: q.prompt,
       choices: s.shown[i]!.map((c) => q.choices[c]!),
       picked: showingAnswer(s) ? s.answers[i]! : null,
       correct: correctAt(s, i),
       timeLeft: left(s) * STEP,
-      timeTotal: totalSteps(s.mods) * STEP,
+      timeTotal: totalSteps(s) * STEP,
       done: isDone(s),
     }
   },
   done: isDone,
   score(s) {
     const correct = s.answers.filter((a, i) => a === correctAt(s, i)).length
-    return (0.9 * correct) / COUNT + (correct > 0 ? (0.1 * left(s)) / totalSteps(s.mods) : 0)
+    return (0.9 * correct) / count(s) + (correct > 0 ? (0.1 * left(s)) / totalSteps(s) : 0)
   },
 }

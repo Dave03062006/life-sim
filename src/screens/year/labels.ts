@@ -1,4 +1,4 @@
-import type { CategoryId, Interest, Person, StageId } from '../../life/types'
+import type { CategoryId, Interest, Life, Person, StageId } from '../../life/types'
 
 export const CATEGORY: Record<CategoryId, { label: string; blurb: string }> = {
   school: { label: 'School', blurb: 'Classes, exams and clubs. This becomes Work once you leave school.' },
@@ -10,6 +10,10 @@ export const CATEGORY: Record<CategoryId, { label: string; blurb: string }> = {
   fun: { label: 'Fun', blurb: 'Play, music and going out. Happiness up, Stress down.' },
   rest: { label: 'Rest', blurb: 'Rest gives energy back. Each rest this year restores less than the one before.' },
 }
+
+/** School becomes Work once you leave it. */
+export const categoryLabel = (life: Life, category: CategoryId): string =>
+  category === 'school' && life.school.at === null ? 'Work' : CATEGORY[category].label
 
 // shortcut: Indonesian school names for every country; move into the content pack when a second country arrives.
 export const STAGE_LABEL: Record<StageId, string> = {

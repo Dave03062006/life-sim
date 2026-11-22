@@ -3,6 +3,7 @@ import { NAMES } from '../content/countries/indonesia/names'
 import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
 import { deathCause } from './death'
+import { openSchoolYear, closeSchoolYear } from './school'
 import { peopleDeaths, startingPeople, yearlyPeople } from './people'
 import { applyChanges, roundAway } from './stats'
 import type { Change, Gender, Life, Wealth } from './types'
@@ -52,13 +53,14 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
 
 const towardFifty = (value: number): number => roundAway((50 - value) * 0.1)
 
-export function ageUp(life: Life, pack: ContentPack): Life {
+/** The year ends: school's report card now, work and money settle here in later tasks. */
+export function closeYear(life: Life, _pack: ContentPack): Life {
+  return closeSchoolYear(life)
+}
+
+/** The next year begins: a year older, the yearly changes, people, then school. */
+export function openYear(life: Life, pack: ContentPack): Life {
   const rng = createRng(life.rng)
-  const cause = deathCause(life, rng)
-  if (cause) {
-    const entry = { age: life.age, kind: 'milestone' as const, text: `You died at ${life.age}. ${cause}.`, changes: [] }
-    return { ...life, rng: rng.state, death: { age: life.age, cause }, journal: [...life.journal, entry] }
-  }
   const age = life.age + 1
   const { happiness, reputation } = life.stats
   const changes: Change[] = [
@@ -77,5 +79,16 @@ export function ageUp(life: Life, pack: ContentPack): Life {
     doneThisYear: {},
     journal: text ? [...life.journal, { age, kind: 'milestone', text, changes: [] }] : life.journal,
   })
-  return { ...peopleDeaths(aged, rng), rng: rng.state }
+  return openSchoolYear({ ...peopleDeaths(aged, rng), rng: rng.state }, pack)
+}
+
+export function ageUp(life: Life, pack: ContentPack): Life {
+  const closed = closeYear(life, pack)
+  const rng = createRng(closed.rng)
+  const cause = deathCause(closed, rng)
+  if (cause) {
+    const entry = { age: closed.age, kind: 'milestone' as const, text: `You died at ${closed.age}. ${cause}.`, changes: [] }
+    return { ...closed, rng: rng.state, death: { age: closed.age, cause }, journal: [...closed.journal, entry] }
+  }
+  return openYear({ ...closed, rng: rng.state }, pack)
 }

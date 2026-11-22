@@ -99,4 +99,22 @@ describe('activities', () => {
     expect(ate.life.spentWith).toEqual(['p-1', 'p-2', 'p-4'])
     expect(ate.life.people[2]!.closeness).toBe(60) // a friend is not family
   })
+  it('adds study effort by result, only for enrolled activities, and sets a flag on a good result', () => {
+    expect(finishActivity(testLife(), act('homework'), GOOD_SCORE).life.school.effort).toBe(1)
+    expect(finishActivity(testLife(), act('homework'), 0.3).life.school.effort).toBe(0.5)
+    expect(finishActivity(testLife(), act('homework'), 0.1).life.school.effort).toBe(0)
+    expect(finishActivity(testLife(), act('jog'), GOOD_SCORE).life.school.effort).toBe(0)
+    expect(finishActivity(testLife({ age: 17 }), act('entrance-test'), GOOD_SCORE).life.flags).toEqual(['passed-entrance'])
+    expect(finishActivity(testLife({ age: 17 }), act('entrance-test'), 0.3).life.flags).toEqual([])
+  })
+  it('shows study activities only while enrolled', () => {
+    const out = testLife({ school: { ...testLife().school, at: null } })
+    expect(offersFor(testLife(), 'school', pack).some((o) => o.def.id === 'homework')).toBe(true)
+    expect(offersFor(out, 'school', pack).some((o) => o.def.id === 'homework')).toBe(false)
+  })
+  it('opens the entrance test from 17, with SMA, SMK or Paket C', () => {
+    expect(offer(testLife({ age: 17 }), 'entrance-test').blocked).toBeNull()
+    expect(offer(testLife({ age: 16 }), 'entrance-test').blocked).toBe('From age 17.')
+    expect(offer(testLife({ age: 19, school: { ...testLife().school, at: null, done: ['tk', 'sd', 'smp'] } }), 'entrance-test').blocked).toBe('Needs SMA, SMK or Paket C.')
+  })
 })

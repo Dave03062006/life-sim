@@ -1,6 +1,7 @@
 import type { Condition, ContentPack, EventAction, EventDef, MannerKind, Outcome } from '../content/types'
 import { createRng, type Rng } from '../engine/random'
 import { NAMES } from '../content/countries/indonesia/names'
+import { pathActions, takePath } from './path'
 import { addPerson, nudgeCloseness, personById } from './people'
 import { stageOf } from './stages'
 import { applyChanges, roundAway } from './stats'
@@ -158,6 +159,9 @@ export function resolveEvent(life: Life, pack: ContentPack, actionId: string, ma
   if (recall && life.memories.some((m) => m.id === recall.memory)) {
     next = { ...next, journal: [...next.journal, { age: life.age, kind: 'memory', text: fill(recall.text, life, pending.cast), changes: [] }] }
   }
-  const done = applyOutcome(next, action.outcomes[tier], pending.cast, MANNER_SCALE[manner.kind](tier), manner.kind === 'calm' ? -2 : 0, rng)
-  return { life: done.life, tier, entry: done.entry, skipped: false }
+  const outcome = action.outcomes[tier]
+  const done = applyOutcome(next, outcome, pending.cast, MANNER_SCALE[manner.kind](tier), manner.kind === 'calm' ? -2 : 0, rng)
+  const move = outcome.path
+  const moved = move && pathActions(done.life, pack).some((a) => a.id === move && !a.blocked) ? takePath(done.life, move, pack) : done.life // a blocked move is skipped
+  return { life: moved, tier, entry: done.entry, skipped: false }
 }

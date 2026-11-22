@@ -64,6 +64,15 @@ describe('quiz', () => {
     s = quiz.step(s, [{ kind: 'pointer', phase: 'down', x: 0, y: 0 }, { kind: 'choose', option: 7 }])
     expect(quiz.view(s).picked).toBeNull()
   })
+  it('asks ten questions when the theme says so, and scores out of ten', () => {
+    let s = quiz.start(NO_MODIFIERS, 5, 'entrance-test')
+    expect(s.questions).toHaveLength(10)
+    expect(quiz.view(s).total).toBe(10)
+    for (let i = 0; i < 10; i++) s = answer(s, i < 5)
+    expect(quiz.done(s)).toBe(true)
+    expect(quiz.score(s)).toBeGreaterThan(0.45)
+    expect(quiz.score(s)).toBeLessThan(0.55)
+  })
   it('uses general questions for an unknown theme', () => {
     expect(quiz.start(NO_MODIFIERS, 5, 'nope').questions.every((q) => q.subject === 'general')).toBe(true)
   })

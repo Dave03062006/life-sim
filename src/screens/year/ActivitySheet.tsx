@@ -5,7 +5,7 @@ import { type ActivityOffer, offersFor } from '../../life/activities'
 import { formatRupiah } from '../../life/format'
 import type { CategoryId, Life } from '../../life/types'
 import { Icon } from '../../ui/Icon'
-import { CATEGORY } from './labels'
+import { CATEGORY, categoryLabel } from './labels'
 import { PeopleList } from './PeopleList'
 
 function chips(offer: ActivityOffer): { text: string; tone?: 'up' | 'down' }[] {
@@ -65,7 +65,8 @@ interface SheetProps {
 export function ActivitySheet({ life, category, onBegin, onClose, onHeight }: SheetProps) {
   const sheet = useRef<HTMLElement>(null)
   const offers = offersFor(life, category, packFor(life.country))
-  const { label, blurb } = CATEGORY[category]
+  const { blurb } = CATEGORY[category]
+  const label = categoryLabel(life, category)
 
   const measure = useCallback(() => onHeight(sheet.current?.offsetHeight ?? 0), [onHeight])
   useLayoutEffect(() => measure(), [category, offers.length, measure])

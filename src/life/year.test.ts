@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { packFor } from '../content'
 import { testLife } from './testLife'
-import { ageUp, newLife } from './year'
+import { ageUp, closeYear, newLife } from './year'
 
 describe('year', () => {
   it('rolls the same life from the same seed, inside the starting ranges', () => {
@@ -32,18 +32,21 @@ describe('year', () => {
 
   it('ages up with the yearly changes and a clean year', () => {
     const pack = packFor('indonesia')
-    const next = ageUp(testLife({ energySpent: 7, restsThisYear: 2, doneThisYear: { jog: 1 } }), pack)
+    const next = ageUp(testLife({ energySpent: 7, restsThisYear: 2, doneThisYear: { jog: 1 }, school: { ...testLife().school, at: null } }), pack)
     expect([next.age, next.stats.stress, next.stats.happiness, next.stats.reputation]).toEqual([17, 25, 69, 61])
     expect([next.energySpent, next.restsThisYear, next.doneThisYear]).toEqual([0, 0, {}])
     expect(next.journal.at(-1)).toMatchObject({ age: 17, kind: 'milestone' })
     expect(next.journal.at(-1)?.text).toContain('KTP')
   })
 
-  it('ends a dying life at its current age, with nothing else that year', () => {
+  it('closes the school year before the death check, so a dying life gets its last report card', () => {
     const pack = packFor('indonesia')
     const life = testLife({ stats: { ...testLife().stats, health: 0 }, energySpent: 5 })
     const next = ageUp(life, pack)
-    expect(next).toEqual({ ...life, rng: next.rng, death: { age: 16, cause: 'Health gave out' }, journal: [{ age: 16, kind: 'milestone', text: 'You died at 16. Health gave out.', changes: [] }] })
+    expect(next.death).toEqual({ age: 16, cause: 'Health gave out' })
+    expect(next.age).toBe(16)
+    expect(next.journal.map((j) => j.text)).toEqual([expect.stringContaining('Your report card'), 'You died at 16. Health gave out.'])
+    expect(closeYear(life, pack).journal).toHaveLength(1)
   })
 
   it('wears the body down with age', () => {

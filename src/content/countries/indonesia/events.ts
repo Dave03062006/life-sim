@@ -656,4 +656,27 @@ const people: EventDef[] = [
   ]),
 ]
 
-export const events: EventDef[] = [...choices, ...news, ...lifeNews, ...lifeChoices, ...people]
+// Queued by school.ts when SMP ends, never drawn at random; each outcome carries the path move it takes.
+const fork = (path: string, ...texts: [string, string, string]): Tiers =>
+  texts.map((text) => o(text, { path })) as Tiers
+const afterSmp: EventDef = {
+  id: 'after-smp', kind: 'choice', stages: ['early-teen', 'late-teen'], weight: 0,
+  title: 'What comes after SMP?',
+  text: 'SMP is behind you, and everyone has an opinion about what comes next. Your mother says SMA, your uncle says SMK, and the neighbour says to start earning.',
+  actions: [
+    act('sma', 'Go on to SMA', 60, fork('sma',
+      'You chose SMA and bought a bag of new pens.',
+      'You chose SMA, and everyone nodded as if they had known all along.',
+      'You chose SMA. The first-day nerves lasted until lunch.')),
+    act('smk', 'Go on to SMK', 60, fork('smk',
+      'You chose SMK and picked a workshop that smells of sawdust.',
+      'You chose SMK, and your uncle looked very pleased.',
+      'You chose SMK. The uniform is stiff, but you will grow into it.')),
+    act('work', 'Start working', 60, fork('leave-school',
+      'You chose to work. A small pay packet beats a long summer holiday.',
+      'You chose to work, and the neighbour finally stopped giving advice.',
+      'You chose to work. It will not be easy, but it is yours.')),
+  ],
+}
+
+export const events: EventDef[] = [...choices, ...news, ...lifeNews, ...lifeChoices, ...people, afterSmp]
