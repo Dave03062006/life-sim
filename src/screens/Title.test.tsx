@@ -80,3 +80,13 @@ it('has Import as a button reachable by Tab, and survives an unreadable file', a
   await userEvent.upload(screen.getByLabelText('Import file'), broken)
   expect((await screen.findByRole('alert')).textContent).toContain("isn't a life-sim save")
 })
+
+it('makes the page and the top bar inert while the import question shows', async () => {
+  await boot()
+  await upload(exportText({ version: 3, active: null, past: [] }))
+  await screen.findByRole('dialog', { name: 'Import saves' })
+  for (const name of ['Continue', 'Start a life', 'Export', 'Import', 'Settings']) expect(screen.getByRole('button', { name }).closest('[inert]')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'Keep mine' }).closest('[inert]')).toBeNull()
+  await userEvent.click(screen.getByRole('button', { name: 'Keep mine' }))
+  expect(screen.getByRole('button', { name: 'Settings' }).closest('[inert]')).toBeNull()
+})

@@ -19,8 +19,8 @@ export function Title() {
   useEffect(() => first.current?.focus(), [])
   return (
     <>
-      <TopBar />
-      <main className="card screen title" inert={settings}>
+      <TopBar inert={incoming !== null} />
+      <main className="card screen title" inert={settings || incoming !== null}>
         <h1>{GAME_NAME}</h1>
         {life && (
           <p className="note">

@@ -12,7 +12,8 @@ const SKINS: [Skin, string][] = [
   ['pixel', 'Pixel'],
 ]
 
-export function TopBar() {
+/** inert: a dialog the screen owns is open, so the bar (and Settings) must wait. */
+export function TopBar({ inert = false }: { inert?: boolean }) {
   const { style, sound, update } = useSettings()
   const settings = useApp((s) => s.settingsOpen)
   const setSettings = useApp((s) => s.setSettingsOpen)
@@ -28,7 +29,7 @@ export function TopBar() {
   }
   return (
     <>
-      <header className="top" inert={settings || confirming}>
+      <header className="top" inert={settings || confirming || inert}>
         <div className="brand">
           <i />
           {GAME_NAME} <em>working title</em>
