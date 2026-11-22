@@ -5,6 +5,7 @@ import { memoryStore } from '../engine/save/storage'
 import { testLife } from '../life/testLife'
 import type { Person } from '../life/types'
 import { newLife } from '../life/year'
+import { packFor } from '../content'
 import { useApp } from './store'
 
 const events = vi.hoisted(() => [] as EventDef[])
@@ -350,4 +351,20 @@ it('ignores a blocked path move, and closes the job board with the rest', async 
   expect(useApp.getState().life).toBe(life)
   useApp.getState().replaceSaves({ version: 5, active: null, past: [] })
   expect(useApp.getState().jobBoardOpen).toBe(false)
+})
+it('treats an illness from begin(treat:...) and saves it', async () => {
+  const saves = await fresh()
+  const app = useApp.getState
+  const flu = { id: 'test-flu', name: 'Flu', kind: 'short' as const, onset: [[0, 0]] as [number, number][], symptoms: '', stages: [{ death: 0 }], treated: { die: 0 }, sources: [],
+    treatments: [{ id: 'rest', label: 'Rest', place: 'home' as const, cost: 0, energy: 0, effect: 'cure' as const }] }
+  const illnesses = packFor('indonesia').illnesses
+  illnesses.push(flu)
+  try {
+    useApp.setState({ life: testLife({ age: 30, illnesses: [{ id: 'test-flu', since: 29, stage: 0, known: true, treated: null }] }), screen: 'year' })
+    app().begin('treat:test-flu:rest')
+    expect(app().life!.illnesses).toEqual([])
+    expect(app().lastResult!.entry.text).toBe('You were treated for flu and got better.')
+    await flush()
+    expect((await saves.load()).active).toEqual(app().life)
+  } finally { illnesses.splice(illnesses.indexOf(flu), 1) }
 })

@@ -54,6 +54,7 @@ export interface Source { title: string; url: string }
 export type IllnessEffect = 'cure' | 'control' | 'ease'
 export interface TreatmentDef {
   id: string; label: string; place: 'home' | 'puskesmas' | 'hospital'; cost: number; energy: number; effect: IllnessEffect
+  line?: string // journal text; a plain line by effect when absent
   stages?: number[] // only offered while the illness is at one of these stages
 }
 export interface IllnessStage { death: number; recover?: number; symptoms?: Partial<Record<StatKey, number>>; energy?: number; silent?: boolean }

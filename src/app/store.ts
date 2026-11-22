@@ -11,6 +11,7 @@ import { modifiersFor } from '../life/modifiers'
 import { sell as sellItem, sellBlocked, setLifestyle as applyLifestyle } from '../life/money'
 import { findMove, takePath as takeMove } from '../life/path'
 import { personById } from '../life/people'
+import { treat, treatmentOffers } from '../life/treatment'
 import { actionsFor, afterEvent, giveGift, queuePersonEvent, talk, timeActivity, type PersonActionId } from '../life/personActions'
 import { cleanName, rollLife, type LifeRoll } from '../life/roll'
 import type { CategoryId, Interest, JournalEntry, Life, Lifestyle, PendingEvent } from '../life/types'
@@ -200,6 +201,14 @@ export const useApp = create<AppState>()((set, get) => {
       const { life } = get()
       if (!life || busy(get())) return
       const pack = packFor(life.country)
+      if (activityId.startsWith('treat:')) {
+        const [, illnessId = '', treatmentId = ''] = activityId.split(':')
+        const o = treatmentOffers(life, pack).find((x) => x.def.id === activityId)
+        if (!o || o.blocked) return
+        const { life: next, entry } = treat(life, illnessId, treatmentId, pack)
+        set({ life: next, lastResult: { def: o.def, tier: 'good', entry } })
+        return persist(next)
+      }
       const def = pack.activities.find((a) => a.id === activityId)
       if (!def) return
       const offer = offersFor(life, def.category, pack).find((o) => o.def.id === activityId)

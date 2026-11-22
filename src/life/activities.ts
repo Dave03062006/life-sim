@@ -8,6 +8,7 @@ import { formatRupiah } from './format'
 import { blockedBy } from './requirements'
 import { addPerson, nudgeCloseness } from './people'
 import { stageOf } from './stages'
+import { treatmentOffers } from './treatment'
 import { applyChanges, isBenefit, roundAway } from './stats'
 import type { CategoryId, Change, JournalEntry, Life, Person, Relation, StatKey } from './types'
 
@@ -60,7 +61,7 @@ const onTrack = (life: Life, def: ActivityDef): boolean =>
 
 export function offersFor(life: Life, category: CategoryId, pack: ContentPack): ActivityOffer[] {
   const stage = stageOf(life.age).id
-  return pack.activities
+  return [...(category === 'health' ? treatmentOffers(life, pack) : []), ...pack.activities
     .filter((d) => d.category === category && d.stages.includes(stage) && onTrack(life, d))
     .map((def) => ({
       def,
@@ -68,7 +69,7 @@ export function offersFor(life: Life, category: CategoryId, pack: ContentPack): 
       ...check(life, def),
       energyGain: gainOf(life, def),
       overwork: overworkPoints(life, def.energy) > 0,
-    }))
+    }))]
 }
 
 export interface ActivityOutcome { life: Life; tier: ResultTier; entry: JournalEntry }
