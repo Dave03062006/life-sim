@@ -52,3 +52,15 @@ it('asks before replacing a job', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Take the job' }))
   expect(useApp.getState().life!.job?.careerId).toBe('office')
 })
+
+it('keeps the sheet on Escape and ignores number keys while the board is open, then returns focus', async () => {
+  await start(adult(), 'Work')
+  const button = screen.getByRole('button', { name: /^Job board/ })
+  await userEvent.click(button)
+  await userEvent.keyboard('2')
+  expect(useApp.getState().openCategory).toBe('school')
+  await userEvent.keyboard('{Escape}')
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(useApp.getState().openCategory).toBe('school')
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Job board/ }))
+})

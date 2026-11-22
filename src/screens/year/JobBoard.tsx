@@ -41,10 +41,19 @@ export function JobBoard({ life }: { life: Life }) {
     <div className="scrim">
       {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a modal <dialog> needs showModal(), which jsdom lacks */}
       <div ref={ref} className="card dialog jobs" role="dialog" aria-modal="true" aria-labelledby="jobs-title" tabIndex={-1}>
-        <h2 id="jobs-title">Job board</h2>
+        <header className="sh">
+          <h2 id="jobs-title">Job board</h2>
+          <button className="ghost" onClick={close}>
+            Close<kbd>Esc</kbd>
+          </button>
+        </header>
         <div className="opts">
           {rows.map((m) => (
-            <button key={m.id} className="opt" disabled={m.blocked !== null} onClick={() => {
+            <button
+              key={m.id}
+              className="opt"
+              disabled={m.blocked !== null}
+              onClick={() => {
                 play('tap')
                 if (life.job) setAsking(m.id)
                 else take(m.id)
@@ -55,11 +64,6 @@ export function JobBoard({ life }: { life: Life }) {
               {m.blocked && <small className="why">{m.blocked}</small>}
             </button>
           ))}
-        </div>
-        <div className="row">
-          <button className="ghost" onClick={close}>
-            Close<kbd>Esc</kbd>
-          </button>
         </div>
       </div>
     </div>

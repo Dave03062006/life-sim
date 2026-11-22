@@ -35,6 +35,16 @@ export function YearScreen({ life }: { life: Life }) {
     const card = (sel: string) => document.querySelector<HTMLButtonElement>(`.sheet .act${sel}:not(:disabled)`)
     ;(card(`[data-id="${started.current}"]`) ?? card('') ?? document.querySelector<HTMLButtonElement>('.dock .age'))?.focus()
   }, [lastResult])
+  // Once the job board closes, focus goes back to its button.
+  const wasBoard = useRef(false)
+  useEffect(() => {
+    if (jobBoardOpen || !wasBoard.current) {
+      wasBoard.current = jobBoardOpen
+      return
+    }
+    wasBoard.current = false
+    ;(document.querySelector<HTMLButtonElement>('.sheet .job-board-btn') ?? document.querySelector<HTMLButtonElement>('.dock .age'))?.focus()
+  }, [jobBoardOpen])
   // Once the last event or question closes, focus goes to the age button.
   const wasAsking = useRef(false)
   useEffect(() => {

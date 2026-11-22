@@ -44,3 +44,9 @@ it('says you live with your family before your own way', async () => {
   expect(screen.getByText('You live with your family. Costs start with your first full-time job or at 25.')).toBeTruthy()
   expect(screen.queryByRole('group', { name: 'Lifestyle' })).toBeNull()
 })
+
+it('shows plain effects for each lifestyle', async () => {
+  await start(grown())
+  expect(screen.getByText(/No effect on Happiness or Health/)).toBeTruthy()
+  expect(screen.getByText(/Happiness \+3 · Health \+1/)).toBeTruthy()
+})

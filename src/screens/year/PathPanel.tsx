@@ -19,7 +19,10 @@ export function PathPanel({ life, onLayout }: { life: Life; onLayout(): void }) 
       {status && <p className="status"><b>{status}</b></p>}
       <div className="opts">
         {open.map((m) => (
-          <button key={m.id} className="opt" onClick={() => {
+          <button
+            key={m.id}
+            className="opt"
+            onClick={() => {
               play('tap')
               takePath(m.id)
             }}
@@ -29,7 +32,9 @@ export function PathPanel({ life, onLayout }: { life: Life; onLayout(): void }) 
           </button>
         ))}
         {life.age >= 15 && (
-          <button className="opt" onClick={() => {
+          <button
+            className="opt job-board-btn"
+            onClick={() => {
               play('open')
               setJobBoardOpen(true)
             }}

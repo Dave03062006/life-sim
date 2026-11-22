@@ -5,7 +5,9 @@ import { formatRupiah } from '../../life/format'
 import { LIFESTYLE, LIVING_WITH_FAMILY, sellBlocked } from '../../life/money'
 import type { Life, Lifestyle } from '../../life/types'
 
-const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
+const signed = (n: number) => (n > 0 ? `+${n}` : `−${-n}`)
+const effects = (happiness: number, health: number) =>
+  [happiness && `Happiness ${signed(happiness)}`, health && `Health ${signed(health)}`].filter(Boolean).join(' · ') || 'No effect on Happiness or Health'
 
 /** Your lifestyle (once you live on your own) and the big things you own, each with a Sell button. */
 export function MoneyPanel({ life }: { life: Life }) {
@@ -29,7 +31,7 @@ export function MoneyPanel({ life }: { life: Life }) {
                 />
                 <span style={{ textTransform: 'capitalize' }}>{l.label}</span>
                 <small>
-                  {formatRupiah(l.cost)} a year · Happiness {signed(l.happiness)} · Health {signed(l.health)}
+                  {formatRupiah(l.cost)} a year · {effects(l.happiness, l.health)}
                 </small>
               </label>
             )
