@@ -27,7 +27,7 @@ describe('onsetChance', () => {
     expect(onsetChance(testLife({ age: 50, illnesses: [ill('test-flu')] }), base)).toBe(0)
   })
   it('multiplies for low Health and high Stress, halves with the vaccine, and caps at 1', () => {
-    const risky = { ...base, risk: { lowHealth: 2, highStress: 1.5, untreated: { sugar: 3 } } }
+    const risky = { ...base, risk: { lowHealth: 2, highStress: 1.5, untreated: { 'test-sugar': 3 } } }
     const sick = testLife({ age: 50, stats: { ...testLife().stats, health: 20, stress: 80 } })
     expect(onsetChance(sick, risky)).toBeCloseTo(0.6)
     expect(onsetChance(testLife({ age: 50, illnesses: [ill('test-sugar')] }), risky)).toBeCloseTo(0.6)
