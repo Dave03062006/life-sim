@@ -80,6 +80,11 @@ describe('work', () => {
     expect(findMove(testLife({ ...grown, money: 5 }), 'job:business', pack)?.blocked).toBe('You need Rp 10.000.000. You have Rp 5.')
   })
 
+  it('will not reset the career you already hold', () => {
+    expect(findMove(working({ step: 2 }), 'job:office', pack)?.blocked).toBe('You already work here.')
+    expect(() => takePath(working({ step: 2 }), 'job:office', pack)).toThrow('You already work here.')
+  })
+
   it('scales performance from work activities, and slacking always costs', () => {
     const def = (id: string) => pack.activities.find((a) => a.id === id)!
     expect(finishActivity(working(), def('extra-hours'), 0.7).life.job?.performance).toBe(58)

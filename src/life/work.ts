@@ -50,7 +50,8 @@ function jobMove(life: Life, career: CareerDef): PathAction {
   const entry = career.steps[0]!
   const cost = career.startCost ?? 0
   const blocked =
-    entry.hours === 'full' && life.school.at !== null && IN_SCHOOL.includes(life.school.at) ? 'Finish or leave school first.'
+    life.job?.careerId === career.id ? 'You already work here.'
+    : entry.hours === 'full' && life.school.at !== null && IN_SCHOOL.includes(life.school.at) ? 'Finish or leave school first.'
     : life.age < career.minAge ? `From age ${career.minAge}.`
     : unmet(life, entry.requires ?? [])
       ?? (life.money < cost ? `You need ${formatRupiah(cost)}. You have ${formatRupiah(life.money)}.` : null)
