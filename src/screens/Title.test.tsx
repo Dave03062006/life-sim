@@ -14,7 +14,7 @@ vi.mock('../app/backup', async (orig) => ({ ...(await orig<typeof import('../app
 
 const boot = async (active = testLife()) => {
   const saves = createSaves(memoryStore())
-  await saves.store({ version: 3, active, past: [] })
+  await saves.store({ version: 4, active, past: [] })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
   render(<App />)
@@ -45,12 +45,12 @@ const upload = (text: string) =>
 it('exports the current saves', async () => {
   await boot()
   await userEvent.click(screen.getByRole('button', { name: 'Export' }))
-  expect(download).toHaveBeenCalledWith('life-sim-saves.json', exportText({ version: 3, active: useApp.getState().life, past: [] }))
+  expect(download).toHaveBeenCalledWith('life-sim-saves.json', exportText({ version: 4, active: useApp.getState().life, past: [] }))
 })
 
 it('replaces saves with a valid file only on yes', async () => {
   await boot()
-  const file = { version: 3 as const, active: null, past: [testLife({ id: 'old' })] }
+  const file = { version: 4 as const, active: null, past: [testLife({ id: 'old' })] }
   await upload(exportText(file))
   expect(screen.getByText('Replace your current life and past lives with this file?')).toBeTruthy()
   await userEvent.click(screen.getByRole('button', { name: 'Keep mine' }))
@@ -83,7 +83,7 @@ it('has Import as a button reachable by Tab, and survives an unreadable file', a
 
 it('makes the page and the top bar inert while the import question shows', async () => {
   await boot()
-  await upload(exportText({ version: 3, active: null, past: [] }))
+  await upload(exportText({ version: 4, active: null, past: [] }))
   await screen.findByRole('dialog', { name: 'Import saves' })
   for (const name of ['Continue', 'Start a life', 'Export', 'Import', 'Settings']) expect(screen.getByRole('button', { name }).closest('[inert]')).not.toBeNull()
   expect(screen.getByRole('button', { name: 'Keep mine' }).closest('[inert]')).toBeNull()

@@ -3,6 +3,7 @@ import type { ActivityDef, ContentPack, ResultTier } from '../content/types'
 import { createRng } from '../engine/random'
 import { OVERWORK_HEALTH, OVERWORK_STRESS, overworkPoints, repeatScale, restGain } from './energy'
 import { formatRupiah } from './format'
+import { blockedBy } from './requirements'
 import { addPerson, nudgeCloseness } from './people'
 import { stageOf } from './stages'
 import { applyChanges, isBenefit, roundAway } from './stats'
@@ -33,7 +34,8 @@ function companion(life: Life, relation: Relation): Person | undefined {
 
 function check(life: Life, def: ActivityDef): { blocked: string | null; openNote: string | null } {
   const reqs = def.requires ?? []
-  for (const r of reqs) if (r.kind === 'min-age' && life.age < r.age) return { blocked: r.reason, openNote: null }
+  const early = blockedBy(life, reqs)
+  if (early) return { blocked: early, openNote: null }
   if (def.with && !companion(life, def.with)) return { blocked: `You have no ${def.with === 'grandparent' ? 'grandparents' : def.with}.`, openNote: null }
   let openNote: string | null = null
   for (const r of reqs) {

@@ -17,7 +17,7 @@ describe('year', () => {
   })
 
   it('starts a version 3 life with wealth, no death, and money only from age 15', () => {
-    expect(newLife({ seed: 7, wealth: 'comfortable' })).toMatchObject({ version: 3, wealth: 'comfortable', death: null, money: 0 })
+    expect(newLife({ seed: 7, wealth: 'comfortable' })).toMatchObject({ version: 4, wealth: 'comfortable', death: null, money: 0 })
     expect(newLife({ seed: 7, startAge: 15 }).money).toBe(200000)
   })
 

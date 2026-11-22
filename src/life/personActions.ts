@@ -24,6 +24,8 @@ const GAMES: Record<Relation, { type: MinigameType; theme: string }> = {
   friend: { type: 'tapping', theme: 'time' },
   crush: { type: 'tapping', theme: 'time' },
   partner: { type: 'timing', theme: 'time' },
+  spouse: { type: 'timing', theme: 'time' },
+  child: { type: 'tapping', theme: 'time' },
 }
 
 const giftBlocked = (life: Life): string | null =>

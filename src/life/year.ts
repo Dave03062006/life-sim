@@ -1,3 +1,4 @@
+import { schoolForAge } from './requirements'
 import { NAMES } from '../content/countries/indonesia/names'
 import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
@@ -18,7 +19,7 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
   const stress = roll(0, 20)
   const people = startingPeople(rng, startAge, gender, name, NAMES)
   return {
-    version: 3,
+    version: 4,
     id: `life-${seed}`,
     rng: rng.state,
     country: 'indonesia',
@@ -40,6 +41,12 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
     spentWith: [],
     wealth,
     death: null,
+    school: schoolForAge(startAge),
+    job: null,
+    lifestyle: 'normal',
+    ownWay: startAge >= 25,
+    flags: [],
+    belongings: [],
   }
 }
 

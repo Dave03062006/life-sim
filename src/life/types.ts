@@ -4,16 +4,29 @@ export type StageId = 'baby' | 'small-child' | 'child' | 'early-teen' | 'late-te
 export type CategoryId = 'school' | 'mind' | 'body' | 'health' | 'people' | 'money' | 'fun' | 'rest'
 export type Gender = 'female' | 'male'
 export interface Change { key: StatKey | 'money' | 'energy'; delta: number }
-export type Relation = 'mother' | 'father' | 'sibling' | 'grandparent' | 'friend' | 'crush' | 'partner'
-export interface Person { id: string; name: string; relation: Relation; gender: Gender; age: number; closeness: number }
+export type Relation = 'mother' | 'father' | 'sibling' | 'grandparent' | 'friend' | 'crush' | 'partner' | 'spouse' | 'child'
+export interface Person { id: string; name: string; relation: Relation; gender: Gender; age: number; closeness: number; since?: number } // since: your age when they became your partner or spouse
 export interface Memory { id: string; age: number; text: string; people: string[] }   // people = person ids
 export type Interest = 'women' | 'men' | 'both' | 'none'
 export interface PendingEvent { eventId: string; cast: Record<string, string> }       // role -> person id
 export interface JournalEntry { age: number; kind: 'milestone' | 'activity' | 'event' | 'memory'; text: string; changes: Change[]; people?: { id: string; delta: number }[] } // people: real closeness changes
 export type Wealth = 'struggling' | 'getting-by' | 'comfortable' | 'well-off'
 export interface Death { age: number; cause: string }
+export type SchoolLevel = 'tk' | 'sd' | 'smp' | 'sma' | 'smk' | 'paket-c' | 'uni'
+export type Field = 'engineering' | 'health' | 'education' | 'business' | 'arts'
+export interface Schooling {
+  at: SchoolLevel | null // where you are enrolled now
+  year: number // years done at `at`
+  effort: number // study points this year
+  grade: number | null // the last report card, 0-100
+  done: SchoolLevel[] // finished levels, in order
+  field: Field | null // the university field you study or studied
+  funding: 'scholarship' | 'family' | 'self' | null // while at uni
+}
+export interface Job { careerId: string; step: number; performance: number; years: number } // performance 0-100; years in this step
+export type Lifestyle = 'frugal' | 'normal' | 'comfortable'
 export interface Life {
-  version: 3
+  version: 4
   id: string
   rng: number               // the seeded generator's position
   country: 'indonesia'
@@ -35,4 +48,10 @@ export interface Life {
   spentWith: string[]             // person ids you spent time with this year
   wealth: Wealth                  // the family you were born into
   death: Death | null             // null while alive
+  school: Schooling
+  job: Job | null
+  lifestyle: Lifestyle
+  ownWay: boolean       // living costs apply (first full-time job, or 25)
+  flags: string[]       // lasting facts: 'bank', 'bpjs', 'passed-entrance'
+  belongings: string[]  // belonging ids you own
 }

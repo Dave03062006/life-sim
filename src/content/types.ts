@@ -1,10 +1,20 @@
-import type { CategoryId, Life, Relation, StageId, StatKey } from '../life/types'
+import type { CategoryId, Field, Life, Relation, SchoolLevel, StageId, StatKey } from '../life/types'
 
 export type MinigameType = 'timing' | 'tapping' | 'memory' | 'quiz' | 'catch' | 'typing'
 export type ResultTier = 'fail' | 'weak' | 'good' | 'great'
 export type Requirement =
   | { kind: 'min-age'; age: number; reason: string }
   | { kind: 'stat'; key: StatKey; min: number; reason: string; openNote: string }
+  | { kind: 'max-age'; age: number; reason: string }
+  | { kind: 'school'; levels: SchoolLevel[]; reason: string } // enrolled in or finished one of these
+  | { kind: 'field'; field: Field; reason: string } // finished uni in this field
+  | { kind: 'flag'; flag: string; reason: string }
+  | { kind: 'no-flag'; flag: string; reason: string }
+  | { kind: 'owns'; item: string; reason: string }
+  | { kind: 'job'; reason: string } // you hold a job
+export interface CareerStep { title: string; salary: number; hours: 'full' | 'part'; requires?: Requirement[] }
+export interface CareerDef { id: string; name: string; minAge: number; steps: CareerStep[]; business?: true; startCost?: number }
+export interface BelongingDef { id: string; name: string; price: number; resale: number; energy?: number; livingCut?: number }
 export interface ActivityDef {
   id: string
   category: CategoryId
@@ -30,6 +40,8 @@ export interface ContentPack {
   activities: ActivityDef[]
   milestones: Record<number, string>
   events: EventDef[]
+  careers: CareerDef[]
+  belongings: BelongingDef[]
 }
 
 export type Condition =

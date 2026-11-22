@@ -19,7 +19,7 @@ const fresh = async (file?: SaveFile) => {
 it('boots to the title, with or without an active life', async () => {
   await fresh()
   expect(app()).toMatchObject({ ready: true, screen: 'title', life: null, past: [] })
-  await fresh({ version: 3, active: testLife(), past: [testLife({ id: 'old' })] })
+  await fresh({ version: 4, active: testLife(), past: [testLife({ id: 'old' })] })
   expect(app().screen).toBe('title')
   expect(app().past.map((l) => l.id)).toEqual(['old'])
   app().continueLife()
@@ -62,7 +62,7 @@ it('will not start with an empty name', async () => {
 
 it('asks before replacing an unfinished life, and changes nothing on no', async () => {
   const active = testLife()
-  await fresh({ version: 3, active, past: [] })
+  await fresh({ version: 4, active, past: [] })
   app().newRoll(3)
   app().startLife()
   expect(app()).toMatchObject({ confirmAbandon: true, screen: 'new-life', life: active })
@@ -72,7 +72,7 @@ it('asks before replacing an unfinished life, and changes nothing on no', async 
 
 it('moves the old life to past lives as unfinished on yes, in one save', async () => {
   const old = testLife({ id: 'old' })
-  const saves = await fresh({ version: 3, active: old, past: [testLife({ id: 'older' })] })
+  const saves = await fresh({ version: 4, active: old, past: [testLife({ id: 'older' })] })
   const writes: SaveFile[] = []
   const store = saves.store
   saves.store = (file) => {
@@ -91,7 +91,7 @@ it('moves the old life to past lives as unfinished on yes, in one save', async (
 })
 
 it('goes to the title from the year, but not while something is showing', async () => {
-  await fresh({ version: 3, active: testLife(), past: [] })
+  await fresh({ version: 4, active: testLife(), past: [] })
   app().continueLife()
   useApp.setState({ pendingEvent: { eventId: 'x', cast: {} } })
   app().goTitle()

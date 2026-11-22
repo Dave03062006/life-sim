@@ -14,7 +14,7 @@ import { relationLabel } from './year/labels'
 
 const open = async (active: Life | null = null) => {
   const saves = createSaves(memoryStore())
-  await saves.store({ version: 3, active, past: [] })
+  await saves.store({ version: 4, active, past: [] })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
   render(<App />)

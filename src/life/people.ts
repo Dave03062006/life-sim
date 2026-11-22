@@ -76,7 +76,7 @@ export function yearlyPeople(life: Life): Life {
 
 const RELATION_WORD: Record<Person['relation'], string | Record<Person['gender'], string>> = {
   mother: 'mother', father: 'father', sibling: { female: 'sister', male: 'brother' },
-  grandparent: { female: 'grandmother', male: 'grandfather' }, friend: 'friend', crush: 'crush', partner: 'partner',
+  grandparent: { female: 'grandmother', male: 'grandfather' }, friend: 'friend', crush: 'crush', partner: 'partner', spouse: 'spouse', child: 'child',
 }
 
 /** Everyone else ages by your odds, without your Health: each dies of old age or a rare accident. */

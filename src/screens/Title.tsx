@@ -47,7 +47,7 @@ export function Title() {
             className="ghost"
             onClick={() => {
               const { life, past } = useApp.getState()
-              downloadText('life-sim-saves.json', exportText({ version: 3, active: life, past }))
+              downloadText('life-sim-saves.json', exportText({ version: 4, active: life, past }))
             }}
           >
             Export
