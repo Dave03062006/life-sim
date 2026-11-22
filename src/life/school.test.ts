@@ -60,7 +60,7 @@ describe('school', () => {
     let life = testLife({ age: 19, money: 50_000_000, school: school({ at: 'uni', year: 0, done: ['tk', 'sd', 'smp', 'sma'], field: 'business', funding: 'self' }) })
     for (let i = 0; i < 4; i++) life = closeSchoolYear(life)
     expect(life.money).toBe(50_000_000 - 4 * UNI_FEE)
-    expect(life.school).toMatchObject({ at: null, funding: null, field: 'business' })
+    expect(life.school).toMatchObject({ at: null, funding: null, field: null, degrees: ['business'] })
     expect(life.school.done.at(-1)).toBe('uni')
     expect(life.journal.some((j) => j.text === 'You graduated in business.')).toBe(true)
   })

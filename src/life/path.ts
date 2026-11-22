@@ -49,7 +49,7 @@ function uni(life: Life, field: Field): PathAction {
     blockedBy(life, [{ kind: 'flag', flag: 'passed-entrance', reason: 'Pass the entrance test first.' }])
     ?? (!finished(life, ...UPPER) ? 'Finish SMA, SMK or Paket C first.' : null)
     ?? (life.school.at !== null ? 'You are already at school.' : null)
-    ?? (finished(life, 'uni') && life.school.field === field ? 'You already have this degree.' : null)
+    ?? (life.school.degrees.includes(field) ? 'You already have this degree.' : null)
   return { id: `uni:${field}`, label: `Study ${field} at university`, detail: FUNDING_DETAIL[fundingOf(life)], blocked }
 }
 
@@ -79,7 +79,7 @@ export function takePath(life: Life, id: string, pack: ContentPack): Life {
     school = enrol('uni', { field, funding })
     text = `You started university: ${field}. ${FUNDING_LINE[funding]}`
   } else {
-    school = { ...life.school, at: null, year: 0, effort: 0, funding: null }
+    school = { ...life.school, at: null, year: 0, effort: 0, funding: null, field: null }
     text = id === 'leave-uni' ? 'You left university.' : 'You left school.'
   }
   return { ...life, school, journal: [...life.journal, { age: life.age, kind: 'milestone', text, changes: [] }] }

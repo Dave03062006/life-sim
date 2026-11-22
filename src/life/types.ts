@@ -20,7 +20,8 @@ export interface Schooling {
   effort: number // study points this year
   grade: number | null // the last report card, 0-100
   done: SchoolLevel[] // finished levels, in order
-  field: Field | null // the university field you study or studied
+  field: Field | null // the field you study now; null when not at uni
+  degrees: Field[] // fields you graduated in
   funding: 'scholarship' | 'family' | 'self' | null // while at uni
 }
 export interface Job { careerId: string; step: number; performance: number; years: number } // performance 0-100; years in this step

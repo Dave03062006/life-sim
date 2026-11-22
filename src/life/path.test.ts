@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { packFor } from '../content'
 import { resolveEvent } from './events'
+import { blockedBy } from './requirements'
+import { closeSchoolYear } from './school'
 import { pathActions, takePath } from './path'
 import { testLife } from './testLife'
 
@@ -50,6 +52,16 @@ describe('path', () => {
     expect(started.school).toMatchObject({ at: 'uni', field: 'business', funding: 'scholarship', year: 0 })
     expect(started.journal.at(-1)?.text).toBe('You started university: business. You won a scholarship.')
     expect(takePath(started, 'leave-uni', pack).school.at).toBeNull()
+  })
+
+  it('keeps a finished degree when studying another field', () => {
+    const grad = testLife({ age: 25, flags: ['passed-entrance'], school: school({ at: null, year: 0, done: ['tk', 'sd', 'smp', 'sma', 'uni'], degrees: ['education'] }) })
+    expect(move(grad, 'uni:education').blocked).toBe('You already have this degree.')
+    const left = takePath(takePath(grad, 'uni:health', pack), 'leave-uni', pack)
+    expect(blockedBy(left, [{ kind: 'field', field: 'education', reason: 'x' }])).toBeNull()
+    let two = takePath(grad, 'uni:health', pack)
+    for (let i = 0; i < 4; i++) two = closeSchoolYear(two)
+    expect(two.school.degrees).toEqual(['education', 'health'])
   })
 
   it('throws on a blocked or unknown move', () => {

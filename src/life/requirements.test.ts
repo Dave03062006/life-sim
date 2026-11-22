@@ -25,8 +25,8 @@ describe('blockedBy', () => {
     const base = testLife().school
     const r: Requirement = { kind: 'field', field: 'health', reason: 'field' }
     expect(blockedBy(testLife({ school: { ...base, field: 'health' } }), [r])).toBe('field')
-    expect(blockedBy(testLife({ school: { ...base, done: ['uni'], field: 'arts' } }), [r])).toBe('field')
-    expect(blockedBy(testLife({ school: { ...base, done: ['uni'], field: 'health' } }), [r])).toBeNull()
+    expect(blockedBy(testLife({ school: { ...base, done: ['uni'], degrees: ['arts'] } }), [r])).toBe('field')
+    expect(blockedBy(testLife({ school: { ...base, done: ['uni'], degrees: ['health'] } }), [r])).toBeNull()
   })
   it('flag, no-flag, owns and job', () => {
     expect(blockedBy(testLife(), [{ kind: 'flag', flag: 'bank', reason: 'f' }])).toBe('f')

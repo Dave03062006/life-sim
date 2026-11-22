@@ -7,7 +7,7 @@ const STEPS: [number, SchoolLevel][] = [[4, 'tk'], [6, 'sd'], [12, 'smp'], [15, 
 
 /** The schooling a life of this age has by default: tk from 4, sd from 6, smp from 12, sma from 15, all four done at 18. */
 export function schoolForAge(age: number): Schooling {
-  const base = { effort: 0, grade: null, field: null, funding: null }
+  const base = { effort: 0, grade: null, field: null, degrees: [], funding: null }
   const i = STEPS.findLastIndex(([from]) => age >= from)
   if (i < 0) return { ...base, at: null, year: 0, done: [] }
   if (age >= 18) return { ...base, at: null, year: 0, done: STEPS.map(([, l]) => l) }
@@ -22,7 +22,7 @@ export function blockedBy(life: Life, reqs: readonly Requirement[]): string | nu
       r.kind === 'min-age' ? life.age >= r.age
       : r.kind === 'max-age' ? life.age <= r.age
       : r.kind === 'school' ? (life.school.at !== null && r.levels.includes(life.school.at)) || finished(life, ...r.levels)
-      : r.kind === 'field' ? finished(life, 'uni') && life.school.field === r.field
+      : r.kind === 'field' ? life.school.degrees.includes(r.field)
       : r.kind === 'flag' ? life.flags.includes(r.flag)
       : r.kind === 'no-flag' ? !life.flags.includes(r.flag)
       : r.kind === 'owns' ? life.belongings.includes(r.item)

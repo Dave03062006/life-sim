@@ -40,7 +40,7 @@ export function closeSchoolYear(life: Life): Life {
     log(at === 'uni' ? `You graduated in ${field ?? 'your field'}.` : `You finished ${LEVEL_NAME[at]}.`, [])
   }
   const doneLevels = done && !next.school.done.includes(at) ? [...next.school.done, at] : next.school.done
-  return { ...next, school: { ...next.school, at: done ? null : at, year: done ? 0 : year + 1, effort: 0, grade, done: doneLevels, funding: done ? null : funding } }
+  return { ...next, school: { ...next.school, at: done ? null : at, year: done ? 0 : year + 1, effort: 0, grade, done: doneLevels, funding: done ? null : funding, field: done ? null : field, degrees: done && at === 'uni' && field && !next.school.degrees.includes(field) ? [...next.school.degrees, field] : next.school.degrees } }
 }
 
 /** Compulsory school is automatic: TK at 4, SD at 6 (with or without TK), SMP straight after SD. SMP's end queues the fork. */

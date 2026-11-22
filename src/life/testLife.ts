@@ -28,7 +28,7 @@ export function testLife(overrides: Partial<Life> = {}): Life {
     spentWith: [],
     wealth: 'getting-by',
     death: null,
-    school: { at: 'sma', year: 1, effort: 0, grade: null, done: ['tk', 'sd', 'smp'], field: null, funding: null },
+    school: { at: 'sma', year: 1, effort: 0, grade: null, done: ['tk', 'sd', 'smp'], field: null, degrees: [], funding: null },
     job: null,
     lifestyle: 'normal',
     ownWay: false,
