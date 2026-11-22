@@ -91,8 +91,8 @@ describe('money', () => {
     expect(sellBlocked(testLife(), 'motorbike', pack)).toBe("You don't own that.")
     expect(() => sell(rider, 'motorbike', pack)).toThrow('Your job as an ojek driver needs it. Quit first.')
     const sold = sell(testLife({ belongings: ['motorbike'], money: 0 }), 'motorbike', pack)
-    expect(sold).toMatchObject({ money: 3_000_000, belongings: [] })
-    expect(sold.journal.at(-1)?.text).toBe('You sold your motorbike for Rp 3.000.000.')
+    expect(sold).toMatchObject({ money: 5_500_000, belongings: [] })
+    expect(sold.journal.at(-1)?.text).toBe('You sold your motorbike for Rp 5.500.000.')
   })
 
   it('buys once, adds energy, and counts belongings in net worth', () => {
@@ -102,7 +102,7 @@ describe('money', () => {
     expect(bought.belongings).toEqual(['motorbike'])
     expect(offer(bought, 'money', 'motorbike')?.blocked).toBe('You already have one.')
     expect(energyBudget(bought)).toBe(energyBudget(rich) + 1)
-    expect(netWorth(bought, pack)).toBe(bought.money + 3_000_000)
+    expect(netWorth(bought, pack)).toBe(bought.money + 5_500_000)
     expect(offer(testLife({ age: 20, money: 200_000_000 }), 'money', 'buy-car')?.blocked).toBeNull()
   })
 

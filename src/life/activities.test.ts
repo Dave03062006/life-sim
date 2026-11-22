@@ -53,7 +53,7 @@ describe('activities', () => {
   it('says why an activity is closed, and why one is open', () => {
     expect(offer(testLife(), 'bimbel').blocked).toBe('You need Rp 250.000. You have Rp 215.000.')
     expect(offer(testLife(), 'motorbike').blocked).toBe('From age 17, with a SIM C licence')
-    expect(offer(testLife({ age: 17 }), 'motorbike').blocked).toBe('You need Rp 4.500.000. You have Rp 215.000.')
+    expect(offer(testLife({ age: 17 }), 'motorbike').blocked).toBe('You need Rp 8.000.000. You have Rp 215.000.')
     expect(offer(testLife(), 'osis')).toMatchObject({ blocked: null, openNote: 'Open to you: Reputation 60+' })
     expect(offer(testLife({ stats: { ...testLife().stats, reputation: 40 } }), 'osis').blocked).toContain('Reputation 60')
     expect(offer(testLife({ energySpent: 9 }), 'gym').overwork).toBe(true)

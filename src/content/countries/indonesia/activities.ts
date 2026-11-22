@@ -105,15 +105,15 @@ const base: ActivityDef[] = [
   a('tutor', 'money', 'Tutor a neighbour’s kid', 'Teach maths to a primary-school kid.', 'quiz', 2, 75000, { smarts: 1, reputation: 1 }, 'You tutored a neighbour’s kid in maths.', { requires: [stat('smarts', 'Smarts')] }),
   a('save-bank', 'money', 'Save at the bank', 'Put money away. It earns a little interest each year.', '', 0, 0, {}, 'You opened a savings account.', { sets: 'bank', requires: [{ kind: 'no-flag', flag: 'bank', reason: 'You already have a savings account.' }] }),
   a('clothes', 'money', 'Buy new clothes', 'A sharper look for school and weekends.', '', 0, -180000, { looks: 5, happiness: 2 }, 'You bought new clothes.'),
-  a('motorbike', 'money', 'Buy a motorbike', 'A second-hand scooter means freedom.', '', 0, -4500000, { happiness: 8, reputation: 3 }, 'You bought a second-hand scooter.', {
+  a('motorbike', 'money', 'Buy a motorbike', 'A second-hand scooter means freedom.', '', 0, -8000000, { happiness: 8, reputation: 3 }, 'You bought a second-hand scooter.', {
     buys: 'motorbike',
     requires: [{ kind: 'min-age', age: 17, reason: 'From age 17, with a SIM C licence' }],
   }),
-  // Prices: second-hand car and a modest house outside the big-city centres (see belongings.ts)
+  // Prices and sources: see belongings.ts (see belongings.ts)
   a('buy-car', 'money', 'Buy a car', 'A second-hand family car. Roomier, and the rain stops mattering.', '', 0, -150000000, { happiness: 6, reputation: 4 }, 'You bought a second-hand car.', {
     stages: GROWN, buys: 'car', requires: [{ kind: 'min-age', age: 17, reason: 'From age 17, with a SIM A licence.' }],
   }),
-  a('buy-house', 'money', 'Buy a house', 'A modest house outside the city centre. No more rent, no more landlord.', '', 0, -600000000, { happiness: 8, stress: -4 }, 'You bought a house and got the keys.', { stages: GROWN, buys: 'house' }),
+  a('buy-house', 'money', 'Buy a starter house', 'A small subsidised house on the edge of town. No more rent, no more landlord.', '', 0, -185000000, { happiness: 8, stress: -4 }, 'You bought a house and got the keys.', { stages: GROWN, buys: 'house' }),
   a('join-bpjs', 'health', 'Join BPJS Kesehatan', 'Kelas 3 health insurance, paid every year. Treatment discounts come later.', '', 0, 0, {}, 'You signed up for BPJS Kesehatan.', {
     sets: 'bpjs', requires: [{ kind: 'min-age', age: 18, reason: 'From age 18.' }, { kind: 'no-flag', flag: 'bpjs', reason: 'You are already in BPJS.' }],
   }),

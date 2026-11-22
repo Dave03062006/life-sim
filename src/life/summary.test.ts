@@ -24,7 +24,7 @@ it('sums up a life that ended', () => {
 })
 
 it('adds belongings to net worth', () => {
-  expect(summaryOf(testLife({ belongings: ['motorbike'] })).netWorth).toBe(215000 + 3_000_000)
+  expect(summaryOf(testLife({ belongings: ['motorbike'] })).netWorth).toBe(215000 + 5_500_000)
 })
 
 it('sums up an unfinished life', () => {

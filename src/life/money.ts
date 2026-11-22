@@ -17,7 +17,7 @@ export const LIFESTYLE: Record<Lifestyle, { label: string; cost: number; happine
 export const OWN_WAY_AGE = 25
 export const CHILD_COST = 9_000_000 // a year per child under 18
 export const INTEREST = 0.02 // on positive money, with the 'bank' flag
-// BPJS Kesehatan mandiri kelas 3: Rp 42.000/month, Rp 7.000 covered by the government, members pay Rp 35.000 (Perpres 63/2022)
+// BPJS Kesehatan mandiri kelas 3: Rp 42.000/month, Rp 7.000 covered by the government, members pay Rp 35.000 (Perpres 63/2022; bisnis.com 2025-09-01, besaran iuran BPJS Kesehatan)
 export const BPJS_PREMIUM = 420_000
 export const DEBT_STRESS = 5
 export const LIVING_WITH_FAMILY = 'You live with your family. Costs start with your first full-time job or at 25.'
