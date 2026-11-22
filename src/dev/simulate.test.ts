@@ -29,5 +29,5 @@ describe('simulateLife', () => {
     expect(unreachable).toEqual([]) // spec 10.6: no activity is unreachable
     expect(sims.flatMap((s) => s.stuck)).toEqual([]) // every year of every life has an open activity
     console.log(`lives ${LIVES}: median ${median}, oldest ${ages[LIVES - 1]}, accident ${share(CAUSE.accident)}, health ${share(CAUSE.health)}, job at 30 ${jobShare}, median money at 40 ${medianMoney}`)
-  }, 600000)
+  }, 1_800_000) // npm run simulate (10,000 lives) takes 7 to 11 minutes
 })
