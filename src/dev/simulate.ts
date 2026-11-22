@@ -8,7 +8,7 @@ import { stageOf } from '../life/stages'
 import type { Life } from '../life/types'
 import { ageUp, newLife } from '../life/year'
 
-const MAX_AGE = 200 // a runaway-loop guard only: at 15% a year past 90, a few of 10,000 healthy lives pass 130
+const MAX_AGE = 130
 const MAX_PLAYS = 50 // zero-cost activities (skip class, save at the bank) never spend energy; stop a year that only finds those
 
 /** Plays one random life from birth to death: the balance guard for the death odds and the content. */

@@ -1,14 +1,15 @@
 import type { Rng } from '../engine/random'
 import type { Life } from './types'
 
-export const OLD_AGE: readonly [from: number, chance: number][] = [[90, 0.3], [80, 0.12], [70, 0.04], [60, 0.01]]
+export const OLD_AGE: readonly [from: number, chance: number][] = [[115, 1], [100, 0.6], [90, 0.3], [80, 0.12], [70, 0.04], [60, 0.01]]
 export const ACCIDENT = 0.0005
 export const CAUSE = { health: 'Health gave out', oldAge: 'Old age', accident: 'An accident' } as const
 
 /** The yearly chance of dying of old age; health null (other people) leaves it unscaled. */
 export function oldAgeChance(age: number, health: number | null): number {
   const base = OLD_AGE.find(([from]) => age >= from)?.[1] ?? 0
-  return health === null ? base : health >= 80 ? base * 0.5 : health < 30 ? base * 2 : base
+  const scaled = health === null || age >= 115 ? base : health >= 80 ? base * 0.5 : health < 30 ? base * 2 : base // certain from 115, whatever the Health
+  return Math.min(1, scaled)
 }
 
 /** Checked at Age Up: Health 0, then old age, then a rare accident. */

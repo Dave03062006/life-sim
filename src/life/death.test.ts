@@ -14,6 +14,10 @@ describe('death', () => {
     expect([oldAgeChance(60, null), oldAgeChance(84, null), oldAgeChance(95, null)]).toEqual([0.01, 0.12, 0.3])
   })
 
+  it('makes old age likelier from 100 and certain from 115', () => {
+    expect([oldAgeChance(100, 50), oldAgeChance(100, 85), oldAgeChance(115, 90), oldAgeChance(120, null)]).toEqual([0.6, 0.3, 1, 1])
+  })
+
   it('always ends a life at Health 0', () => {
     for (let seed = 1; seed <= 50; seed++) {
       expect(deathCause(testLife({ age: 30, stats: { ...testLife().stats, health: 0 } }), createRng(seed))).toBe(CAUSE.health)
