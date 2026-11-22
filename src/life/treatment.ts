@@ -30,10 +30,11 @@ function activityOf(life: Life, def: IllnessDef, t: TreatmentDef): ActivityDef {
   }
 }
 
-function blockedFor(life: Life, i: Illness, t: TreatmentDef, price: number, used: number): string | null {
+function blockedFor(life: Life, i: Illness, t: TreatmentDef, used: number): string | null {
   if (t.stages && !t.stages.includes(i.stage)) return t.effect === 'cure' ? 'Found too late for surgery.' : 'Not at this stage.'
   if (used > 0) return 'Controlled this year. Take it again next year.'
-  if (price > life.money) return `You need ${formatRupiah(price)}. You have ${formatRupiah(life.money)}. BPJS would cover it.`
+  const price = treatmentCost(life, t)
+  if (price > 0 && price > life.money) return `You need ${formatRupiah(price)}. You have ${formatRupiah(life.money)}. BPJS would cover it.`
   return null
 }
 
@@ -45,7 +46,7 @@ export function treatmentOffers(life: Life, pack: ContentPack): ActivityOffer[] 
       const act = activityOf(life, def, t)
       const used = life.doneThisYear[act.id] ?? 0
       if (used > 0 && t.effect !== 'control') return []
-      return [{ def: act, timesDone: used, blocked: blockedFor(life, i, t, -act.money!, used), openNote: null, energyGain: 0, overwork: overworkPoints(life, t.energy) > 0 }]
+      return [{ def: act, timesDone: used, blocked: blockedFor(life, i, t, used), openNote: null, energyGain: 0, overwork: overworkPoints(life, t.energy) > 0 }]
     })
   })
 }

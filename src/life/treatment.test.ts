@@ -38,8 +38,15 @@ describe('treatment offers', () => {
     expect(o?.blocked).toBe('You need Rp 15.000.000. You have Rp 2.000.000. BPJS would cover it.')
     expect(treatmentOffers(adult(), pack)[0]?.def.description).toBe('Rp 15.000.000')
   })
-  it('offers nothing for a hidden illness, and nothing once cured', () => {
+  it('offers nothing for a hidden illness, and nothing for a cured one', () => {
     expect(treatmentOffers(adult({ illnesses: [ill({ known: false })] }), pack)).toEqual([])
+    expect(treatmentOffers(adult({ illnesses: [ill({ treated: 'cured' })] }), pack)).toEqual([])
+  })
+  it('stays open when the treatment is free and money is negative', () => {
+    expect(treatmentOffers(testLife({ age: 9, money: -500, illnesses: [ill()] }), pack)[0]?.blocked).toBeNull()
+    expect(treatmentOffers(adult({ money: -500, flags: ['bpjs'] }), pack)[0]?.blocked).toBeNull()
+    expect(treatmentOffers(adult({ money: -500 }), pack).find((o) => o.def.id.endsWith('rest'))?.blocked).toBeNull()
+    expect(treat(adult({ money: -500 }), 'test-flu', 'rest', pack).life.illnesses[0]?.treated).toBe('eased')
   })
   it('blocks a treatment that does not fit the stage', () => {
     const late = treatmentOffers(adult({ illnesses: [ill({ stage: 1 })] }), pack)
