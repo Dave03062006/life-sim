@@ -31,14 +31,18 @@ describe('modifiersFor', () => {
   })
   it('applies a known untreated illness and not a controlled one', () => {
     const real = packFor('indonesia')
-    real.illnesses.push({ id: 'flu', name: 'Flu', kind: 'long', onset: [], symptoms: '', stages: [{ death: 0 }], treated: { die: 0 }, treatments: [], sources: [], minigame: { label: 'Slow', mods: { move: 0.5, wobble: 1 } } })
+    const saved = [...real.illnesses]
+    real.illnesses.push({ id: 'test-flu', name: 'Flu', kind: 'long', onset: [], symptoms: '', stages: [{ death: 0 }], treated: { die: 0 }, treatments: [], sources: [], minigame: { label: 'Slow', mods: { move: 0.5, wobble: 0.5 } } })
     try {
-      const ill = { id: 'flu', since: 10, stage: 0, known: true, treated: null } as const
-      expect(modifiersFor(testLife({ illnesses: [ill] }), gym, false)).toMatchObject({ move: 0.5, wobble: 1 })
+      const ill = { id: 'test-flu', since: 10, stage: 0, known: true, treated: null } as const
+      expect(modifiersFor(testLife({ illnesses: [ill] }), gym, false)).toMatchObject({ move: 0.5, wobble: 0.5 })
       expect(modifiersFor(testLife({ illnesses: [{ ...ill, treated: 'controlled' }] }), gym, false)).toMatchObject({ move: 1, wobble: 0 })
       expect(modifiersFor(testLife({ illnesses: [{ ...ill, known: false }] }), gym, false).move).toBe(1)
+      const weak = testLife({ illnesses: [ill], stats: { ...testLife().stats, health: 30, stress: 60 } })
+      expect(modifiersFor(weak, gym, false).move).toBeCloseTo(0.5 * 0.85)
+      expect(modifiersFor(weak, gym, false).wobble).toBe(1)
     } finally {
-      real.illnesses.length = 0
+      real.illnesses.splice(0, real.illnesses.length, ...saved)
     }
   })
 })

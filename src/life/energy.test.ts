@@ -39,14 +39,16 @@ describe('energy', () => {
   })
   it('cuts the budget by an illness, still floored', () => {
     const real = packFor('indonesia')
-    real.illnesses.push({ id: 'flu', name: 'Flu', kind: 'short', onset: [], symptoms: '', stages: [{ death: 0, energy: 2 }], treated: { die: 0 }, treatments: [], sources: [] })
+    const saved = [...real.illnesses]
+    real.illnesses.push({ id: 'test-flu', name: 'Flu', kind: 'short', onset: [], symptoms: '', stages: [{ death: 0, energy: 2 }], treated: { die: 0 }, treatments: [], sources: [] })
     try {
-      const ill = { id: 'flu', since: 10, stage: 0, known: true, treated: null } as const
+      const ill = { id: 'test-flu', since: 10, stage: 0, known: true, treated: null } as const
       expect(energyBudget(testLife({ illnesses: [ill] }))).toBe(8)
       expect(energyBudget(testLife({ illnesses: [{ ...ill, treated: 'cured' }] }))).toBe(10)
+      expect(energyBudget(testLife({ illnesses: [{ ...ill, treated: 'eased' }] }))).toBe(10)
       expect(energyBudget(withStats({ health: 20, stress: 80 }, { age: 1, illnesses: [ill] }))).toBe(2)
     } finally {
-      real.illnesses.length = 0
+      real.illnesses.splice(0, real.illnesses.length, ...saved)
     }
   })
 })

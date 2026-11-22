@@ -72,11 +72,11 @@ export function discover(life: Life, pack: ContentPack, how: 'check-up' | 'sympt
 
 export const knownIllnesses = (life: Life): Illness[] => life.illnesses.filter((i) => i.known)
 
-/** Energy cut by symptoms that are untreated or only eased (the brief's rule). */
+/** Energy cut by untreated symptoms; easing, control and cure all stop it (Ruling 5). */
 export function illnessEnergy(life: Life, pack: ContentPack): number {
   return life.illnesses.reduce((sum, i) => {
     const def = defOf(pack, i)
-    return def && (i.treated === null || i.treated === 'eased') && !silentNow(def, i) ? sum + (def.stages[i.stage]?.energy ?? 0) : sum
+    return def && i.treated === null && !silentNow(def, i) ? sum + (def.stages[i.stage]?.energy ?? 0) : sum
   }, 0)
 }
 
