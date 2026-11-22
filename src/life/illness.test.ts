@@ -150,4 +150,13 @@ describe('ending and dying', () => {
     expect(onsetChance(testLife({ age: 50, illnesses: [ill('test-sugar', { treated: 'eased' })] }), risky)).toBeCloseTo(0.4)
     expect(onsetChance(testLife({ age: 50, illnesses: [ill('test-sugar', { treated: 'controlled' })] }), risky)).toBeCloseTo(0.2)
   })
+  it('writes no line for an illness the player never knew, and keeps acronyms', () => {
+    const hidden = closeIllnessYear(lifeWith(ill('test-flu', { known: false })), packOf([dies(0)]), rng())
+    expect(hidden.illnesses).toEqual([])
+    expect(hidden.journal).toEqual([])
+    const clears = { ...tb, stages: [{ death: 0, recover: 1 }] }
+    expect(closeIllnessYear(lifeWith(ill('test-tb', { known: false })), packOf([clears]), rng()).journal).toEqual([])
+    const covid = { ...dies(0), name: 'COVID' }
+    expect(closeIllnessYear(lifeWith(ill('test-flu')), packOf([covid]), rng()).journal.map((e) => e.text)).toEqual(['You got over COVID.'])
+  })
 })

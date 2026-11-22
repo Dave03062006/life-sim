@@ -7,7 +7,7 @@ import type { Change, Illness, JournalEntry, Life, StatKey } from './types'
 export const LOW_HEALTH = 30
 export const HIGH_STRESS = 70
 
-const lower = (name: string): string => name.charAt(0).toLowerCase() + name.slice(1)
+const lower = (name: string): string => (/^.[a-z]/.test(name) ? name.charAt(0).toLowerCase() + name.slice(1) : name) // keeps acronyms like COVID
 const defOf = (pack: ContentPack, i: Illness): IllnessDef | undefined => pack.illnesses.find((d) => d.id === i.id)
 const silentNow = (def: IllnessDef, i: Illness): boolean => def.stages[i.stage]?.silent === true
 const entry = (life: Life, text: string, changes: Change[] = []): JournalEntry => ({ age: life.age, kind: 'event', text, changes })
@@ -127,9 +127,9 @@ export function closeIllnessYear(life: Life, pack: ContentPack, rng: Rng): Life 
       const weaker = i.treated !== 'controlled' && rng.next() < (def.untreated?.weaker ?? 0)
       const changes = weaker ? (Object.entries(def.untreated?.weakerEffects ?? {}) as [StatKey, number][]).map(([key, delta]): Change => ({ key, delta })) : []
       next = applyChanges(next, changes)
-      next = { ...next, journal: [...next.journal, entry(life, weaker ? `You got over ${name}, but it took a lot out of you.` : `You got over ${name}.`, changes)] }
+      if (i.known) next = { ...next, journal: [...next.journal, entry(life, weaker ? `You got over ${name}, but it took a lot out of you.` : `You got over ${name}.`, changes)] }
     } else if (i.treated === 'controlled') kept.push(i)
-    else if (rng.next() < (def.stages[i.stage]?.recover ?? 0)) next = { ...next, journal: [...next.journal, entry(life, `You got over ${name}.`)] }
+    else if (rng.next() < (def.stages[i.stage]?.recover ?? 0)) { if (i.known) next = { ...next, journal: [...next.journal, entry(life, `You got over ${name}.`)] } }
     else kept.push({ ...i, stage: Math.min(i.stage + 1, def.stages.length - 1) })
   }
   return { ...next, illnesses: kept }

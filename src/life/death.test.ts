@@ -55,7 +55,8 @@ describe('death', () => {
     const sick = { id: 'test-flu', since: 1, stage: 0, known: true, treated: null }
     const stats = testLife().stats
     expect(deathCause(testLife({ age: 99, illnesses: [sick], stats: { ...stats, health: 0 } }), createRng(1), pack)).toBe(CAUSE.health)
-    expect(deathCause(testLife({ age: 99, illnesses: [sick] }), createRng(1), pack)).toBe('Flu')
+    expect(deathCause(testLife({ age: 116, illnesses: [sick] }), createRng(1), pack)).toBe('Flu')
+    expect(deathCause(testLife({ age: 116, illnesses: [{ ...sick, treated: 'cured' }] }), createRng(1), pack)).toBe(CAUSE.oldAge)
     expect(deathCause(testLife({ age: 116 }), createRng(1), pack)).toBe(CAUSE.oldAge)
   })
 })

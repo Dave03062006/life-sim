@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { packFor } from '../content'
 import { testLife } from './testLife'
+import { summaryOf } from './summary'
 import { ageUp, closeYear, newLife } from './year'
 
 describe('year', () => {
@@ -70,5 +71,17 @@ describe('year', () => {
     expect(next.death).toEqual({ age: 16, cause: 'Tuberculosis' })
     expect(next.age).toBe(16)
     expect(next.journal.at(-1)?.text).toBe('You died at 16. Tuberculosis.')
+    expect(summaryOf(next).cause).toBe('Tuberculosis')
+    expect(next.illnesses).toHaveLength(1)
+  })
+
+  it('lets a survivor shake off a short illness and move a long one on', () => {
+    const real = packFor('indonesia')
+    const flu = { id: 'test-flu', name: 'Flu', kind: 'short' as const, onset: [], symptoms: '', stages: [{ death: 0 }], untreated: { die: [[0, 0]] as [number, number][] }, treated: { die: 0 }, treatments: [], sources: [] }
+    const tb = { ...flu, id: 'test-tb', name: 'Tuberculosis', kind: 'long' as const, stages: [{ death: 0 }, { death: 0 }], untreated: undefined }
+    const ills = ['test-flu', 'test-tb'].map((id) => ({ id, since: 10, stage: 0, known: true, treated: null }))
+    const next = ageUp(testLife({ illnesses: ills }), { ...real, illnesses: [flu, tb] })
+    expect(next.death).toBeNull()
+    expect(next.illnesses.map((i) => [i.id, i.stage])).toEqual([['test-tb', 1]])
   })
 })
