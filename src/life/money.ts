@@ -6,9 +6,9 @@ import { applyChanges } from './stats'
 import type { Change, Life, Lifestyle, Wealth } from './types'
 import { heldIn, salaryOf } from './work'
 
-// a year, ages 6-11; doubled 12-17. Pocket money by family wealth (a game scale, no single source)
 export const ALLOWANCE: Record<Wealth, number> = { struggling: 250_000, 'getting-by': 600_000, comfortable: 1_500_000, 'well-off': 3_000_000 }
-// Living costs a year: Rp 2 / 3,5 / 7 juta a month, in line with BPS/Numbeo single-person costs for mid-size Indonesian cities
+// ALLOWANCE (a year, ages 6-11, doubled 12-17), LIFESTYLE costs (Rp 2 / 3,5 / 7 juta a month), CHILD_COST and INTEREST are game figures,
+// sized against the BPS average net wage of Rp 3,09 juta a month (Feb 2025) but not taken from a single source.
 export const LIFESTYLE: Record<Lifestyle, { label: string; cost: number; happiness: number; health: number }> = {
   frugal: { label: 'frugal', cost: 24_000_000, happiness: -2, health: -1 },
   normal: { label: 'normal', cost: 42_000_000, happiness: 0, health: 0 },

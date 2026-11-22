@@ -109,7 +109,7 @@ const base: ActivityDef[] = [
     buys: 'motorbike',
     requires: [{ kind: 'min-age', age: 17, reason: 'From age 17, with a SIM C licence' }],
   }),
-  // Prices and sources: see belongings.ts (see belongings.ts)
+  // Prices and sources: see belongings.ts
   a('buy-car', 'money', 'Buy a car', 'A second-hand family car. Roomier, and the rain stops mattering.', '', 0, -150000000, { happiness: 6, reputation: 4 }, 'You bought a second-hand car.', {
     stages: GROWN, buys: 'car', requires: [{ kind: 'min-age', age: 17, reason: 'From age 17, with a SIM A licence.' }],
   }),

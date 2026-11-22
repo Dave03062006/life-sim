@@ -5,7 +5,7 @@ import type { Change, Life, SchoolLevel } from './types'
 
 export const LENGTH: Record<SchoolLevel, number> = { tk: 2, sd: 6, smp: 3, sma: 3, smk: 3, 'paket-c': 1, uni: 4 }
 export const STUDY_TARGET = 3
-// State university UKT bands: typical middle bands Rp 2,5-7,5 juta per semester, so about Rp 10 juta a year
+// A game figure inside typical state-university UKT middle bands of Rp 2,5-7,5 juta a semester (not checked against one source)
 export const UNI_FEE = 10_000_000 // a year, paid when funding is 'self'
 export const SCHOLARSHIP = { smarts: 80, grade: 80 }
 
