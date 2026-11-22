@@ -1,4 +1,6 @@
 import { type PointerEvent, useEffect, useRef, useState } from 'react'
+import { packFor } from '../content'
+import { illnessEffects } from '../life/illness'
 import { RESULT_SOUND, play } from '../app/sound'
 import { useApp } from '../app/store'
 import type { ActivityDef, ResultTier } from '../content/types'
@@ -196,6 +198,7 @@ function Game({ def, mods, seed }: { def: ActivityDef; mods: Modifiers; seed: nu
         <span className="label">Mini-game · {type}</span>
         <h2 id="game-title">{def.title}</h2>
         <p>{instruction}</p>
+        {life && illnessEffects(life, packFor(life.country)).map((label) => <p key={label} className="note">{label}</p>)}
         <div onPointerDown={shown || skipped ? undefined : pointer('down')} onPointerMove={shown || skipped ? undefined : pointer('move')}>
           <View view={view} def={def} send={send} effects={effects && hit ? 'flash zoom' : undefined}>
             {hasBall && <i className="ball" ref={ballEl} />}

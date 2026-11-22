@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { downloadText, exportText, importText } from '../app/backup'
-import { GAME_NAME } from '../app/name'
+import { GAME_NAME, MEDICAL_NOTE } from '../app/name'
 import { useApp } from '../app/store'
 import type { SaveFile } from '../engine/save/saves'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -78,6 +78,7 @@ export function Title() {
           />
         </div>
         <p role="alert">{bad ? "That file isn't a life-sim save, or it's damaged." : ''}</p>
+        <p className="note">{MEDICAL_NOTE}</p>
       </main>
       {incoming && (
         <ConfirmDialog

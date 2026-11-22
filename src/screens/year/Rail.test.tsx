@@ -15,3 +15,15 @@ it('floats the change beside each changed stat when a result applies', () => {
   expect(stats.getByText('+3').className).toBe('delta up')
   expect(stats.getByText('−Rp 30.000').className).toBe('delta down')
 })
+
+it('badges a known illness, tints the picture while untreated, and ignores a hidden one', () => {
+  const ill = (known: boolean, treated: 'controlled' | null = null) => testLife({ illnesses: [{ id: 'dengue', since: 16, stage: 0, known, treated }] })
+  const { container, rerender } = render(<Rail life={ill(true)} />)
+  expect(screen.getByText('Dengue fever')).toBeTruthy()
+  expect(container.querySelector('.scene.ill')).not.toBeNull()
+  rerender(<Rail life={ill(true, 'controlled')} />)
+  expect(screen.getByText('Dengue fever · controlled')).toBeTruthy()
+  expect(container.querySelector('.scene.ill')).toBeNull()
+  rerender(<Rail life={ill(false)} />)
+  expect(screen.queryByText(/Dengue/)).toBeNull()
+})

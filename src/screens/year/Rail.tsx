@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useApp } from '../../app/store'
+import { packFor } from '../../content'
 import { energyLeft } from '../../life/energy'
 import { formatRupiah } from '../../life/format'
 import { stageOf } from '../../life/stages'
 import { schoolLabel } from '../../life/school'
+import { knownIllnesses } from '../../life/illness'
 import { isBenefit } from '../../life/stats'
 import { jobLabel } from '../../life/work'
 import type { Change, Life, StatKey } from '../../life/types'
@@ -27,6 +29,8 @@ export function Rail({ life }: { life: Life }) {
   const { stats } = life
   const last = useLastChanges()
   const status = schoolLabel(life) ?? jobLabel(life)
+  const pack = packFor(life.country)
+  const ill = knownIllnesses(life)
   // a floating number beside each changed stat, rising and fading (the .delta rise animation)
   const delta = (key: StatKey | 'money') => {
     const change = last.n ? last.entry?.changes.find((c) => c.key === key) : undefined
@@ -45,7 +49,7 @@ export function Rail({ life }: { life: Life }) {
   )
   return (
     <aside className="rail">
-      <figure className="scene">
+      <figure className={ill.some((i) => i.treated === null) ? 'scene ill' : 'scene'}>
         <img className="fl" src={scenePath(stage, life.gender, 'flat')} alt={alt} />
         <img className="px" src={scenePath(stage, life.gender, 'pixel')} alt={alt} />
         <figcaption className="badges">{energyLeft(life) < 0 && <span className="badge">Overworked</span>}</figcaption>
@@ -56,6 +60,16 @@ export function Rail({ life }: { life: Life }) {
           {life.age} years old · {life.city}
         </p>
         {status && <p>{status}</p>}
+        {ill.length > 0 && (
+          <p className="badges-row">
+            {ill.map((i) => (
+              <span key={i.id} className="chip">
+                {pack.illnesses.find((d) => d.id === i.id)?.name}
+                {i.treated && i.treated !== 'cured' && ` · ${i.treated}`}
+              </span>
+            ))}
+          </p>
+        )}
       </div>
       <section className="card stats" aria-label="Stats">
         {bar('health')}

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { App } from '../app/App'
-import { GAME_NAME } from '../app/name'
+import { GAME_NAME, MEDICAL_NOTE } from '../app/name'
 import { exportText } from '../app/backup'
 import { useApp } from '../app/store'
 import { createSaves } from '../engine/save/saves'
@@ -89,4 +89,9 @@ it('makes the page and the top bar inert while the import question shows', async
   expect(screen.getByRole('button', { name: 'Keep mine' }).closest('[inert]')).toBeNull()
   await userEvent.click(screen.getByRole('button', { name: 'Keep mine' }))
   expect(screen.getByRole('button', { name: 'Settings' }).closest('[inert]')).toBeNull()
+})
+
+it('shows the medical note', async () => {
+  await boot()
+  expect(screen.getByText(MEDICAL_NOTE)).toBeTruthy()
 })

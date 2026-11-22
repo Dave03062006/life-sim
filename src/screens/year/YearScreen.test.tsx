@@ -88,3 +88,13 @@ it('gives focus back to the card that was pressed, and Escape closes a result', 
   expect(useApp.getState().lastResult).toBeNull()
   expect(document.activeElement).toBe(card)
 })
+
+it('opens Health with your illness and its treatment, and hides unknown ones', async () => {
+  await start()
+  const ill = (id: string, known: boolean) => ({ id, since: 7, stage: 0, known, treated: null })
+  act(() => useApp.setState({ life: testLife({ age: 8, illnesses: [ill('dengue', true), ill('typhoid', false)] }) }))
+  await userEvent.click(screen.getByRole('button', { name: 'Health' }))
+  expect(screen.getByRole('heading', { name: 'Your health' })).toBeTruthy()
+  expect(screen.getAllByText(/Your family pays\./).length).toBeGreaterThan(0)
+  expect(screen.queryByText(/Typhoid/)).toBeNull()
+})

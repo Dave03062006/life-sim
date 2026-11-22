@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { MEDICAL_NOTE } from '../app/name'
 import { useApp } from '../app/store'
+import { packFor } from '../content'
 import { useSettings } from '../engine/settings'
 import type { Interest } from '../life/types'
 import { useReducedMotion } from '../ui/useReducedMotion'
@@ -61,7 +63,22 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             </select>
           </label>
         )}
-        <p className="note">This is a game. Its health figures are simplified from the sources it lists, and it is not medical advice.</p>
+        <p className="note">{MEDICAL_NOTE}</p>
+        <details>
+          <summary>Health sources</summary>
+          <ul>
+            {packFor(life?.country ?? 'indonesia').illnesses.map((d) => (
+              <li key={d.id}>
+                <b>{d.name}</b>{' '}
+                {d.sources.map((s) => (
+                  <a key={s.url} href={s.url} target="_blank" rel="noreferrer">
+                    {s.title}
+                  </a>
+                ))}
+              </li>
+            ))}
+          </ul>
+        </details>
         <button className="primary" onClick={onClose}>
           Close
         </button>

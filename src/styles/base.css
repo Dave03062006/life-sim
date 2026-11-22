@@ -59,6 +59,8 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
 .scene{position:relative;width:var(--rail);height:var(--rail);flex:none;border-radius:var(--r);overflow:hidden}
 .scene img{width:100%;height:100%;object-fit:cover;object-position:50% 0;transition:filter .6s}
 .badges{position:absolute;left:10px;top:10px;display:grid;gap:6px;justify-items:start}
+.scene.ill::after{content:"";position:absolute;inset:0;background:var(--ill-tint);pointer-events:none}
+.badges-row{display:flex;flex-wrap:wrap;gap:6px}
 .badge{padding:4px 10px;border-radius:99px;font-weight:800;font-size:12px;background:var(--solid);color:var(--bad)}
 .who{padding:0 4px}
 .who h1{font-size:25px;font-weight:800;letter-spacing:-.025em;line-height:1.1}

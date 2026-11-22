@@ -3,7 +3,7 @@
   --ink:#252A5E;--ink2:#5F648C;--ink3:#A3A6C0;--page:#EDE4D8;--card:rgba(255,255,255,.76);--solid:#fff;
   --scrim:rgba(20,24,60,.45);--hair:rgba(37,42,94,.10);--track:rgba(37,42,94,.09);--accent:#D2432A;--on-accent:#fff;
   --good:#14795D;--bad:#C43A30;--on-item:#fff;--good-item:#14795D;--bad-item:#C43A30;--warn:#96590A;--health:#F2674A;--happy:#F2B137;--smarts:#4D5AC7;--looks:#2F9C8C;--minor:#8B90B3;--note-on:var(--happy);
-  --flash:#fff;--r:24px;--r2:18px;--ease:cubic-bezier(.2,.9,.25,1.15);--dur:.22s}
+  --flash:#fff;--ill-tint:rgba(120,150,90,.22);--r:24px;--r2:18px;--ease:cubic-bezier(.2,.9,.25,1.15);--dur:.22s}
 
 /* the ambient art depends on the life stage, so the page sets --amb-flat on .amb */
 [data-style=flat] .amb{background-image:var(--amb-flat);filter:saturate(1.4) brightness(1.08)}

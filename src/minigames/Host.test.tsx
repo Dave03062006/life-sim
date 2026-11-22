@@ -181,3 +181,9 @@ it('leaves keys to Settings controls while Settings is open', async () => {
   expect(fireEvent.keyDown(box, { code: 'Space', key: ' ' })).toBe(true) // true = not default-prevented
   box.remove()
 })
+
+it('names the illness effect under the instruction', async () => {
+  await begin()
+  act(() => useApp.setState({ life: testLife({ illnesses: [{ id: 'dengue', since: 16, stage: 0, known: true, treated: null }] }) }))
+  expect(screen.getByText('Dengue fever: your aim wobbles')).toBeTruthy()
+})
