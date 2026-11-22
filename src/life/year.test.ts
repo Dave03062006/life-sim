@@ -16,6 +16,11 @@ describe('year', () => {
     expect(newLife({ seed: 7 }).age).toBe(0)
   })
 
+  it('starts a version 3 life with wealth, no death, and money only from age 15', () => {
+    expect(newLife({ seed: 7, wealth: 'comfortable' })).toMatchObject({ version: 3, wealth: 'comfortable', death: null, money: 0 })
+    expect(newLife({ seed: 7, startAge: 15 }).money).toBe(200000)
+  })
+
   it('gives a new life a family, and a friend from age 12', () => {
     const young = newLife({ seed: 7 }).people
     expect(young.map((p) => p.relation)).toEqual(expect.arrayContaining(['mother', 'father']))

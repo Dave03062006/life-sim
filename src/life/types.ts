@@ -10,8 +10,10 @@ export interface Memory { id: string; age: number; text: string; people: string[
 export type Interest = 'women' | 'men' | 'both' | 'none'
 export interface PendingEvent { eventId: string; cast: Record<string, string> }       // role -> person id
 export interface JournalEntry { age: number; kind: 'milestone' | 'activity' | 'event' | 'memory'; text: string; changes: Change[]; people?: { id: string; delta: number }[] } // people: real closeness changes
+export type Wealth = 'struggling' | 'getting-by' | 'comfortable' | 'well-off'
+export interface Death { age: number; cause: string }
 export interface Life {
-  version: 2
+  version: 3
   id: string
   rng: number               // the seeded generator's position
   country: 'indonesia'
@@ -31,4 +33,6 @@ export interface Life {
   pendingEvents: PendingEvent[]
   seenEvents: string[]            // event ids already drawn in this life
   spentWith: string[]             // person ids you spent time with this year
+  wealth: Wealth                  // the family you were born into
+  death: Death | null             // null while alive
 }

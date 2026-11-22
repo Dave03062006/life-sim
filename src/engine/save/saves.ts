@@ -1,18 +1,18 @@
 import { NAMES } from '../../content/countries/indonesia/names'
 import { startingPeople } from '../../life/people'
-import type { Life } from '../../life/types'
+import type { Gender, Life } from '../../life/types'
 import { createRng } from '../random'
 import { checksumOf } from './checksum'
 import type { KeyValueStore } from './storage'
 
-export const SAVE_VERSION = 2
-export interface SaveFile { version: 2; active: Life | null; past: Life[] }
-export const EMPTY_SAVE: SaveFile = { version: 2, active: null, past: [] }
+export const SAVE_VERSION = 3
+export interface SaveFile { version: 3; active: Life | null; past: Life[] }
+export const EMPTY_SAVE: SaveFile = { version: 3, active: null, past: [] }
 export interface Saves { load(): Promise<SaveFile>; store(file: SaveFile): Promise<void> }
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
-const isLife = (v: unknown) => isObject(v) && (v.version === 1 || v.version === 2)
+const isLife = (v: unknown) => isObject(v) && (v.version === 1 || v.version === 2 || v.version === 3)
 
 function isValid(raw: unknown): raw is { checksum: string; file: Record<string, unknown> } {
   if (!isObject(raw) || typeof raw.checksum !== 'string' || !isObject(raw.file)) return false
@@ -22,18 +22,26 @@ function isValid(raw: unknown): raw is { checksum: string; file: Record<string, 
   return (file.active === null || isLife(file.active)) && (file.past === undefined || (Array.isArray(file.past) && file.past.every(isLife)))
 }
 
-/** Version 1 lives gain a family (from their own generator) and the empty Plan 3 fields. */
-function upgradeLife(old: Life | Record<string, unknown>): Life {
-  if (old.version === 2) return old as Life
-  const life = old as unknown as Life
-  const rng = createRng(life.rng)
-  const people = startingPeople(rng, life.age, life.gender, life.name, NAMES)
-  return { ...life, version: 2, rng: rng.state, people, memories: [], interest: null, pendingEvents: [], seenEvents: [], spentWith: [] }
+/** Version 1 lives gain a family (from their own generator) and the empty Plan 3 fields; version 2 lives gain wealth and no death. */
+function upgradeLife(old: Record<string, unknown>): Life {
+  if (old.version === 3) return old as unknown as Life
+  let life = old
+  if (life.version === 1) {
+    const rng = createRng(life.rng as number)
+    const people = startingPeople(rng, life.age as number, life.gender as Gender, life.name as string, NAMES)
+    life = { ...life, version: 2, rng: rng.state, people, memories: [], interest: null, pendingEvents: [], seenEvents: [], spentWith: [] }
+  }
+  return { ...life, version: 3, wealth: 'getting-by', death: null } as unknown as Life
 }
 
 function upgrade(file: Record<string, unknown>): SaveFile {
-  const past = (file.past ?? []) as Life[]
-  return { version: 2, active: file.active ? upgradeLife(file.active as Life) : null, past: past.map(upgradeLife) }
+  const past = (file.past ?? []) as Record<string, unknown>[]
+  return { version: 3, active: file.active ? upgradeLife(file.active as Record<string, unknown>) : null, past: past.map(upgradeLife) }
+}
+
+/** Checks the checksum and version, then upgrades; null when the data is not a usable save. */
+export function parseSave(raw: unknown): SaveFile | null {
+  return isValid(raw) ? upgrade(raw.file) : null
 }
 
 export function createSaves(store: KeyValueStore): Saves {
@@ -42,7 +50,8 @@ export function createSaves(store: KeyValueStore): Saves {
       try {
         const raw = await store.get<unknown>('save')
         if (raw === undefined) return EMPTY_SAVE
-        if (isValid(raw)) return upgrade(raw.file) // always: a version 2 file may still hold a version 1 life
+        const parsed = parseSave(raw) // always upgrades: a version 3 file may still hold older lives
+        if (parsed) return parsed
         await store.set('save-damaged', raw)
       } catch {
         // An unreadable store means starting fresh.

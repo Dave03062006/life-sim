@@ -3,11 +3,11 @@ import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
 import { startingPeople, yearlyPeople } from './people'
 import { applyChanges, roundAway } from './stats'
-import type { Change, Gender, Life } from './types'
+import type { Change, Gender, Life, Wealth } from './types'
 
-export interface NewLifeOptions { seed: number; startAge?: number; name?: string; gender?: Gender; city?: string }
+export interface NewLifeOptions { seed: number; startAge?: number; name?: string; gender?: Gender; city?: string; wealth?: Wealth }
 
-export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'male', city = 'Surabaya' }: NewLifeOptions): Life {
+export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'male', city = 'Surabaya', wealth = 'getting-by' }: NewLifeOptions): Life {
   const rng = createRng(seed)
   const roll = (min: number, max: number) => rng.int(min, max + 1)
   const health = roll(60, 100)
@@ -17,7 +17,7 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
   const stress = roll(0, 20)
   const people = startingPeople(rng, startAge, gender, name, NAMES)
   return {
-    version: 2,
+    version: 3,
     id: `life-${seed}`,
     rng: rng.state,
     country: 'indonesia',
@@ -26,7 +26,7 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
     city,
     age: startAge,
     stats: { health, happiness, smarts, looks, stress, reputation: 50 },
-    money: 200000,
+    money: startAge >= 15 ? 200000 : 0,
     energySpent: 0,
     restsThisYear: 0,
     doneThisYear: {},
@@ -37,6 +37,8 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
     pendingEvents: [],
     seenEvents: [],
     spentWith: [],
+    wealth,
+    death: null,
   }
 }
 

@@ -1,0 +1,1 @@
+export const CITIES: string[] = ['Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Makassar', 'Palembang', 'Yogyakarta', 'Denpasar', 'Malang', 'Balikpapan', 'Pontianak', 'Manado', 'Padang', 'Banjarmasin', 'Pekanbaru', 'Kupang', 'Jayapura', 'Ambon', 'Mataram']

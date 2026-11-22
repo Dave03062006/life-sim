@@ -126,7 +126,7 @@ it('does nothing out of turn while a mini-game is playing', async () => {
 })
 it('keeps past lives when it saves', async () => {
   const saves = createSaves(memoryStore())
-  await saves.store({ version: 2, active: testLife({ age: 15 }), past: [testLife({ id: 'old' })] })
+  await saves.store({ version: 3, active: testLife({ age: 15 }), past: [testLife({ id: 'old' })] })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
   useApp.getState().begin('clothes')
@@ -212,7 +212,7 @@ it('never lets an event missing from the pack block the year', async () => {
   const saves = createSaves(memoryStore())
   events.splice(0, events.length, ...builtIns, choice('e1'))
   const unknown = { eventId: 'removed', cast: {} }
-  await saves.store({ version: 2, active: testLife({ pendingEvents: [unknown, { eventId: 'e1', cast: {} }] }), past: [] })
+  await saves.store({ version: 3, active: testLife({ pendingEvents: [unknown, { eventId: 'e1', cast: {} }] }), past: [] })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
   expect(useApp.getState().pendingEvent).toEqual({ eventId: 'e1', cast: {} })
@@ -220,7 +220,7 @@ it('never lets an event missing from the pack block the year', async () => {
   expect((await saves.load()).active!.pendingEvents).toEqual([{ eventId: 'e1', cast: {} }])
 
   const only = createSaves(memoryStore())
-  await only.store({ version: 2, active: testLife({ age: 15, pendingEvents: [unknown] }), past: [] })
+  await only.store({ version: 3, active: testLife({ age: 15, pendingEvents: [unknown] }), past: [] })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(only)
   expect(useApp.getState().pendingEvent).toBeNull()
@@ -230,7 +230,7 @@ it('never lets an event missing from the pack block the year', async () => {
 it('brings back an unanswered event after reload', async () => {
   const saves = createSaves(memoryStore())
   events.splice(0, events.length, ...builtIns, choice('e1'))
-  await saves.store({ version: 2, active: testLife({ pendingEvents: [{ eventId: 'e1', cast: {} }] }), past: [] })
+  await saves.store({ version: 3, active: testLife({ pendingEvents: [{ eventId: 'e1', cast: {} }] }), past: [] })
   useApp.setState(useApp.getInitialState())
   expect(useApp.getState().pendingEvent).toBeNull()
   await useApp.getState().boot(saves)
