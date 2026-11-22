@@ -679,4 +679,40 @@ const afterSmp: EventDef = {
   ],
 }
 
-export const events: EventDef[] = [...choices, ...news, ...lifeNews, ...lifeChoices, ...people, afterSmp]
+// Queued by work.ts when a good year earns a step up; never drawn at random. Accepting carries the 'promote' move.
+const promotion: EventDef = {
+  id: 'promotion', kind: 'choice', stages: ['late-teen', 'young-adult', 'adult', 'senior'], weight: 0,
+  title: 'A step up',
+  text: 'Your boss calls you in. You have done good work as {job}, and there is an opening for {next}.',
+  actions: [
+    act('accept', 'Accept', 85, [
+      o('You said yes. The new title looks good on the door.', { path: 'promote', effects: { happiness: 3 } }),
+      o('You said yes, and now you are mostly wondering what the job involves.', { path: 'promote', effects: { stress: 2 } }),
+      o('You said yes, a little too quietly. It still counts.', { path: 'promote' }),
+    ]),
+    act('raise', 'Ask for a bigger raise', 45, [
+      o('You asked, and the boss laughed and agreed. The new pay comes with a small bonus.', { path: 'promote', raise: true, effects: { happiness: 4 } }),
+      o('You asked, and the boss met you halfway. You are {next} now.', { path: 'promote', effects: { stress: 2 } }),
+      o('You asked, and the boss frowned. The offer stays as it was, for now.', { effects: { reputation: -1 } }),
+    ]),
+    act('decline', 'Turn it down', 85, [
+      o('You said no, thank you. You like the job you have.', { effects: { stress: -2 } }),
+      o('You said no, and the boss looked puzzled.', {}),
+      o('You said no and then spent the evening wondering why.', { effects: { stress: 2 } }),
+    ]),
+  ],
+}
+
+// Thin work news: each needs a job.
+const workNews = (id: string, title: string, text: string, news: Partial<Outcome> = {}): EventDef =>
+  ({ id, kind: 'news', stages: ['late-teen', 'young-adult', 'adult', 'senior'], weight: 2, when: [{ kind: 'job' }], title, text, news: { text, ...news } })
+const jobNews: EventDef[] = [
+  workNews('news-work-birthday', 'A cake at work', 'Someone brought a birthday cake to the office. You got the piece with the most icing.', { effects: { happiness: 3 } }),
+  workNews('news-work-air-con', 'The air conditioning broke', 'The AC gave up on the hottest day of the month. Everyone worked in the doorway with a fan.', { effects: { stress: 3, happiness: -1 } }),
+  workNews('news-work-thr', 'A small THR bonus', 'The holiday bonus came a little early this year. It is not much, but it is something.', { effects: { happiness: 3 }, money: 200_000 }),
+  workNews('news-work-new-boss', 'A new boss', 'A new boss started on Monday. By Friday they knew everyone’s name and coffee order.', { effects: { reputation: 1, happiness: 1 } }),
+  workNews('news-work-traffic', 'Stuck in traffic', 'A flooded road turned the ride to work into two hours. You arrived with wet shoes and a good podcast.', { effects: { stress: 3 } }),
+  workNews('news-work-praise', 'A kind word', 'A customer wrote to say you were helpful. Your boss read it out in the morning meeting.', { effects: { reputation: 3, happiness: 3 } }),
+]
+
+export const events: EventDef[] = [...choices, ...news, ...jobNews, ...lifeNews, ...lifeChoices, ...people, afterSmp, promotion]

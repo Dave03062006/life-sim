@@ -2,7 +2,7 @@ import type { CategoryId, StageId, StatKey } from '../../../life/types'
 import type { ActivityDef, MinigameType, Requirement } from '../../types'
 
 type Fx = Partial<Record<StatKey, number>>
-type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages' | 'track' | 'sets'>>
+type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages' | 'track' | 'sets' | 'performance'>>
 
 const FAIL: Partial<Record<CategoryId, Fx>> = {
   body: { health: -3 },
@@ -37,6 +37,8 @@ function a(
 
 const B: StageId = 'baby', SC: StageId = 'small-child', CH: StageId = 'child', ET: StageId = 'early-teen', LT: StageId = 'late-teen'
 const YA: StageId = 'young-adult', AD: StageId = 'adult', SE: StageId = 'senior'
+const JOB: Requirement = { kind: 'job', reason: "You don't have a job. Try the job board." }
+const WORK: StageId[] = [LT, YA, AD, SE]
 const CH_UP = [CH, ET, LT, YA, AD, SE], ET_UP = [ET, LT, YA, AD, SE], GROWN = [YA, AD, SE]
 
 // The original late-teen activities, unchanged in text, and the other ages that fit them.
@@ -151,6 +153,13 @@ const base: ActivityDef[] = [
   a('call-relative', 'people', 'Call a relative far away', 'A long call about nothing and everything.', '', 0, 0, { happiness: 2 }, 'You called a relative far away. The call ran an hour.', { stages: [AD, SE] }),
   a('side-gig', 'money', 'Take a side gig', 'Weekend work for a little extra.', 'tapping', 2, 90000, { stress: 2 }, 'You took a side gig on the weekend.', { stages: [YA, AD] }),
   a('sell-garden', 'money', 'Sell garden produce', 'Chillies and spinach at the morning market.', '', 1, 40000, { reputation: 1 }, 'You sold your chillies at the morning market.', { stages: [AD, SE] }),
+  // Work: shown from 15 once you have left school, and open only with a job
+  a('extra-hours', 'school', 'Work extra hours', 'Stay late and finish what the day left behind.', 'tapping', 2, 0, { stress: 3 }, 'You stayed late and cleared the pile.', { stages: WORK, track: 'work', performance: 8, requires: [JOB] }),
+  a('help-colleague', 'school', 'Help a colleague', 'Lend a hand with something that is not your job.', 'memory', 1, 0, { reputation: 2 }, 'You helped a colleague, and they will remember it.', { stages: WORK, track: 'work', performance: 4, requires: [JOB] }),
+  a('pitch-idea', 'school', 'Pitch an idea', 'Bring a better way of doing things to the boss.', 'quiz', 2, 0, {}, 'You pitched your idea and the boss wrote it down.', { stages: WORK, track: 'work', performance: 10, requires: [JOB, stat('smarts', 'Smarts')] }),
+  a('clear-inbox', 'school', 'Clear the inbox', 'Answer the messages that have been waiting all week.', 'typing', 1, 0, { stress: -1 }, 'You cleared the inbox, almost to zero.', { stages: WORK, track: 'work', performance: 4, requires: [JOB] }),
+  a('team-lunch', 'school', 'Join the team lunch', 'Nasi campur with the people you work with.', '', 1, -50000, { happiness: 2, reputation: 2 }, 'You went to the team lunch and heard all the gossip.', { stages: WORK, track: 'work', requires: [JOB] }),
+  a('slack-off', 'school', 'Slack off', 'Disappear for an hour. It is a risk, and the boss notices.', 'timing', 0, 0, { happiness: 2 }, 'You slipped out for an hour. Somebody noticed.', { stages: WORK, track: 'work', performance: -5, energyBack: 1, requires: [JOB] }),
 ]
 
 export const activities: ActivityDef[] = base.map((d) => (wider[d.id] ? { ...d, stages: wider[d.id]! } : d))

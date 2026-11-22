@@ -5,6 +5,12 @@ import { testLife } from './testLife'
 
 const withStats = (s: Partial<Stats>, more: Partial<Life> = {}) => testLife({ stats: { ...testLife().stats, ...s }, ...more })
 describe('energy', () => {
+  it('holds back time for a job, never below the floor', () => {
+    const job = { careerId: 'office', step: 0, performance: 50, years: 0 }
+    expect(energyBudget(testLife({ age: 20, job }))).toBe(8)
+    expect(energyBudget(testLife({ age: 20, job: { ...job, careerId: 'shop' } }))).toBe(10)
+    expect(energyBudget(withStats({ health: 20, stress: 80 }, { age: 70, job }))).toBe(2)
+  })
   it('sets the budget from the stage, health and stress', () => {
     expect(energyBudget(testLife())).toBe(10)
     expect(energyBudget(withStats({ health: 29 }))).toBe(8)

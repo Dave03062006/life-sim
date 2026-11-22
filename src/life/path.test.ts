@@ -3,12 +3,37 @@ import { packFor } from '../content'
 import { resolveEvent } from './events'
 import { blockedBy } from './requirements'
 import { closeSchoolYear } from './school'
-import { pathActions, takePath } from './path'
+import { findMove, pathActions, takePath } from './path'
 import { testLife } from './testLife'
 
 const pack = packFor('indonesia')
 const school = (over: Partial<ReturnType<typeof testLife>['school']>) => ({ ...testLife().school, ...over })
-const move = (life: ReturnType<typeof testLife>, id: string) => pathActions(life, pack).find((a) => a.id === id)!
+const move = (life: ReturnType<typeof testLife>, id: string) => findMove(life, id, pack)!
+
+describe('work moves', () => {
+  const adult = (over: Partial<ReturnType<typeof testLife>> = {}) => testLife({ age: 30, school: school({ at: null, done: ['tk', 'sd', 'smp', 'sma'] }), ...over })
+  it('blocks software below Smarts 70, with the reason', () => {
+    expect(move(adult({ stats: { ...testLife().stats, smarts: 65 } }), 'job:software').blocked).toBe('Needs Smarts 70 or more.')
+    expect(move(adult({ stats: { ...testLife().stats, smarts: 70 } }), 'job:software').blocked).toBeNull()
+  })
+  it('blocks the civil service test after 35', () => {
+    expect(move(adult({ age: 36 }), 'job:civil').blocked).toBe('The civil service test is open up to age 35.')
+  })
+  it('blocks full-time work while in school', () => {
+    expect(move(testLife({ age: 16 }), 'job:office').blocked).toBe('Finish or leave school first.')
+    expect(move(testLife({ age: 16 }), 'job:shop').blocked).toBeNull()
+  })
+  it('needs a motorbike for driving and a degree for teaching', () => {
+    expect(move(adult(), 'job:driving').blocked).toBe('You need a motorbike.')
+    expect(move(adult({ belongings: ['motorbike'] }), 'job:driving').blocked).toBeNull()
+    expect(move(adult(), 'job:teaching').blocked).toBe('Needs a degree in education.')
+  })
+  it('keeps retire closed until 58', () => {
+    expect(move(testLife({ age: 57 }), 'retire').blocked).toBe('You can retire from 58.')
+    expect(move(testLife({ age: 58 }), 'retire').blocked).toBe("You don't have a job.")
+    expect(move(testLife({ age: 30 }), 'quit').blocked).toBe("You don't have a job.")
+  })
+})
 
 describe('path', () => {
   it('blocks leave-school until SMP is finished, and opens it in SMA', () => {

@@ -3,6 +3,7 @@ import { formatRupiah } from './format'
 import { blockedBy, finished } from './requirements'
 import { LEVEL_NAME, SCHOLARSHIP, UNI_FEE } from './school'
 import type { Field, Life, SchoolLevel, Schooling } from './types'
+import { isWorkMove, jobBoard, promoteMove, takeWorkMove, workMoves } from './work'
 
 export interface PathAction { id: string; label: string; detail: string; blocked: string | null }
 
@@ -57,16 +58,21 @@ function leaveUni(life: Life): PathAction {
   return { id: 'leave-uni', label: 'Leave university', detail: 'Stop studying, and stop paying.', blocked: life.school.at === 'uni' ? null : 'You are not at university.' }
 }
 
-/** Every school move with its state; closed ones carry their reason. Work moves join in Task 3. */
-export function pathActions(life: Life, _pack: ContentPack): PathAction[] {
-  return [upper(life, 'sma'), upper(life, 'smk'), leaveSchool(life), paketC(life), ...FIELDS.map((f) => uni(life, f)), leaveUni(life)]
+/** Every school move, plus quit and retire, with their state; closed ones carry their reason. The job board lists the rest. */
+export function pathActions(life: Life, pack: ContentPack): PathAction[] {
+  return [upper(life, 'sma'), upper(life, 'smk'), leaveSchool(life), paketC(life), ...FIELDS.map((f) => uni(life, f)), leaveUni(life), ...workMoves(life, pack)]
 }
+
+/** Any move by id: the listed ones, the job board, and the promotion that only events use. */
+export const findMove = (life: Life, id: string, pack: ContentPack): PathAction | undefined =>
+  [...pathActions(life, pack), ...jobBoard(life, pack), promoteMove(life, pack)].find((a) => a.id === id)
 
 /** Takes an open move, and writes it into the journal. Throws on a blocked or unknown id. */
 export function takePath(life: Life, id: string, pack: ContentPack): Life {
-  const action = pathActions(life, pack).find((a) => a.id === id)
+  const action = findMove(life, id, pack)
   if (!action) throw new Error(`Unknown path move ${id}`)
   if (action.blocked) throw new Error(`${id} is blocked: ${action.blocked}`)
+  if (isWorkMove(id)) return takeWorkMove(life, id, pack)
   const enrol = (at: SchoolLevel, over: Partial<Schooling> = {}): Schooling => ({ ...life.school, at, year: 0, effort: 0, ...over })
   let school: Schooling
   let text: string

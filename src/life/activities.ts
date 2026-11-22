@@ -94,6 +94,8 @@ export function finishActivity(life: Life, def: ActivityDef, score: number, pers
     if (!isBenefit(key, delta)) add(key, delta)
     else if (tier !== 'fail') add(key, Math.sign(delta) * Math.max(1, Math.abs(roundAway(delta * scale))))
   }
+  const perf = def.performance ?? 0
+  const perfDelta = perf < 0 ? perf : tier === 'fail' ? 0 : Math.max(1, Math.round(perf * scale))
   if (tier === 'fail') for (const [key, delta] of Object.entries(def.failPenalty ?? {}) as [StatKey, number][]) add(key, delta)
   if (over > 0) {
     add('stress', OVERWORK_STRESS * over)
@@ -122,6 +124,7 @@ export function finishActivity(life: Life, def: ActivityDef, score: number, pers
         ...life.people.filter((p) => def.together?.includes(p.relation)).map((p): [string, number] => [p.id, nudge(TOGETHER_CLOSENESS, 0)]),
       ]
   let after = next
+  if (perfDelta !== 0 && after.job) after = { ...after, job: { ...after.job, performance: Math.min(100, Math.max(0, after.job.performance + perfDelta)) } }
   if (def.sets && (tier === 'good' || tier === 'great') && !after.flags.includes(def.sets)) after = { ...after, flags: [...after.flags, def.sets] }
   if (def.track === 'enrolled' && life.school.at !== null) after = { ...after, school: { ...after.school, effort: after.school.effort + TIER_SCALE[tier] } }
   const moved: { id: string; delta: number }[] = []

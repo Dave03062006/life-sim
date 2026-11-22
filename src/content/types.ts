@@ -32,7 +32,7 @@ export interface ActivityDef {
   requires?: Requirement[]
   track?: 'enrolled' | 'work' // enrolled: shown only while at school; work: shown from 15 when not enrolled. Absent: always shown
   sets?: string // a flag set on a Good or Great result
-  performance?: number // job performance, scaled like a benefit (Task 3)
+  performance?: number // job performance, scaled like a benefit
   buys?: string // a belonging id (Task 4)
   with?: Relation // one person of this relation joins (a woman first, so a grandmother before a grandfather); blocked when there is none
   together?: Relation[] // everyone of these relations joins, closeness +2 each
@@ -54,6 +54,7 @@ export type Condition =
   | { kind: 'no-memory'; id: string }
   | { kind: 'money'; min: number }
   | { kind: 'age'; min?: number; max?: number }
+  | { kind: 'job' } // you hold a job
 export interface Outcome {
   text: string // may use {role} placeholders, e.g. {friend}
   effects?: Partial<Record<StatKey, number>>
@@ -61,6 +62,7 @@ export interface Outcome {
   closeness?: Partial<Record<string, number>> // role -> change
   memory?: { id: string; text: string } // recorded with the cast's people
   addPerson?: { relation: 'crush' } // a new crush matching life.interest; skipped when interest is null or none
+  raise?: true // also pays 10% of the next career step's salary
   path?: string // a path move taken when this outcome lands; skipped if blocked
 }
 export type MannerKind = 'calm' | 'blunt' | 'joke'

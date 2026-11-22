@@ -22,8 +22,8 @@ describe('indonesia content', () => {
     expect(THEMES['entrance-test']?.count).toBe(10)
     expect(questionsFor(THEMES['entrance-test']!.quiz!, 1, 10)).toHaveLength(10)
   })
-  it('offers 45 late-teen activities, at least four in every category', () => {
-    expect(lateTeen).toHaveLength(45)
+  it('offers 51 late-teen activities, at least four in every category', () => {
+    expect(lateTeen).toHaveLength(51)
     for (const c of stageOf(16).categories) {
       expect({ c, ok: lateTeen.filter((a) => a.category === c).length >= 4 }).toEqual({ c, ok: true })
     }
@@ -93,7 +93,7 @@ describe('indonesia events', () => {
   const choices = events.filter((e) => e.kind === 'choice')
   const actions = choices.flatMap((e) => (e.actions ?? []).map((a) => ({ e, a })))
   const outcomes = actions.flatMap(({ e, a }) => (['success', 'mixed', 'fail'] as const).map((t) => ({ e, a, t, o: a.outcomes[t] })))
-  const roles = (e: (typeof events)[number]) => ['name', ...(e.id === 'talk' || e.id === 'ask-out' ? ['them'] : []), ...Object.keys(e.cast ?? {})]
+  const roles = (e: (typeof events)[number]) => ['name', ...(e.id === 'talk' || e.id === 'ask-out' ? ['them'] : []), 'job', 'next', ...Object.keys(e.cast ?? {})]
   const texts = (e: (typeof events)[number]) => [e.title, e.text, e.recall?.text ?? '', e.news?.text ?? '',
     ...(e.actions ?? []).flatMap((a) => [a.label, a.open?.note ?? '', ...Object.values(a.outcomes).flatMap((o) => [o.text, o.memory?.text ?? ''])])]
   const unknownRoles = events.flatMap((e) => texts(e).flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((m) => m[1]!)).filter((r) => !roles(e).includes(r)))
@@ -165,5 +165,28 @@ describe('indonesia events', () => {
     const built = events.filter((e) => e.id === 'talk' || e.id === 'ask-out')
     expect(built.map((e) => e.id)).toEqual(['talk', 'ask-out'])
     expect(built.filter((e) => !e.stages.includes('early-teen') || e.weight !== 0 || e.actions!.length !== 3)).toEqual([])
+  })
+})
+
+describe('indonesia careers', () => {
+  it('has eight ladders of rising pay, each requirement with a reason', () => {
+    expect(pack.careers.map((c) => c.id)).toEqual(['shop', 'office', 'teaching', 'nursing', 'software', 'driving', 'civil', 'business'])
+    for (const c of pack.careers) {
+      expect({ id: c.id, ok: c.steps.length >= 3 && c.steps.length <= 4 }).toEqual({ id: c.id, ok: true })
+      expect({ id: c.id, rising: c.steps.every((s, i) => i === 0 || s.salary > c.steps[i - 1]!.salary) }).toEqual({ id: c.id, rising: true })
+      for (const s of c.steps) for (const r of s.requires ?? []) expect({ id: c.id, ok: r.reason.length > 9 }).toEqual({ id: c.id, ok: true })
+    }
+  })
+  it('asks for Reputation 60 at the top of every ladder but business', () => {
+    for (const c of pack.careers) {
+      const top = c.steps.at(-1)!.requires ?? []
+      expect({ id: c.id, rep: top.some((r) => r.kind === 'stat' && r.key === 'reputation' && r.min === 60) }).toEqual({ id: c.id, rep: !c.business })
+    }
+  })
+  it('defines six work activities and a promotion event', () => {
+    expect(pack.activities.filter((a) => a.track === 'work').map((a) => a.id)).toEqual(['extra-hours', 'help-colleague', 'pitch-idea', 'clear-inbox', 'team-lunch', 'slack-off'])
+    const promotion = pack.events.find((e) => e.id === 'promotion')!
+    expect(promotion.weight).toBe(0)
+    expect(promotion.actions!.map((a) => a.label)).toEqual(['Accept', 'Ask for a bigger raise', 'Turn it down'])
   })
 })

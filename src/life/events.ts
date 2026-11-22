@@ -1,10 +1,11 @@
 import type { Condition, ContentPack, EventAction, EventDef, MannerKind, Outcome } from '../content/types'
 import { createRng, type Rng } from '../engine/random'
 import { NAMES } from '../content/countries/indonesia/names'
-import { pathActions, takePath } from './path'
+import { findMove, takePath } from './path'
 import { addPerson, nudgeCloseness, personById } from './people'
 import { stageOf } from './stages'
 import { applyChanges, roundAway } from './stats'
+import { currentStep, nextStepOf } from './work'
 import type { Change, JournalEntry, Life, Person, StatKey } from './types'
 
 export const DEFAULT_MANNERS: { id: string; label: string; kind: MannerKind }[] = [
@@ -21,6 +22,7 @@ function holds(life: Life, c: Condition): boolean {
     case 'memory': return life.memories.some((m) => m.id === c.id)
     case 'no-memory': return !life.memories.some((m) => m.id === c.id)
     case 'money': return life.money >= c.min
+    case 'job': return life.job !== null
     case 'age': return life.age >= (c.min ?? 0) && life.age <= (c.max ?? Infinity)
   }
 }
@@ -54,6 +56,7 @@ function castFor(life: Life, ev: EventDef, rng: Rng | null): Record<string, stri
 export function fill(text: string, life: Life, cast: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (whole, key: string) => {
     if (key === 'name') return life.name
+    if (key === 'job' || key === 'next') return (key === 'job' ? currentStep(life)?.step.title : nextStepOf(life)?.title) ?? whole
     const id = cast[key]
     return (id && personById(life, id)?.name) || whole
   })
@@ -64,7 +67,7 @@ function applyOutcome(life: Life, outcome: Outcome, cast: Record<string, string>
   const deltas = new Map<StatKey, number>()
   for (const [key, delta] of Object.entries(outcome.effects ?? {}) as [StatKey, number][]) deltas.set(key, roundAway(delta * scale))
   if (stress) deltas.set('stress', (deltas.get('stress') ?? 0) + stress)
-  const money = outcome.money ?? 0
+  const money = (outcome.money ?? 0) + (outcome.raise ? Math.round(((nextStepOf(life)?.salary ?? 0) * 0.1) / 1000) * 1000 : 0)
   let next = applyChanges(life, [...[...deltas].map(([key, delta]): Change => ({ key, delta })), { key: 'money', delta: money }])
   const changes: Change[] = [...deltas.keys()].map((key) => ({ key, delta: next.stats[key] - life.stats[key] })).filter((c) => c.delta !== 0)
   if (money !== 0) changes.push({ key: 'money', delta: money })
@@ -162,6 +165,6 @@ export function resolveEvent(life: Life, pack: ContentPack, actionId: string, ma
   const outcome = action.outcomes[tier]
   const done = applyOutcome(next, outcome, pending.cast, MANNER_SCALE[manner.kind](tier), manner.kind === 'calm' ? -2 : 0, rng)
   const move = outcome.path
-  const moved = move && pathActions(done.life, pack).some((a) => a.id === move && !a.blocked) ? takePath(done.life, move, pack) : done.life // a blocked move is skipped
+  const moved = move && findMove(done.life, move, pack)?.blocked === null ? takePath(done.life, move, pack) : done.life // a blocked move is skipped
   return { life: moved, tier, entry: done.entry, skipped: false }
 }

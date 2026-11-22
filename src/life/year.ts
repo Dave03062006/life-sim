@@ -4,6 +4,7 @@ import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
 import { deathCause } from './death'
 import { openSchoolYear, closeSchoolYear } from './school'
+import { closeWorkYear, currentStep } from './work'
 import { peopleDeaths, startingPeople, yearlyPeople } from './people'
 import { applyChanges, roundAway } from './stats'
 import type { Change, Gender, Life, Wealth } from './types'
@@ -54,8 +55,8 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
 const towardFifty = (value: number): number => roundAway((50 - value) * 0.1)
 
 /** The year ends: school's report card now, work and money settle here in later tasks. */
-export function closeYear(life: Life, _pack: ContentPack): Life {
-  return closeSchoolYear(life)
+export function closeYear(life: Life, pack: ContentPack): Life {
+  return closeWorkYear(closeSchoolYear(life), pack)
 }
 
 /** The next year begins: a year older, the yearly changes, people, then school. */
@@ -64,7 +65,7 @@ export function openYear(life: Life, pack: ContentPack): Life {
   const age = life.age + 1
   const { happiness, reputation } = life.stats
   const changes: Change[] = [
-    { key: 'stress', delta: -10 },
+    { key: 'stress', delta: currentStep(life)?.step.hours === 'full' ? -5 : -10 },
     { key: 'happiness', delta: towardFifty(happiness) },
     { key: 'reputation', delta: towardFifty(reputation) },
     { key: 'health', delta: age >= 65 ? -2 : age >= 45 ? -1 : 0 },

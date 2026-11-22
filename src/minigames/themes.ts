@@ -45,6 +45,7 @@ export const THEMES: Record<string, Theme> = {
   'hobby-class': { pads: ['Wax', 'Dye', 'Pattern', 'Dry'] },
   'evening-class': { pads: ['Read', 'Note', 'Ask', 'Review'] },
   'read-ahead': { pads: ['Title', 'Page', 'Picture', 'Word'] },
+  'pitch-idea': { quiz: { kind: 'bank', subjects: ['general', 'maths', 'english'] } },
   tutor: { quiz: { kind: 'arithmetic' } },
   'entrance-test': { quiz: { kind: 'bank', subjects: ['maths', 'science', 'english', 'indonesia', 'general'] }, count: 10 },
 }
