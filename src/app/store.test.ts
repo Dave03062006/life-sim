@@ -317,3 +317,27 @@ it('asks the question before an event with a romance option', async () => {
   useApp.getState().setInterest('none')
   expect(useApp.getState()).toMatchObject({ askingInterest: false, pendingEvent: { eventId: 'party', cast: {} } })
 })
+it('starts a new life clean, with no question or event left over from the old one', async () => {
+  const flirt: EventAction = { id: 'flirt', label: 'Flirt', chance: 50, romance: true, outcomes: outcomes('You flirted.') }
+  await fresh(choice('party', { actions: [...choice('party').actions!, flirt] }))
+  const app = useApp.getState
+  useApp.setState({ life: testLife({ pendingEvents: [{ eventId: 'party', cast: {} }] }) })
+  app().endBirthday()
+  expect(app().askingInterest).toBe(true)
+  app().newRoll(3)
+  app().startLife()
+  app().answerAbandon(true)
+  expect(app()).toMatchObject({ screen: 'year', askingInterest: false, pendingEvent: null, lastEvent: null })
+  expect(app().life).toMatchObject({ age: 0, interest: null })
+})
+it('imports a file clean, then shows its own queue', async () => {
+  const flirt: EventAction = { id: 'flirt', label: 'Flirt', chance: 50, romance: true, outcomes: outcomes('You flirted.') }
+  await fresh(choice('party', { actions: [...choice('party').actions!, flirt] }))
+  const app = useApp.getState
+  useApp.setState({ life: testLife({ pendingEvents: [{ eventId: 'party', cast: {} }] }), birthday: 16, openCategory: 'fun' })
+  app().endBirthday()
+  app().replaceSaves({ version: 3, active: null, past: [] })
+  expect(app()).toMatchObject({ life: null, askingInterest: false, pendingEvent: null, lastEvent: null, lastResult: null, playing: null, birthday: null, openCategory: null })
+  app().replaceSaves({ version: 3, active: testLife({ interest: 'none', pendingEvents: [{ eventId: 'party', cast: {} }] }), past: [] })
+  expect(app()).toMatchObject({ askingInterest: false, pendingEvent: { eventId: 'party', cast: {} } })
+})

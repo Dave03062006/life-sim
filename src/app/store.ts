@@ -72,6 +72,11 @@ const busy = (s: AppState) =>
   !s.life || s.playing !== null || s.lastResult !== null || s.birthday !== null || s.pendingEvent !== null || s.lastEvent !== null || s.askingInterest
 /** Runs once the romance question is answered; null means show the next event. */
 let resume: (() => void) | null = null
+/** Every per-life dialog closed: a new or imported life starts with none of the old one's. */
+function cleanSlate(): Partial<AppState> {
+  resume = null
+  return { askingInterest: false, pendingEvent: null, lastEvent: null, lastResult: null, playing: null, birthday: null, openCategory: null }
+}
 /** The first pending event that can show, or the romance question before one with a romance option; saves any dropped. */
 function showNext(given: Life): Partial<AppState> {
   const pack = packFor(given.country)
@@ -105,7 +110,7 @@ export const useApp = create<AppState>()((set, get) => {
     const life = newLife({ ...roll, name: cleanName(roll.name), startAge: 0 })
     const birth = pack.milestones[0]
     const withBirth = birth ? { ...life, journal: [{ age: 0, kind: 'milestone' as const, text: birth, changes: [] }] } : life
-    set({ past: old ? [...past, old] : past, screen: 'year', roll: null, confirmAbandon: false, openCategory: null })
+    set({ ...cleanSlate(), past: old ? [...past, old] : past, screen: 'year', roll: null, confirmAbandon: false })
     saveAndShow(drawEvents(withBirth, pack))
   }
   return {
@@ -179,7 +184,7 @@ export const useApp = create<AppState>()((set, get) => {
       if (get().past.some((l) => l.id === lifeId)) set({ screen: 'summary', summaryId: lifeId })
     },
     replaceSaves(file) {
-      set({ life: file.active, past: file.past, screen: 'title', roll: null, confirmAbandon: false, openCategory: null, summaryId: null, ...(file.active && showNext(file.active)) })
+      set({ ...cleanSlate(), life: file.active, past: file.past, screen: 'title', roll: null, confirmAbandon: false, summaryId: null, ...(file.active && showNext(file.active)) })
       persist(file.active)
     },
     open: (openCategory) => set({ openCategory }),
