@@ -3,7 +3,7 @@ import { packFor } from '../content'
 import { LENGTH, SCHOLARSHIP, UNI_FEE, closeSchoolYear, reportCard, schoolLabel } from './school'
 import { schoolForAge } from './requirements'
 import { testLife } from './testLife'
-import { ageUp, newLife } from './year'
+import { ageUp, closeYear, newLife } from './year'
 
 const pack = packFor('indonesia')
 const school = (over: Partial<ReturnType<typeof testLife>['school']>) => ({ ...testLife().school, ...over })
@@ -58,7 +58,7 @@ describe('school', () => {
 
   it('takes the fee each year of self-funded uni and graduates after four', () => {
     let life = testLife({ age: 19, money: 50_000_000, school: school({ at: 'uni', year: 0, done: ['tk', 'sd', 'smp', 'sma'], field: 'business', funding: 'self' }) })
-    for (let i = 0; i < 4; i++) life = closeSchoolYear(life)
+    for (let i = 0; i < 4; i++) life = closeYear(life, pack)
     expect(life.money).toBe(50_000_000 - 4 * UNI_FEE)
     expect(life.school).toMatchObject({ at: null, funding: null, field: null, degrees: ['business'] })
     expect(life.school.done.at(-1)).toBe('uni')

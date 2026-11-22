@@ -189,4 +189,8 @@ describe('indonesia careers', () => {
     expect(promotion.weight).toBe(0)
     expect(promotion.actions!.map((a) => a.label)).toEqual(['Accept', 'Ask for a bigger raise', 'Turn it down'])
   })
+  it('names a belonging for every purchase, and never resells above the price', () => {
+    for (const a of pack.activities.filter((x) => x.buys)) expect({ id: a.id, ok: pack.belongings.some((b) => b.id === a.buys) }).toEqual({ id: a.id, ok: true })
+    for (const b of pack.belongings) expect({ id: b.id, ok: b.resale <= b.price }).toEqual({ id: b.id, ok: true })
+  })
 })

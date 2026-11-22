@@ -33,7 +33,7 @@ export interface ActivityDef {
   track?: 'enrolled' | 'work' // enrolled: shown only while at school; work: shown from 15 when not enrolled. Absent: always shown
   sets?: string // a flag set on a Good or Great result
   performance?: number // job performance, scaled like a benefit
-  buys?: string // a belonging id (Task 4)
+  buys?: string // a belonging id, added when the activity finishes
   with?: Relation // one person of this relation joins (a woman first, so a grandmother before a grandfather); blocked when there is none
   together?: Relation[] // everyone of these relations joins, closeness +2 each
   makes?: 'friend' // a Good or Great result adds a new same-age friend of your gender

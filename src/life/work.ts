@@ -18,7 +18,7 @@ const NO_JOB = "You don't have a job."
 
 interface Held { career: CareerDef; step: CareerStep }
 
-function heldIn(life: Life, pack: ContentPack): Held | null {
+export function heldIn(life: Life, pack: ContentPack): Held | null {
   if (!life.job) return null
   const career = pack.careers.find((c) => c.id === life.job!.careerId)
   const step = career?.steps[life.job.step]
@@ -103,12 +103,11 @@ export function takeWorkMove(life: Life, id: string, pack: ContentPack): Life {
   return { ...started, job: { careerId: career.id, step: 0, performance: PERFORMANCE_START, years: 0 }, ownWay: started.ownWay || entry.hours === 'full' }
 }
 
-/** Salary, performance drift and a year in the step; then a promotion offer, or being let go. */
+/** Performance drift and a year in the step; then a promotion offer, or being let go. */
 export function closeWorkYear(life: Life, pack: ContentPack): Life {
   const held = heldIn(life, pack)
   if (!held || !life.job) return life
-  const pay = salaryOf(life, pack)
-  let next = pay > 0 ? note(life, `Your salary: ${formatRupiah(pay)}.`, [{ key: 'money', delta: pay }]) : life
+  let next = life
   const job: Job = { ...life.job, performance: Math.min(100, Math.max(0, life.job.performance + PERFORMANCE_DRIFT)), years: life.job.years + 1 }
   next = { ...next, job }
   if (job.performance >= PROMOTE_AT && job.years >= PROMOTE_AFTER && promoteMove(next, pack).blocked === null) {

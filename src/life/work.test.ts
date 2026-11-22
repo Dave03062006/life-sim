@@ -63,6 +63,7 @@ describe('work', () => {
     const life = working()
     const closed = closeYear(life, pack)
     expect(closed.money - life.money).toBe(48_000_000)
+    expect(closed.journal.at(-1)?.text).toBe('This year: salary Rp 48.000.000.')
     expect(closed.journal.at(-1)?.changes).toEqual([{ key: 'money', delta: 48_000_000 }])
     expect(ageUp(life, pack).job?.years).toBe(1)
   })

@@ -1,3 +1,4 @@
+import { packFor } from '../content'
 import { stageOf } from './stages'
 import { currentStep, RESERVE } from './work'
 import type { Life } from './types'
@@ -9,7 +10,8 @@ export const MIN_BUDGET = 2
 export function energyBudget(life: Life): number {
   const cut = (life.stats.health < 30 ? 2 : 0) + (life.stats.stress >= 70 ? 2 : 0)
   const held = currentStep(life)
-  return Math.max(MIN_BUDGET, stageOf(life.age).energy - cut - (held ? RESERVE[held.step.hours] : 0))
+  const extra = life.belongings.reduce((sum, id) => sum + (packFor(life.country).belongings.find((b) => b.id === id)?.energy ?? 0), 0)
+  return Math.max(MIN_BUDGET, stageOf(life.age).energy - cut - (held ? RESERVE[held.step.hours] : 0) + extra)
 }
 
 export const energyLeft = (life: Life): number => energyBudget(life) - life.energySpent

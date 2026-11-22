@@ -23,6 +23,10 @@ it('sums up a life that ended', () => {
   expect(CLOSING_LINES.old).toContain(s.closing)
 })
 
+it('adds belongings to net worth', () => {
+  expect(summaryOf(testLife({ belongings: ['motorbike'] })).netWorth).toBe(215000 + 3_000_000)
+})
+
 it('sums up an unfinished life', () => {
   const s = summaryOf(testLife())
   expect(s).toMatchObject({ ended: 'unfinished', cause: null })

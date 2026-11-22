@@ -1,11 +1,11 @@
 import type { ContentPack } from '../content/types'
-import { formatRupiah } from './format'
 import { finished } from './requirements'
 import { applyChanges } from './stats'
 import type { Change, Life, SchoolLevel } from './types'
 
 export const LENGTH: Record<SchoolLevel, number> = { tk: 2, sd: 6, smp: 3, sma: 3, smk: 3, 'paket-c': 1, uni: 4 }
 export const STUDY_TARGET = 3
+// State university UKT bands: typical middle bands Rp 2,5-7,5 juta per semester, so about Rp 10 juta a year
 export const UNI_FEE = 10_000_000 // a year, paid when funding is 'self'
 export const SCHOLARSHIP = { smarts: 80, grade: 80 }
 
@@ -15,7 +15,7 @@ export function reportCard(life: Life): number {
   return Math.round(0.6 * life.stats.smarts + 0.4 * 100 * Math.min(1, life.school.effort / STUDY_TARGET))
 }
 
-/** The report card, the uni fee, then the year counted; the level ends when its years are done. */
+/** The report card, then the year counted; the level ends when its years are done. */
 export function closeSchoolYear(life: Life): Life {
   const { at, year, field, funding } = life.school
   if (at === null) return life
@@ -33,7 +33,6 @@ export function closeSchoolYear(life: Life): Life {
     grade = reportCard(life)
     log(`Your report card: ${grade}.`, grade >= 80 ? [{ key: 'happiness', delta: 3 }] : grade < 40 ? [{ key: 'happiness', delta: -3 }, { key: 'stress', delta: 3 }] : [])
   }
-  if (at === 'uni' && funding === 'self') log(`University fees: ${formatRupiah(UNI_FEE)}.`, [{ key: 'money', delta: -UNI_FEE }])
 
   const done = year + 1 >= LENGTH[at]
   if (done) {

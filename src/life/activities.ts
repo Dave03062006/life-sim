@@ -43,6 +43,7 @@ function check(life: Life, def: ActivityDef): { blocked: string | null; openNote
     if (life.stats[r.key] < r.min) return { blocked: r.reason, openNote: null }
     openNote ??= r.openNote
   }
+  if (def.buys && life.belongings.includes(def.buys)) return { blocked: 'You already have one.', openNote: null }
   const price = -(def.money ?? 0)
   if (price > life.money) return { blocked: `You need ${formatRupiah(price)}. You have ${formatRupiah(life.money)}.`, openNote: null }
   return { blocked: null, openNote }
@@ -126,6 +127,7 @@ export function finishActivity(life: Life, def: ActivityDef, score: number, pers
   let after = next
   if (perfDelta !== 0 && after.job) after = { ...after, job: { ...after.job, performance: Math.min(100, Math.max(0, after.job.performance + perfDelta)) } }
   if (def.sets && (tier === 'good' || tier === 'great') && !after.flags.includes(def.sets)) after = { ...after, flags: [...after.flags, def.sets] }
+  if (def.buys && !after.belongings.includes(def.buys)) after = { ...after, belongings: [...after.belongings, def.buys] }
   if (def.track === 'enrolled' && life.school.at !== null) after = { ...after, school: { ...after.school, effort: after.school.effort + TIER_SCALE[tier] } }
   const moved: { id: string; delta: number }[] = []
   for (const [id, delta] of company) {

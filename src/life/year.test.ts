@@ -45,8 +45,8 @@ describe('year', () => {
     const next = ageUp(life, pack)
     expect(next.death).toEqual({ age: 16, cause: 'Health gave out' })
     expect(next.age).toBe(16)
-    expect(next.journal.map((j) => j.text)).toEqual([expect.stringContaining('Your report card'), 'You died at 16. Health gave out.'])
-    expect(closeYear(life, pack).journal).toHaveLength(1)
+    expect(next.journal.map((j) => j.text)).toEqual(['This year: allowance Rp 1.200.000.', expect.stringContaining('Your report card'), 'You died at 16. Health gave out.'])
+    expect(closeYear(life, pack).journal).toHaveLength(2)
   })
 
   it('wears the body down with age', () => {

@@ -2,7 +2,7 @@ import type { CategoryId, StageId, StatKey } from '../../../life/types'
 import type { ActivityDef, MinigameType, Requirement } from '../../types'
 
 type Fx = Partial<Record<StatKey, number>>
-type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages' | 'track' | 'sets' | 'performance'>>
+type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages' | 'track' | 'sets' | 'performance' | 'buys'>>
 
 const FAIL: Partial<Record<CategoryId, Fx>> = {
   body: { health: -3 },
@@ -48,7 +48,7 @@ export const wider: Record<string, StageId[]> = {
   futsal: [CH, ET, LT, YA, AD], jog: CH_UP, gym: [LT, YA, AD, SE], badminton: CH_UP, swim: CH_UP, silat: CH_UP,
   checkup: ET_UP, dentist: [SC, ...CH_UP], 'eat-better': CH_UP, counsellor: [ET, LT],
   cook: [SC, ...CH_UP], 'family-dinner': [B, SC, ...CH_UP], 'call-nenek': [SC, ...CH_UP], 'new-friend': CH_UP,
-  'sell-snacks': [CH, ET, LT], tutor: [LT, YA, AD, SE], 'save-bank': CH_UP, clothes: ET_UP, 'warung-shift': [LT, YA, AD],
+  'sell-snacks': [CH, ET, LT], tutor: [LT, YA, AD, SE], 'save-bank': CH_UP, motorbike: [LT, YA, AD, SE], 'join-bpjs': GROWN, clothes: ET_UP, 'warung-shift': [LT, YA, AD],
   band: ET_UP, warnet: [ET, LT, YA], film: CH_UP, karaoke: ET_UP, 'ride-town': ET_UP, comics: CH_UP,
   nap: [B, SC, ...CH_UP], 'sleep-in': CH_UP, meditate: ET_UP, pijat: GROWN, holiday: CH_UP, 'do-nothing': CH_UP,
 }
@@ -103,10 +103,19 @@ const base: ActivityDef[] = [
   a('warung-shift', 'money', 'Shift at the warung', 'Serve customers at Bu Yanti’s food stall.', 'memory', 2, 60000, { stress: 2 }, 'You worked shifts at the warung.'),
   a('sell-snacks', 'money', 'Sell snacks at school', 'Buy kue in bulk and sell it at break time.', 'quiz', 1, 35000, { reputation: 1 }, 'You sold snacks at break time.'),
   a('tutor', 'money', 'Tutor a neighbour’s kid', 'Teach maths to a primary-school kid.', 'quiz', 2, 75000, { smarts: 1, reputation: 1 }, 'You tutored a neighbour’s kid in maths.', { requires: [stat('smarts', 'Smarts')] }),
-  a('save-bank', 'money', 'Save at the bank', 'Put money away. It earns a little interest each year.', '', 0, 0, {}, 'You opened a savings account.'),
+  a('save-bank', 'money', 'Save at the bank', 'Put money away. It earns a little interest each year.', '', 0, 0, {}, 'You opened a savings account.', { sets: 'bank', requires: [{ kind: 'no-flag', flag: 'bank', reason: 'You already have a savings account.' }] }),
   a('clothes', 'money', 'Buy new clothes', 'A sharper look for school and weekends.', '', 0, -180000, { looks: 5, happiness: 2 }, 'You bought new clothes.'),
   a('motorbike', 'money', 'Buy a motorbike', 'A second-hand scooter means freedom.', '', 0, -4500000, { happiness: 8, reputation: 3 }, 'You bought a second-hand scooter.', {
+    buys: 'motorbike',
     requires: [{ kind: 'min-age', age: 17, reason: 'From age 17, with a SIM C licence' }],
+  }),
+  // Prices: second-hand car and a modest house outside the big-city centres (see belongings.ts)
+  a('buy-car', 'money', 'Buy a car', 'A second-hand family car. Roomier, and the rain stops mattering.', '', 0, -150000000, { happiness: 6, reputation: 4 }, 'You bought a second-hand car.', {
+    stages: GROWN, buys: 'car', requires: [{ kind: 'min-age', age: 17, reason: 'From age 17, with a SIM A licence.' }],
+  }),
+  a('buy-house', 'money', 'Buy a house', 'A modest house outside the city centre. No more rent, no more landlord.', '', 0, -600000000, { happiness: 8, stress: -4 }, 'You bought a house and got the keys.', { stages: GROWN, buys: 'house' }),
+  a('join-bpjs', 'health', 'Join BPJS Kesehatan', 'Kelas 3 health insurance, paid every year. Treatment discounts come later.', '', 0, 0, {}, 'You signed up for BPJS Kesehatan.', {
+    sets: 'bpjs', requires: [{ kind: 'min-age', age: 18, reason: 'From age 18.' }, { kind: 'no-flag', flag: 'bpjs', reason: 'You are already in BPJS.' }],
   }),
   a('band', 'fun', 'Band rehearsal', 'Guitar with your school band. Happiness and Reputation.', 'tapping', 2, 0, { happiness: 5, reputation: 2 }, 'Your band finally nailed the chorus.'),
   a('warnet', 'fun', 'Games at the warnet', 'A few hours at the internet café.', 'tapping', 1, -10000, { happiness: 4, stress: -3, smarts: -1 }, 'You lost an evening at the warnet.'),

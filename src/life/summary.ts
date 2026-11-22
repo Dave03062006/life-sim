@@ -1,3 +1,5 @@
+import { packFor } from '../content'
+import { netWorth } from './money'
 import type { Life, Memory, Person, Stats } from './types'
 
 export interface LifeSummary {
@@ -7,7 +9,7 @@ export interface LifeSummary {
   cause: string | null
   memories: Memory[]
   stats: Stats
-  netWorth: number // money for now; belongings join in Plan 5
+  netWorth: number // money plus the resale value of belongings
   leftBehind: Person[] // living people, closest first
   closing: string
 }
@@ -29,7 +31,7 @@ export function summaryOf(life: Life): LifeSummary {
     cause: life.death?.cause ?? null,
     memories: life.memories.toSorted((a, b) => a.age - b.age),
     stats: life.stats,
-    netWorth: life.money,
+    netWorth: netWorth(life, packFor(life.country)),
     leftBehind: life.people.toSorted((a, b) => b.closeness - a.closeness),
     closing: lines[Math.abs(life.rng) % lines.length]!, // stable for a given life
   }
