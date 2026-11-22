@@ -274,20 +274,20 @@ The People category lists the people in your life with their closeness. Picking 
 
 | Condition | Type | Mostly affects | Untreated, in reality | Treated | Status |
 |---|---|---|---|---|---|
-| Influenza | short | all ages | Rarely fatal in healthy people; riskier past 65 | Rest and fluids | To check (WHO) |
-| Acute diarrhoea | short | under 5 | A leading killer of small children through dehydration | Oral rehydration prevents most deaths | To check (WHO) |
-| Dengue fever | short | all ages | Severe dengue can kill more than 20% without care | Below 1% with proper care | Checked: WHO fact sheets 2009–2014 [1][2]; current sheet wording to confirm |
-| Typhoid fever | short | 5–30 | 10–30% die | Below 1% with prompt care | Checked: CDC Yellow Book [3] |
-| Pneumonia | short | under 5, over 65 | About 30% in the years before antibiotics | Far lower with antibiotics | To check |
-| Appendicitis | short | 10–30 | Often fatal once it bursts | Under 1% with surgery | To check |
-| Tuberculosis | long | 15–55 | About 70% die within 10 years (smear-positive), about 20% (smear-negative); about 3 years from onset to cure or death | About six months of treatment cures most | Checked: Tiemersma et al. 2011 [4] |
-| Asthma | long | from childhood | Attacks; rarely fatal | Controlled with an inhaler | To check (WHO) |
-| High blood pressure | long | 35+ | Shortens life by several years through stroke and heart disease | Controlled with daily medicine | To check |
-| Type 2 diabetes | long | 35+ | Diagnosis at 50 costs about 6 years of life; at 40, about 10 | Controlled with medicine and habits | Checked in part: Emerging Risk Factors Collaboration 2023 [5]; link to the paper to add |
-| Heart attack | short, on heart disease | 45+ | A large share die within a month without care | Much lower in hospital | To check |
-| Stroke | short | 50+ | Roughly one in five die within a month | Lower with fast care | To check |
-| Lung cancer | long | 50+ | About 7 months median survival | Better if caught early | To check (Wao et al. 2013) |
-| Breast cancer | long | women 35+ | Median 2.7 years; 18% alive at 5 years, 4% at 10 | Most survive when caught early | Checked: Bloom et al. 1962 [6] |
+| Influenza | short | all ages | Rarely fatal in healthy people; riskier past 65 | Rest and fluids | Checked: WHO [7] |
+| Acute diarrhoea | short | under 5 | A leading killer of small children through dehydration | Oral rehydration prevents most deaths | Checked: WHO [8] |
+| Dengue fever | short | all ages | Severe dengue can kill more than 20% without care | Below 1% with proper care | Checked [1][2] |
+| Typhoid fever | short | 5–30 | 10–30% die | Below 1% with prompt care | Checked [3] |
+| Pneumonia | short | under 5, over 65 | About 30% in the years before antibiotics | Far lower with antibiotics | Checked [9][10] |
+| Appendicitis | short | 10–30 | Often fatal once it bursts | Under 1% with surgery | Checked [11]; untreated figure is a game estimate |
+| Tuberculosis | long | 15–55 | About 70% die within 10 years (smear-positive), about 20% (smear-negative); about 3 years from onset to cure or death | About six months of treatment cures most | Checked [4] |
+| Asthma | long | from childhood | Attacks; rarely fatal | Controlled with an inhaler | Checked: WHO [12] |
+| High blood pressure | long | 35+ | Shortens life by several years through stroke and heart disease | Controlled with daily medicine | Checked [13] |
+| Type 2 diabetes | long | 35+ | Diagnosis at 50 costs about 6 years of life; at 40, about 10 | Controlled with medicine and habits | Checked [5] |
+| Heart attack | short, on heart disease | 45+ | A large share die within a month without care | Much lower in hospital | Checked [14] |
+| Stroke | short | 50+ | Roughly one in five die within a month | Lower with fast care | Checked [15] |
+| Lung cancer | long | 50+ | About 7 months median survival | Better if caught early | Checked [16] |
+| Breast cancer | long | women 35+ | Median 2.7 years; 18% alive at 5 years, 4% at 10 | Most survive when caught early | Checked [6] |
 
 Not in milestone 1 (**Call**): HIV and other conditions tied to sex or drugs wait for the dark-humour setting or a later decision; depression waits until it can be written with care.
 
@@ -558,6 +558,8 @@ The first screen loads only its own skin's art. Mini-games and the art for other
 29. The belongings: a motorbike at Rp 8.000.000 (resale Rp 5.500.000), a car at Rp 150.000.000 (resale Rp 100.000.000), and a starter house at Rp 185.000.000 that cuts living costs by Rp 15.000.000 a year (Plan 5).
 30. Three plan figures changed after checking sources: Junior developer Rp 60.000.000 a year (was 84.000.000), the motorbike Rp 8.000.000 (was 4.500.000), and the house Rp 185.000.000 as a subsidised starter house (was 600.000.000).
 
+The appendicitis untreated figure (0.5) is a game estimate: no series of untreated cases exists.
+
 ## 15. Left to the builder
 
 - Exact numbers for every activity's benefits and costs, tuned with the simulation.
@@ -574,3 +576,13 @@ The first screen loads only its own skin's art. Mini-games and the art for other
 4. Tiemersma et al., "Natural History of Tuberculosis", PLoS ONE, 2011: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3070694/
 5. Emerging Risk Factors Collaboration, life expectancy and age at diagnosis of type 2 diabetes, 2023; summary: https://www.nursinginpractice.com/?p=33584
 6. Bloom et al., "The natural history of untreated breast cancer (1805–1933)", 1962: https://pubmed.ncbi.nlm.nih.gov/5220111/
+7. WHO, "Influenza (seasonal)" fact sheet: https://www.who.int/news-room/fact-sheets/detail/influenza-(seasonal)
+8. WHO, "Diarrhoeal disease" fact sheet: https://www.who.int/news-room/fact-sheets/detail/diarrhoeal-disease
+9. Pre-antibiotic pneumonia mortality, JCI historical review: https://www.jci.org/articles/view/29920
+10. Pneumonia case fatality by age before and after penicillin: https://pmc.ncbi.nlm.nih.gov/articles/PMC2827629/
+11. Appendicitis mortality in 9 652 cases: https://pmc.ncbi.nlm.nih.gov/articles/PMC1421275/
+12. WHO, "Asthma" fact sheet: https://www.who.int/news-room/fact-sheets/detail/asthma
+13. Franco et al., Hypertension, 2005: https://pubmed.ncbi.nlm.nih.gov/15983235/
+14. ACC, coronary care unit history: https://www.acc.org/Latest-in-Cardiology/Articles/2021/07/01/01/42/Editors-Corner-The-King-of-Hollywood-and-60-Years-of-the-Coronary-Care-Unit
+15. Ackah et al., 2024, stroke case fatality in sub-Saharan Africa: https://pmc.ncbi.nlm.nih.gov/articles/PMC10798456/
+16. Wao et al., 2013, survival of untreated lung cancer: https://pmc.ncbi.nlm.nih.gov/articles/PMC3579762/

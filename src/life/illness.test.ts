@@ -160,3 +160,20 @@ describe('ending and dying', () => {
     expect(closeIllnessYear(lifeWith(ill('test-flu')), packOf([covid]), rng()).journal.map((e) => e.text)).toEqual(['You got over COVID.'])
   })
 })
+
+describe('real conditions', () => {
+  const real = packFor('indonesia').illnesses
+  const get = (id: string): IllnessDef => real.find((d) => d.id === id)!
+  it("tuberculosis's yearly rates put 60-75% in the grave within ten years", () => {
+    const st = get('tb').stages[0]!
+    const stay = (1 - st.death) * (1 - (st.recover ?? 0))
+    const dead = (st.death * (1 - stay ** 10)) / (1 - stay)
+    expect(dead).toBeGreaterThan(0.6)
+    expect(dead).toBeLessThan(0.75)
+  })
+  it("breast cancer's later yearly rate leaves 15-25% alive after five years", () => {
+    const alive = (1 - get('breast-cancer').stages[1]!.death) ** 5
+    expect(alive).toBeGreaterThan(0.15)
+    expect(alive).toBeLessThan(0.25)
+  })
+})

@@ -8,6 +8,7 @@ import { wider } from './countries/indonesia/activities'
 import { packFor } from './index'
 
 const pack = packFor('indonesia')
+const httpsSources = (ill: { sources: { url: string }[] }): boolean => ill.sources.length > 0 && ill.sources.every((x) => x.url.startsWith('https://'))
 const lateTeen = pack.activities.filter((a) => a.stages.includes('late-teen'))
 
 describe('indonesia content', () => {
@@ -212,11 +213,25 @@ describe('indonesia careers', () => {
   })
   it('gives every illness a source, a treatment, descending onset bands, and one stage when short', () => {
     for (const ill of pack.illnesses) {
-      expect({ id: ill.id, https: ill.sources.length > 0 && ill.sources.every((x) => x.url.startsWith('https://')) }).toEqual({ id: ill.id, https: true })
+      expect({ id: ill.id, https: httpsSources(ill) }).toEqual({ id: ill.id, https: true })
       expect({ id: ill.id, cared: ill.treatments.length > 0 }).toEqual({ id: ill.id, cared: true })
       const ages = ill.onset.map(([from]) => from)
       expect({ id: ill.id, sorted: ages.every((a, k) => k === 0 || (ages[k - 1] ?? 0) > a) }).toEqual({ id: ill.id, sorted: true })
       expect({ id: ill.id, stages: ill.kind === 'short' ? ill.stages.length : 1, untreated: ill.kind === 'short' ? !!ill.untreated : true }).toEqual({ id: ill.id, stages: 1, untreated: true })
     }
+  })
+  it('defines the fourteen conditions, with real references between them', () => {
+    expect(pack.illnesses.map((i) => i.id)).toEqual(['flu', 'diarrhoea', 'dengue', 'typhoid', 'pneumonia', 'appendicitis', 'tb', 'asthma', 'high-bp', 'diabetes', 'heart-attack', 'stroke', 'lung-cancer', 'breast-cancer'])
+    const ids = pack.illnesses.map((i) => i.id)
+    for (const ill of pack.illnesses) {
+      for (const k of Object.keys(ill.risk?.untreated ?? {})) expect({ id: ill.id, k, known: ids.includes(k) }).toEqual({ id: ill.id, k, known: true })
+      for (const t of ill.treatments) expect({ id: t.id, ok: t.cost >= 0 && ['home', 'puskesmas', 'hospital'].includes(t.place) }).toEqual({ id: t.id, ok: true })
+    }
+    expect(pack.illnesses.filter((i) => i.gender).map((i) => [i.id, i.gender])).toEqual([['breast-cancer', 'female']])
+  })
+  it('the source check fails for a plain http link or no source', () => {
+    expect(httpsSources({ sources: [{ url: 'http://example.com' }] })).toBe(false)
+    expect(httpsSources({ sources: [] })).toBe(false)
+    expect(httpsSources({ sources: [{ url: 'https://example.com' }] })).toBe(true)
   })
 })

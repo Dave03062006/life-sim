@@ -2,7 +2,8 @@ import type { ContentPack } from '../../types'
 import { activities } from './activities'
 import { belongings } from './belongings'
 import { careers } from './careers'
+import { illnesses } from './illnesses'
 import { events } from './events'
 import { milestones } from './milestones'
 
-export const indonesia: ContentPack = { id: 'indonesia', activities, milestones, events, careers, belongings, illnesses: [] }
+export const indonesia: ContentPack = { id: 'indonesia', activities, milestones, events, careers, belongings, illnesses }
