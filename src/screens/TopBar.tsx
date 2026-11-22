@@ -16,6 +16,9 @@ export function TopBar() {
   const { style, sound, update } = useSettings()
   const settings = useApp((s) => s.settingsOpen)
   const setSettings = useApp((s) => s.setSettingsOpen)
+  const inYear = useApp((s) => s.screen === 'year')
+  const confirming = useApp((s) => s.confirmAbandon)
+  const goTitle = useApp((s) => s.goTitle)
   const opener = useRef<HTMLButtonElement>(null)
   const close = () => {
     flushSync(() => setSettings(false)) // drop inert before moving focus back
@@ -25,7 +28,7 @@ export function TopBar() {
   }
   return (
     <>
-      <header className="top" inert={settings}>
+      <header className="top" inert={settings || confirming}>
         <div className="brand">
           <i />
           {GAME_NAME} <em>working title</em>
@@ -50,6 +53,11 @@ export function TopBar() {
           <button className="ghost snd" aria-pressed={!sound} onClick={() => update({ sound: !sound })}>
             {sound ? 'Sound on' : 'Sound off'}
           </button>
+          {inYear && (
+            <button className="ghost" onClick={goTitle}>
+              Menu
+            </button>
+          )}
           <button ref={opener} className="ghost" onClick={() => setSettings(true)}>
             Settings
           </button>

@@ -13,7 +13,7 @@ const start = async () => {
   useSettings.getState().reset()
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(createSaves(memoryStore()))
-  useApp.setState({ life: testLife() })
+  useApp.setState({ life: testLife(), screen: 'year' })
   render(<App />)
 }
 

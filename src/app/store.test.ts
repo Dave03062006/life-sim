@@ -4,6 +4,7 @@ import { createSaves } from '../engine/save/saves'
 import { memoryStore } from '../engine/save/storage'
 import { testLife } from '../life/testLife'
 import type { Person } from '../life/types'
+import { newLife } from '../life/year'
 import { useApp } from './store'
 
 const events = vi.hoisted(() => [] as EventDef[])
@@ -30,17 +31,20 @@ const fresh = async (...extra: EventDef[]) => {
   return saves
 }
 const flush = () => new Promise((r) => setTimeout(r, 0))
+/** A life at 15 with no events drawn, as the old demo life was. */
+const demo = () => useApp.setState({ life: newLife({ seed: 7, startAge: 15 }), screen: 'year' })
 
-it('boots empty, then starts a life at 15', async () => {
+it('boots empty, then starts a life at birth', async () => {
   await fresh()
   expect(useApp.getState()).toMatchObject({ ready: true, life: null })
-  useApp.getState().startDemoLife(7)
-  expect(useApp.getState().life!.age).toBe(15)
+  useApp.getState().newRoll(7)
+  useApp.getState().startLife()
+  expect(useApp.getState().life!.age).toBe(0)
 })
 it('plays an activity once, journals it and saves it', async () => {
   const saves = await fresh()
   const app = useApp.getState
-  app().startDemoLife(7)
+  demo()
   const before = app().life!.stats.health
   app().begin('jog')
   expect(app().playing!.def.id).toBe('jog')
@@ -57,7 +61,7 @@ it('plays an activity once, journals it and saves it', async () => {
 it('finishes an activity with no mini-game at once, and ignores a blocked one', async () => {
   await fresh()
   const app = useApp.getState
-  app().startDemoLife(7)
+  demo()
   app().begin('clothes')
   expect(app().playing).toBeNull()
   expect(app().lastResult!.tier).toBe('good')
@@ -68,7 +72,7 @@ it('finishes an activity with no mini-game at once, and ignores a blocked one', 
 it('ages up, shows the birthday and closes the sheet', async () => {
   await fresh()
   const app = useApp.getState
-  app().startDemoLife(7)
+  demo()
   app().open('body')
   app().ageUp()
   expect(app()).toMatchObject({ birthday: 16, openCategory: null })
@@ -80,17 +84,18 @@ it('comes back after a reload', async () => {
   const saves = createSaves(memoryStore())
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
-  useApp.getState().startDemoLife(7)
+  useApp.getState().newRoll(7)
+  useApp.getState().startLife()
   await flush()
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
-  expect(useApp.getState().life!.age).toBe(15)
+  expect(useApp.getState().life!.id).toBe('life-7')
 })
 it('keeps playing when saving fails', async () => {
   const failing = { ...memoryStore(), set: () => Promise.reject(new Error('quota')) }
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(createSaves(failing))
-  useApp.getState().startDemoLife(7)
+  demo()
   useApp.getState().begin('jog')
   useApp.getState().finish(0.9)
   await flush()
@@ -98,7 +103,7 @@ it('keeps playing when saving fails', async () => {
 })
 it('ignores a second boot', async () => {
   const saves = await fresh()
-  useApp.getState().startDemoLife(7)
+  demo()
   const life = useApp.getState().life
   await useApp.getState().boot(saves)
   expect(useApp.getState().life).toBe(life)
@@ -107,7 +112,7 @@ it('lets only one of two overlapping boots load', async () => {
   const saves = createSaves(memoryStore())
   useApp.setState(useApp.getInitialState())
   await Promise.all([useApp.getState().boot(saves), useApp.getState().boot(saves)])
-  useApp.getState().startDemoLife(7)
+  demo()
   const life = useApp.getState().life
   await flush()
   await useApp.getState().boot(saves)
@@ -116,7 +121,7 @@ it('lets only one of two overlapping boots load', async () => {
 it('does nothing out of turn while a mini-game is playing', async () => {
   await fresh()
   const app = useApp.getState
-  app().startDemoLife(7)
+  demo()
   app().begin('futsal')
   const life = app().life
   app().ageUp()
@@ -138,7 +143,7 @@ it('keeps past lives when it saves', async () => {
 it('draws a different seed for each game from the life, and replays it', async () => {
   await fresh()
   const app = useApp.getState
-  app().startDemoLife(7)
+  demo()
   const rng = app().life!.rng
   app().begin('jog')
   const first = app().playing!.seed
@@ -152,7 +157,7 @@ it('draws a different seed for each game from the life, and replays it', async (
 })
 it('saves the advanced seed when a game starts', async () => {
   const saves = await fresh()
-  useApp.getState().startDemoLife(7)
+  demo()
   useApp.getState().begin('jog')
   await flush()
   expect((await saves.load()).active!.rng).toBe(useApp.getState().life!.rng)
@@ -186,7 +191,7 @@ it('shows events after the birthday, one at a time, and saves them', async () =>
 it('refuses other actions while an event waits', async () => {
   await fresh(choice('e1'))
   const app = useApp.getState
-  app().startDemoLife(7)
+  demo()
   app().ageUp()
   app().endBirthday()
   expect(app().pendingEvent!.eventId).toBe('e1')

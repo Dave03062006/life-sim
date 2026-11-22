@@ -10,12 +10,20 @@ import { drawEvents, dropStale, resolveEvent, type EventTier } from '../life/eve
 import { modifiersFor } from '../life/modifiers'
 import { personById } from '../life/people'
 import { actionsFor, afterEvent, giveGift, queuePersonEvent, talk, timeActivity, type PersonActionId } from '../life/personActions'
+import { cleanName, rollLife, type LifeRoll } from '../life/roll'
 import type { CategoryId, Interest, JournalEntry, Life, PendingEvent } from '../life/types'
 import { ageUp, newLife } from '../life/year'
 import type { Modifiers } from '../minigames/framework'
 
+export type Screen = 'title' | 'new-life' | 'year' | 'summary' | 'past'
+
 export interface AppState {
   ready: boolean
+  screen: Screen
+  past: Life[]
+  roll: LifeRoll | null // only while screen is 'new-life'
+  confirmAbandon: boolean
+  summaryId: string | null // life id shown on the summary screen
   life: Life | null
   openCategory: CategoryId | null
   playing: { def: ActivityDef; mods: Modifiers; seed: number; personId?: string } | null
@@ -26,7 +34,12 @@ export interface AppState {
   askingInterest: boolean
   lastEvent: { def: EventDef; tier: EventTier; entry: JournalEntry } | null
   boot(saves?: Saves): Promise<void>
-  startDemoLife(seed?: number): void // Plan 1 only; Plan 4 replaces it with the roll screen.
+  goTitle(): void // ignored while a game, event or dialog shows
+  newRoll(seed?: number): void
+  editRoll(patch: Partial<Pick<LifeRoll, 'name' | 'gender'>>): void
+  startLife(): void // with an unfinished active life, sets confirmAbandon and waits
+  answerAbandon(yes: boolean): void
+  continueLife(): void
   open(category: CategoryId | null): void
   begin(activityId: string): void // a blocked activity is ignored; one with no mini-game finishes at once as Good
   finish(score: number): void // acts once per activity
@@ -43,8 +56,7 @@ export interface AppState {
 let saves: Saves | null = null
 let booting: Promise<void> | null = null
 let loading = false
-let past: Life[] = []
-const persist = (life: Life) => void saves?.store({ version: 3, active: life, past }).catch(() => {}) // a failed save must not break the game
+const persist = (life: Life) => void saves?.store({ version: 3, active: life, past: useApp.getState().past }).catch(() => {}) // a failed save must not break the game
 const localSaves = (): Saves => {
   try {
     return createSaves(indexedDbStore('life-sim', 'saves'))
@@ -83,8 +95,23 @@ export const useApp = create<AppState>()((set, get) => {
     persist(life)
     set({ life, ...showNext(life) })
   }
+  /** Starts the rolled life, moving any active one to past lives; one save holds both. */
+  const born = (roll: LifeRoll) => {
+    const { life: old, past } = get()
+    const pack = packFor('indonesia')
+    const life = newLife({ ...roll, name: cleanName(roll.name), startAge: 0 })
+    const birth = pack.milestones[0]
+    const withBirth = birth ? { ...life, journal: [{ age: 0, kind: 'milestone' as const, text: birth, changes: [] }] } : life
+    set({ past: old ? [...past, old] : past, screen: 'year', roll: null, confirmAbandon: false, openCategory: null })
+    saveAndShow(drawEvents(withBirth, pack))
+  }
   return {
     ready: false,
+    screen: 'title',
+    past: [],
+    roll: null,
+    confirmAbandon: false,
+    summaryId: null,
     life: null,
     openCategory: null,
     playing: null,
@@ -102,17 +129,41 @@ export const useApp = create<AppState>()((set, get) => {
       booting = saves
         .load()
         .then((file) => {
-          past = file.past
-          set({ ready: true, life: file.active, ...(file.active && showNext(file.active)) })
+          set({ ready: true, past: file.past, life: file.active, ...(file.active && showNext(file.active)) })
         })
         .finally(() => {
           loading = false
         })
       return booting
     },
-    startDemoLife(seed = randomSeed()) {
-      const life = drawEvents(newLife({ seed, startAge: 15 }), packFor('indonesia'))
-      saveAndShow(life)
+    goTitle() {
+      const s = get()
+      if (s.screen === 'year' && busy(s)) return
+      set({ screen: 'title', roll: null, confirmAbandon: false, openCategory: null })
+    },
+    newRoll(seed) {
+      let next = seed ?? randomSeed()
+      while (seed === undefined && next === get().roll?.seed) next = randomSeed() // a re-roll always changes
+      set({ screen: 'new-life', roll: rollLife(next), confirmAbandon: false })
+    },
+    editRoll(patch) {
+      const { roll } = get()
+      if (roll) set({ roll: { ...roll, ...patch } })
+    },
+    startLife() {
+      const { roll, life } = get()
+      if (!roll || !cleanName(roll.name)) return
+      if (life && !life.death) return set({ confirmAbandon: true })
+      born(roll)
+    },
+    answerAbandon(yes) {
+      const { roll, confirmAbandon } = get()
+      if (!confirmAbandon) return
+      if (!yes || !roll) return set({ confirmAbandon: false })
+      born(roll)
+    },
+    continueLife() {
+      if (get().life) set({ screen: 'year' })
     },
     open: (openCategory) => set({ openCategory }),
     begin(activityId) {

@@ -19,7 +19,7 @@ const start = async (life = testLife()) => {
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(createSaves(memoryStore()))
   render(<App />)
-  act(() => useApp.setState({ life }))
+  act(() => useApp.setState({ life, screen: 'year' }))
   await userEvent.click(screen.getByRole('button', { name: 'People' }))
 }
 

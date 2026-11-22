@@ -11,6 +11,7 @@ vi.mock('../engine/save/storage', async (original) => ({
 it('still boots, on a memory store, when the browser storage cannot be opened', async () => {
   await useApp.getState().boot()
   expect(useApp.getState().ready).toBe(true)
-  useApp.getState().startDemoLife(7)
-  expect(useApp.getState().life!.age).toBe(15)
+  useApp.getState().newRoll(7)
+  useApp.getState().startLife()
+  expect(useApp.getState().life!.age).toBe(0)
 })

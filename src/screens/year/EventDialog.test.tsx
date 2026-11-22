@@ -34,7 +34,7 @@ const start = async (life = testLife({ pendingEvents: [{ eventId: 'class-trip', 
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(createSaves(memoryStore()))
   render(<App />)
-  act(() => useApp.setState({ life, pendingEvent: life.pendingEvents[0] ?? null }))
+  act(() => useApp.setState({ life, screen: 'year', pendingEvent: life.pendingEvents[0] ?? null }))
 }
 const pressed = (name: string | RegExp) => screen.getByRole('button', { name }).getAttribute('aria-pressed')
 

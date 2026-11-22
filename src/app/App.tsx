@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useSettings } from '../engine/settings'
+import { NewLife } from '../screens/NewLife'
+import { Title } from '../screens/Title'
 import { YearScreen } from '../screens/year/YearScreen'
-import { GAME_NAME } from './name'
 import { useReducedMotion } from '../ui/useReducedMotion'
 import { installKeys } from './keys'
 import { applySkin } from './skin'
@@ -10,7 +11,7 @@ import { useApp } from './store'
 export function App() {
   const ready = useApp((s) => s.ready)
   const life = useApp((s) => s.life)
-  const startDemoLife = useApp((s) => s.startDemoLife)
+  const screen = useApp((s) => s.screen)
   const style = useSettings((s) => s.style)
 
   useEffect(() => void useApp.getState().boot(), [])
@@ -24,15 +25,7 @@ export function App() {
   }, [reduced])
 
   if (!ready) return null
-  if (!life) {
-    return (
-      <main className="card start">
-        <h1>{GAME_NAME}</h1>
-        <button className="primary" onClick={() => startDemoLife()}>
-          Start a life
-        </button>
-      </main>
-    )
-  }
-  return <YearScreen life={life} />
+  if (screen === 'year' && life) return <YearScreen life={life} />
+  if (screen === 'new-life') return <NewLife />
+  return <Title />
 }

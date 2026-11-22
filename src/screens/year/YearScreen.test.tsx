@@ -12,7 +12,7 @@ const start = async () => {
   useSettings.getState().update({ reducedMotion: 'on' })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(createSaves(memoryStore()))
-  useApp.setState({ life: testLife({ age: 16 }) })
+  useApp.setState({ life: testLife({ age: 16 }), screen: 'year' })
   render(<App />)
 }
 

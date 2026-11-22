@@ -6,6 +6,12 @@ import { useApp } from './store'
 export function installKeys(): () => void {
   const onKey = (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
+    const app = useApp.getState()
+    if (app.screen !== 'year') {
+      // Escape leaves the roll, even from the name field; the dialogs answer their own
+      if (e.key === 'Escape' && app.screen === 'new-life' && !app.confirmAbandon && !app.settingsOpen) app.goTitle()
+      return
+    }
     const el = e.target
     if (el instanceof HTMLElement && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) && el.getAttribute('type') !== 'checkbox') return
     const { life, playing, lastResult, birthday, settingsOpen, openCategory, open, closeResult, pendingEvent, lastEvent, askingInterest, closeEvent } = useApp.getState()

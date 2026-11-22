@@ -134,7 +134,7 @@ const MANNER_SCALE: Record<MannerKind, (tier: EventTier) => number> = {
 export function dropStale(life: Life, pack: ContentPack): Life {
   const first = life.pendingEvents.findIndex((p) =>
     pack.events.some((e) => e.id === p.eventId) && Object.values(p.cast).every((id) => personById(life, id)))
-  if (first === 0) return life
+  if (first === 0 || life.pendingEvents.length === 0) return life // unchanged: no needless save
   return { ...life, pendingEvents: first < 0 ? [] : life.pendingEvents.slice(first) }
 }
 
