@@ -40,7 +40,7 @@ it('has no Continue without an active life, and opens the roll', async () => {
 })
 
 const upload = (text: string) =>
-  userEvent.upload(screen.getByLabelText('Import'), new File([text], 'saves.json', { type: 'application/json' }))
+  userEvent.upload(screen.getByLabelText('Import file'), new File([text], 'saves.json', { type: 'application/json' }))
 
 it('exports the current saves', async () => {
   await boot()
@@ -66,4 +66,17 @@ it('refuses a file that is not a save', async () => {
   await upload('nope')
   expect((await screen.findByRole('alert')).textContent).toBe("That file isn't a life-sim save, or it's damaged.")
   expect(useApp.getState().life!.id).toBe('life-test')
+})
+
+it('has Import as a button reachable by Tab, and survives an unreadable file', async () => {
+  await boot()
+  const button = screen.getByRole('button', { name: 'Import' })
+  button.focus()
+  await userEvent.tab({ shift: true })
+  await userEvent.tab()
+  expect(document.activeElement).toBe(button)
+  const broken = new File(['x'], 'saves.json', { type: 'application/json' })
+  broken.text = () => Promise.reject(new Error('unreadable'))
+  await userEvent.upload(screen.getByLabelText('Import file'), broken)
+  expect((await screen.findByRole('alert')).textContent).toContain("isn't a life-sim save")
 })

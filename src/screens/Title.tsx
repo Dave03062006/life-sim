@@ -14,6 +14,7 @@ export function Title() {
   const { continueLife, newRoll, showPast } = useApp.getState()
   const [incoming, setIncoming] = useState<SaveFile | null>(null)
   const [bad, setBad] = useState(false)
+  const pick = useRef<HTMLInputElement>(null)
   const first = useRef<HTMLButtonElement>(null)
   useEffect(() => first.current?.focus(), [])
   return (
@@ -51,24 +52,32 @@ export function Title() {
           >
             Export
           </button>
-          <label className="ghost button">
+          <button className="ghost" onClick={() => pick.current?.click()}>
             Import
-            <input
-              type="file"
-              accept=".json,application/json"
-              hidden
-              onChange={async (e) => {
-                const file = e.target.files?.[0]
-                e.target.value = ''
-                if (!file) return
-                const parsed = importText(await file.text())
-                setBad(!parsed)
-                setIncoming(parsed)
-              }}
-            />
-          </label>
+          </button>
+          <input
+            ref={pick}
+            type="file"
+            accept=".json,application/json"
+            aria-label="Import file"
+            tabIndex={-1}
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (!file) return
+              let parsed = null
+              try {
+                parsed = importText(await file.text())
+              } catch {
+                // an unreadable file is reported like a bad one
+              }
+              setBad(!parsed)
+              setIncoming(parsed)
+            }}
+          />
         </div>
-        {bad && <p role="alert">That file isn't a life-sim save, or it's damaged.</p>}
+        <p role="alert">{bad ? "That file isn't a life-sim save, or it's damaged." : ''}</p>
       </main>
       {incoming && (
         <ConfirmDialog
