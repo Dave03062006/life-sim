@@ -137,7 +137,7 @@ const base: ActivityDef[] = [
   a('splash', 'fun', 'Splash at bath time', 'The water is warm and the duck floats.', '', 1, 0, { happiness: 2, health: 1 }, 'You splashed the whole bathroom at bath time.', { stages: [B, SC] }),
   a('crawl', 'fun', 'Learn to crawl', 'Slowly, then suddenly everywhere.', '', 1, 0, { health: 2, happiness: 1 }, 'You crawled across the floor. Nothing was safe after that.', { stages: [B], requires: [{ kind: 'min-age', age: 1, reason: 'From age 1.' }] }),
   a('posyandu', 'health', 'Posyandu weigh-in', 'The village health post weighs you and checks your growth.', '', 1, 0, { health: 2 }, 'The posyandu nurse said you are growing well.', { stages: [B, SC] }),
-  a('immunisation', 'health', 'Get your shots', 'A little needle and a lot of crying.', '', 1, 0, { health: 3, happiness: -1 }, 'You got your shots and cried. Then you got a sticker.', { stages: [B, SC, CH] }),
+  a('immunisation', 'health', 'Get your shots', 'A little needle and a lot of crying.', '', 1, 0, { health: 3, happiness: -1 }, 'You got your shots and cried. Then you got a sticker.', { stages: [B, SC, CH], sets: 'vaccinated' }),
   a('lullaby', 'rest', 'Fall asleep to a lullaby', 'Ibu hums until your eyes close.', '', 0, 0, { stress: -2 }, 'You fell asleep to a lullaby.', { stages: [B, SC], rest: 2 }),
   // Small children
   a('letters', 'mind', 'Learn your letters', 'A, B, C and a very long song.', '', 1, 0, { smarts: 2 }, 'You learned your letters and sang them to the cat.', { stages: [SC] }),

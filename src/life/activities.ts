@@ -1,7 +1,9 @@
 import { NAMES } from '../content/countries/indonesia/names'
 import type { ActivityDef, ContentPack, ResultTier } from '../content/types'
 import { createRng } from '../engine/random'
+import { packFor } from '../content'
 import { OVERWORK_HEALTH, OVERWORK_STRESS, overworkPoints, repeatScale, restGain } from './energy'
+import { reveal } from './illness'
 import { formatRupiah } from './format'
 import { blockedBy } from './requirements'
 import { addPerson, nudgeCloseness } from './people'
@@ -134,6 +136,13 @@ export function finishActivity(life: Life, def: ActivityDef, score: number, pers
     const nudged = nudgeCloseness(after, id, delta)
     after = nudged.life
     moved.push(...nudged.moved)
+  }
+  if (def.id === 'checkup' && (tier === 'good' || tier === 'great')) {
+    const found = reveal(after, packFor(life.country), 'check-up')
+    if (found.texts.length > 0) {
+      after = found.life
+      text = found.texts.join(' ')
+    }
   }
   const ids = company.map(([id]) => id)
 

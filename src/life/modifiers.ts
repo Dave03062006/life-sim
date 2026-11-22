@@ -1,6 +1,8 @@
 import type { ActivityDef } from '../content/types'
 import { NO_MODIFIERS, type Modifiers } from '../minigames/framework'
+import { packFor } from '../content'
 import { energyLeft } from './energy'
+import { applyIllnessMods } from './illness'
 import { stageOf } from './stages'
 import type { Life } from './types'
 
@@ -20,6 +22,7 @@ export function modifiersFor(life: Life, def: ActivityDef, relaxed: boolean): Mo
   }
   m.preview = Math.min(1.25, Math.max(0.85, 1 + (life.stats.smarts - 50) / 200))
   if (life.stats.smarts >= 80) m.eliminate = true
+  applyIllnessMods(life, packFor(life.country), m)
   if (relaxed) {
     m.window *= 1.3
     m.speed *= 0.8

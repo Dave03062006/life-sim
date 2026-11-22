@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { packFor } from '../content'
 import { energyBudget, energyLeft, overworkPoints, repeatScale, restGain } from './energy'
 import type { Life, Stats } from './types'
 import { testLife } from './testLife'
@@ -35,5 +36,17 @@ describe('energy', () => {
   })
   it('shrinks repeats', () => {
     expect([0, 1, 3].map(repeatScale)).toEqual([1, 0.5, 0.25])
+  })
+  it('cuts the budget by an illness, still floored', () => {
+    const real = packFor('indonesia')
+    real.illnesses.push({ id: 'flu', name: 'Flu', kind: 'short', onset: [], symptoms: '', stages: [{ death: 0, energy: 2 }], treated: { die: 0 }, treatments: [], sources: [] })
+    try {
+      const ill = { id: 'flu', since: 10, stage: 0, known: true, treated: null } as const
+      expect(energyBudget(testLife({ illnesses: [ill] }))).toBe(8)
+      expect(energyBudget(testLife({ illnesses: [{ ...ill, treated: 'cured' }] }))).toBe(10)
+      expect(energyBudget(withStats({ health: 20, stress: 80 }, { age: 1, illnesses: [ill] }))).toBe(2)
+    } finally {
+      real.illnesses.length = 0
+    }
   })
 })

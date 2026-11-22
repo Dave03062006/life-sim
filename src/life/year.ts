@@ -2,6 +2,7 @@ import { schoolForAge } from './requirements'
 import { NAMES } from '../content/countries/indonesia/names'
 import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
+import { applySymptoms, catchIllnesses, discover } from './illness'
 import { deathCause } from './death'
 import { openSchoolYear, closeSchoolYear } from './school'
 import { closeMoneyYear, OWN_WAY_AGE } from './money'
@@ -82,7 +83,10 @@ export function openYear(life: Life, pack: ContentPack): Life {
     doneThisYear: {},
     journal: text ? [...life.journal, { age, kind: 'milestone', text, changes: [] }] : life.journal,
   })
-  return openSchoolYear({ ...peopleDeaths(aged, rng), rng: rng.state, ownWay: life.ownWay || age >= OWN_WAY_AGE }, pack)
+  const dealt = peopleDeaths(aged, rng)
+  const reset = { ...dealt, ownWay: life.ownWay || age >= OWN_WAY_AGE, illnesses: dealt.illnesses.map((i) => ({ ...i, treated: null })) }
+  const ill = discover(applySymptoms(catchIllnesses(reset, pack, rng), pack), pack, 'symptoms')
+  return openSchoolYear({ ...ill, rng: rng.state }, pack)
 }
 
 export function ageUp(life: Life, pack: ContentPack): Life {

@@ -29,4 +29,16 @@ describe('modifiersFor', () => {
     const relaxed = modifiersFor(testLife(), gym, true)
     expect([+relaxed.drain.toFixed(2), +relaxed.preview.toFixed(3)]).toEqual([0.8, 1.391]) // 1.07 × 1.3
   })
+  it('applies a known untreated illness and not a controlled one', () => {
+    const real = packFor('indonesia')
+    real.illnesses.push({ id: 'flu', name: 'Flu', kind: 'long', onset: [], symptoms: '', stages: [{ death: 0 }], treated: { die: 0 }, treatments: [], sources: [], minigame: { label: 'Slow', mods: { move: 0.5, wobble: 1 } } })
+    try {
+      const ill = { id: 'flu', since: 10, stage: 0, known: true, treated: null } as const
+      expect(modifiersFor(testLife({ illnesses: [ill] }), gym, false)).toMatchObject({ move: 0.5, wobble: 1 })
+      expect(modifiersFor(testLife({ illnesses: [{ ...ill, treated: 'controlled' }] }), gym, false)).toMatchObject({ move: 1, wobble: 0 })
+      expect(modifiersFor(testLife({ illnesses: [{ ...ill, known: false }] }), gym, false).move).toBe(1)
+    } finally {
+      real.illnesses.length = 0
+    }
+  })
 })
