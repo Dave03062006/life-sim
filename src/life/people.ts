@@ -1,5 +1,6 @@
 import type { NameLists } from '../content/countries/indonesia/names'
 import type { Rng } from '../engine/random'
+import { ACCIDENT, oldAgeChance } from './death'
 import type { Gender, Life, Person } from './types'
 
 export const MAX_FRIENDS = 8
@@ -69,6 +70,28 @@ export const personById = (life: Life, id: string): Person | undefined => life.p
 export function yearlyPeople(life: Life): Life {
   const people = life.people.map((p) => ({ ...p, age: p.age + 1, closeness: life.spentWith.includes(p.id) ? p.closeness : Math.max(0, p.closeness - 3) }))
   return { ...life, people, spentWith: [] }
+}
+
+const RELATION_WORD: Record<Person['relation'], string | Record<Person['gender'], string>> = {
+  mother: 'mother', father: 'father', sibling: { female: 'sister', male: 'brother' },
+  grandparent: { female: 'grandmother', male: 'grandfather' }, friend: 'friend', crush: 'crush', partner: 'partner',
+}
+
+/** Everyone else ages by your odds, without your Health: each dies of old age or a rare accident. */
+export function peopleDeaths(life: Life, rng: Rng): Life {
+  let next = life
+  for (const p of life.people) {
+    if (rng.next() >= oldAgeChance(p.age, null) && rng.next() >= ACCIDENT) continue
+    const word = RELATION_WORD[p.relation]
+    const text = `Your ${typeof word === 'string' ? word : word[p.gender]} ${p.name} died, aged ${p.age}.`
+    next = {
+      ...next,
+      people: next.people.filter((q) => q.id !== p.id),
+      journal: [...next.journal, { age: life.age, kind: 'milestone', text, changes: [] }],
+      memories: [...next.memories, { id: `death-${p.id}`, age: life.age, text, people: [p.id] }],
+    }
+  }
+  return next
 }
 
 /** changeCloseness plus the real change (none when capped or gone), for the journal. */

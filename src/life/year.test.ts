@@ -39,6 +39,13 @@ describe('year', () => {
     expect(next.journal.at(-1)?.text).toContain('KTP')
   })
 
+  it('ends a dying life at its current age, with nothing else that year', () => {
+    const pack = packFor('indonesia')
+    const life = testLife({ stats: { ...testLife().stats, health: 0 }, energySpent: 5 })
+    const next = ageUp(life, pack)
+    expect(next).toEqual({ ...life, rng: next.rng, death: { age: 16, cause: 'Health gave out' }, journal: [{ age: 16, kind: 'milestone', text: 'You died at 16. Health gave out.', changes: [] }] })
+  })
+
   it('wears the body down with age', () => {
     const pack = packFor('indonesia')
     const base = testLife().stats

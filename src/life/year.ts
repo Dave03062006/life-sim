@@ -1,7 +1,8 @@
 import { NAMES } from '../content/countries/indonesia/names'
 import { createRng } from '../engine/random'
 import type { ContentPack } from '../content/types'
-import { startingPeople, yearlyPeople } from './people'
+import { deathCause } from './death'
+import { peopleDeaths, startingPeople, yearlyPeople } from './people'
 import { applyChanges, roundAway } from './stats'
 import type { Change, Gender, Life, Wealth } from './types'
 
@@ -45,6 +46,12 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
 const towardFifty = (value: number): number => roundAway((50 - value) * 0.1)
 
 export function ageUp(life: Life, pack: ContentPack): Life {
+  const rng = createRng(life.rng)
+  const cause = deathCause(life, rng)
+  if (cause) {
+    const entry = { age: life.age, kind: 'milestone' as const, text: `You died at ${life.age}. ${cause}.`, changes: [] }
+    return { ...life, rng: rng.state, death: { age: life.age, cause }, journal: [...life.journal, entry] }
+  }
   const age = life.age + 1
   const { happiness, reputation } = life.stats
   const changes: Change[] = [
@@ -55,7 +62,7 @@ export function ageUp(life: Life, pack: ContentPack): Life {
     { key: 'looks', delta: age >= 40 ? -1 : 0 },
   ]
   const text = pack.milestones[age]
-  return yearlyPeople({
+  const aged = yearlyPeople({
     ...applyChanges(life, changes),
     age,
     energySpent: 0,
@@ -63,4 +70,5 @@ export function ageUp(life: Life, pack: ContentPack): Life {
     doneThisYear: {},
     journal: text ? [...life.journal, { age, kind: 'milestone', text, changes: [] }] : life.journal,
   })
+  return { ...peopleDeaths(aged, rng), rng: rng.state }
 }
