@@ -40,8 +40,8 @@ Milestone 1 is built as eight plans:
 1. Foundation and the playable year.
 2. Five more mini-games: Tapping, Memory, Quiz with a starter question bank, Catch, Typing.
 3. Events, memories and people.
-4. A whole life: eight stages, the new-life roll, death, the life summary, past lives, export and import (done: Plans 1 to 4 are what exists now).
-5. School, work, money and family (marriage, children).
+4. A whole life: eight stages, the new-life roll, death, the life summary, past lives, export and import (done).
+5. School, work, money and family (marriage, children) (done).
 6. Health and disease.
 7. Content and art for every stage, including the staged 60 images.
 8. Checks and publishing: browser checks, accessibility, a code tour, Vercel.

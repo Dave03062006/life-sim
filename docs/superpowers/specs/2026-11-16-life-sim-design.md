@@ -103,6 +103,9 @@ For the full game Dave picked a **staged plan of about 60 images for milestone 1
 - Eight activity categories on one level. Rest gives energy back, less each time.
 - No time pressure on the player.
 - Build the whole loop first with thin content, then add content packs.
+- Marriage is open to every couple. This is a game rule (Plan 5).
+- Children come once you are married, or after three years with a partner. Adoption comes later (Plan 5).
+- Living costs start with your first full-time job, or at 25 (Plan 5).
 
 Proposed by Claude earlier and not objected to: energy varies by life stage and shrinks with poor Health or high Stress; one to three events when you age up; death from old age, Health reaching zero, illness, or a rare accident; one active life plus a list of past lives; a reduce-motion setting.
 
@@ -546,6 +549,14 @@ The first screen loads only its own skin's art. Mini-games and the art for other
 20. An unfinished life is kept as abandoned when a new one starts (section 8).
 21. Text is plain English in the data, with no translation layer yet (10.5).
 22. Old age past the 5.12 table: 60% a year from 100, scaled by Health like the rest, and certain death at 115, whatever the Health. The table stopped at 90, and a 149-year-old broke the grounded tone (5.12, Plan 4).
+23. The eight ladders and their salaries (Plan 5, careers.ts), as yearly Rupiah: shop work 18.000.000 (part-time) to 84.000.000; office 48.000.000 to 180.000.000; teaching 18.000.000 to 108.000.000; nursing 54.000.000 to 108.000.000; software 60.000.000 to 300.000.000; driving 36.000.000 (part-time) to 72.000.000; civil service 48.000.000 to 144.000.000; your own business 30.000.000 to 240.000.000, paid by a formula on performance, with a 10.000.000 start cost. Entry rows come from checked sources; higher rungs are game steps up.
+24. University fees are UNI_FEE, Rp 10.000.000 a year. Funding is a scholarship when Smarts is 80 or more and the last grade is 80 or more, otherwise paid by the family when it is comfortable or well-off, otherwise by the player (Plan 5).
+25. The report card is 0.6 x Smarts + 0.4 x 100 x study effort (capped at 3 study activities), rounded. Nobody repeats a year: the level ends when its years are done (Plan 5).
+26. Allowance by wealth, a year for ages 6 to 11 and doubled for 12 to 17: struggling Rp 250.000, getting by Rp 600.000, comfortable Rp 1.500.000, well-off Rp 3.000.000. Lifestyle costs a year: frugal Rp 24.000.000 (Happiness -2, Health -1), normal Rp 42.000.000, comfortable Rp 84.000.000 (Happiness +3, Health +1). A child under 18 costs Rp 9.000.000 a year (Plan 5).
+27. Interest is 2% a year on positive money for players with a bank account (Plan 5).
+28. Debt adds 5 Stress every year it lasts. Debt never stops you applying for a job that costs nothing to start; a first version blocked every job while in debt, and the simulator found it (Plan 5).
+29. The belongings: a motorbike at Rp 8.000.000 (resale Rp 5.500.000), a car at Rp 150.000.000 (resale Rp 100.000.000), and a starter house at Rp 185.000.000 that cuts living costs by Rp 15.000.000 a year (Plan 5).
+30. Three plan figures changed after checking sources: Junior developer Rp 60.000.000 a year (was 84.000.000), the motorbike Rp 8.000.000 (was 4.500.000), and the house Rp 185.000.000 as a subsidised starter house (was 600.000.000).
 
 ## 15. Left to the builder
 

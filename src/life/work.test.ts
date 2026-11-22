@@ -68,6 +68,10 @@ describe('work', () => {
     expect(ageUp(life, pack).job?.years).toBe(1)
   })
 
+  it('lets someone in debt apply for a job that costs nothing to start', () => {
+    expect(findMove(testLife({ ...grown, money: -50_000_000 }), 'job:office', pack)?.blocked).toBeNull()
+  })
+
   it('applies, replaces, quits and retires', () => {
     expect(jobBoard(testLife(), pack)).toHaveLength(8)
     const start = takePath(testLife(grown), 'job:office', pack)

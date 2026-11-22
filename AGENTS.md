@@ -66,11 +66,25 @@ Run `npm run check`, `npm test` and `npm run build` before committing.
 
 ## How to add a stage's content
 
-Every stage needs at least two activities in each open category. Add them with the `a(...)` helper as above, and use the `wider` table in `activities.ts` to widen which stages an existing activity covers. Stage events go in `events.ts`. `npm test` plays 1,000 lives and fails on bad content, so run it after every addition.
+Every stage needs at least two activities in each open category. Add them with the `a(...)` helper as above, and use the `wider` table in `activities.ts` to widen which stages an existing activity covers. Stage events go in `events.ts`. `npm test` plays 1,000 lives that also go to school, take jobs and retire, and fails on bad content, so run it after every addition.
 
 ## Balance guard
 
-`src/dev/simulate.ts` plays whole lives. `npm test` plays 1,000 and `npm run simulate` plays 10,000. The median age at death must stay between 65 and 86 until Plan 6 adds illness; change the odds in `death.ts` only with this test in view. `death.ts` follows the spec's odds, plus a 0.6 tier from age 100 and certain death at 115, which extends the spec.
+`src/dev/simulate.ts` plays whole lives. `npm test` plays 1,000 and `npm run simulate` plays 10,000. The median age at death must stay between 65 and 86 until Plan 6 adds illness; at least half of the lives must hold a job at 30, the median money at 40 must be above zero, and every activity must be offered unblocked in at least one life (spec 10.6). Fix an unreachable activity in content; do not add an allow-list. Change the odds in `death.ts` only with this test in view. `death.ts` follows the spec's odds, plus a 0.6 tier from age 100 and certain death at 115, which extends the spec.
+
+## How to add a career
+
+Add one `CareerDef` to `src/content/countries/indonesia/careers.ts` with the `ladder([...])` helper: one row per step as `[title, yearly salary in Rp, 'part'?]`. The entry requirements go in the second argument; the top step needs Reputation 60 unless you pass `top = false`. Put a source comment above the entry in the same style as the others: the monthly figure, where it was checked, and which rungs are game steps up. A figure with no source says so. Promotions and the job board come from the ladder, so nothing else needs wiring. `npm test` checks the ladder and plays lives that take it.
+
+## How to add a belonging
+
+1. Add a `BelongingDef` in `belongings.ts`: `price`, `resale`, and optionally `energy` (extra energy each year) or `livingCut` (a yearly cut in living costs). Put the source for the price in a comment.
+2. Add an activity with `buys: '<belonging id>'` through the `a(...)` helper, so the player can reach it. The balance guard fails if that activity is never offered.
+3. A career or event can ask for it with `{ kind: 'owns', item: '<id>', reason }`.
+
+## How to add a path move
+
+School and work moves live in `src/life/path.ts` (school) and `src/life/work.ts` (jobs, quit, retire, promote). A move is a `PathAction` with an `id`, a label, a detail and `blocked`: `null` when open, otherwise the reason in plain words. Never hide a closed move; say why it is closed. `pathActions` lists the moves, `findMove(life, id, pack)` finds any move by id, and `takePath(life, id, pack)` takes an open one and writes the journal line (it throws on a blocked or unknown id). Add the move to `pathActions` or `workMoves`, handle its id in `takePath` or `takeWorkMove`, and write tests that check both the open and the closed state.
 
 ## How to add an event
 
@@ -130,4 +144,4 @@ Commits are made under Dave's account, with no AI co-author line.
 
 ## Plan numbering
 
-1. Foundation and the playable year. 2. More mini-games. 3. Events, memories and people. 4. A whole life (done). 5. School, work, money and family (marriage, children). 6. Health and disease. 7. Content and art. 8. Checks and publishing.
+1. Foundation and the playable year. 2. More mini-games. 3. Events, memories and people. 4. A whole life (done). 5. School, work, money and family (marriage, children; done). 6. Health and disease. 7. Content and art. 8. Checks and publishing.
