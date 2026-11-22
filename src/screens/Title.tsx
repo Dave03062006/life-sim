@@ -6,8 +6,9 @@ import { TopBar } from './TopBar'
 /** Where every visit starts: carry on with the active life, or roll a new one. */
 export function Title() {
   const life = useApp((s) => s.life)
+  const pastCount = useApp((s) => s.past.length)
   const settings = useApp((s) => s.settingsOpen)
-  const { continueLife, newRoll } = useApp.getState()
+  const { continueLife, newRoll, showPast } = useApp.getState()
   const first = useRef<HTMLButtonElement>(null)
   useEffect(() => first.current?.focus(), [])
   return (
@@ -29,6 +30,11 @@ export function Title() {
           <button ref={life ? undefined : first} className={life ? 'ghost' : 'primary'} onClick={() => newRoll()}>
             Start a life
           </button>
+          {pastCount > 0 && (
+            <button className="ghost" onClick={showPast}>
+              Past lives ({pastCount})
+            </button>
+          )}
         </div>
       </main>
     </>

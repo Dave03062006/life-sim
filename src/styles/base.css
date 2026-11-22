@@ -34,6 +34,13 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
 .screen .stats{padding:0}
 .row .why{margin-right:auto;font-size:13px;font-weight:700;color:var(--warn)}
 .primary:disabled{opacity:.5;cursor:not-allowed}
+.summary header{display:grid;gap:4px}
+.summary .life{padding-top:4px}
+.summary .closing{font-weight:700;font-style:italic}
+.lives{list-style:none;padding:0;display:grid;gap:8px}
+.lives button{display:grid;gap:2px;width:100%;padding:10px 14px;border-radius:12px;background:var(--track)}
+.lives button:hover{color:var(--accent)}
+.lives span{font-size:13px;font-weight:600;color:var(--ink2)}
 
 .top{position:relative;z-index:21;display:flex;align-items:center;gap:16px;min-height:36px}
 .brand{font-weight:800;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;white-space:nowrap}

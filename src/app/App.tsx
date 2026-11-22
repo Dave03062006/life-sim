@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useSettings } from '../engine/settings'
 import { NewLife } from '../screens/NewLife'
+import { PastLives } from '../screens/PastLives'
+import { Summary } from '../screens/Summary'
 import { Title } from '../screens/Title'
 import { YearScreen } from '../screens/year/YearScreen'
 import { useReducedMotion } from '../ui/useReducedMotion'
@@ -27,5 +29,7 @@ export function App() {
   if (!ready) return null
   if (screen === 'year' && life) return <YearScreen life={life} />
   if (screen === 'new-life') return <NewLife />
+  if (screen === 'summary') return <Summary />
+  if (screen === 'past') return <PastLives />
   return <Title />
 }

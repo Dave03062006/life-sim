@@ -14,7 +14,7 @@
 [data-style=pixel] :is(.who h1,.agebig b,.sh h2,.modal h2,.money b){font-weight:700;letter-spacing:0;text-shadow:2px 2px 0 var(--edge)}
 [data-style=pixel] .agebig b{color:var(--accent);text-shadow:4px 4px 0 var(--edge);letter-spacing:.02em}
 [data-style=pixel] .brand{letter-spacing:.02em}
-[data-style=pixel] :is(.seg,.seg button,.ghost,kbd,.badge,.delta,.chg,.chip,.pill,.pips i,.bar,.cat,.dialog select,.screen input,.screen select){border-radius:0}
+[data-style=pixel] :is(.seg,.seg button,.ghost,kbd,.badge,.delta,.chg,.chip,.pill,.pips i,.bar,.cat,.lives button,.dialog select,.screen input,.screen select){border-radius:0}
 [data-style=pixel] .seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
 [data-style=pixel] .badge{background:var(--bad);color:#2A0508;box-shadow:0 0 0 2px var(--edge)}
 [data-style=pixel] .delta{background:var(--edge)}

@@ -40,6 +40,8 @@ export interface AppState {
   startLife(): void // with an unfinished active life, sets confirmAbandon and waits
   answerAbandon(yes: boolean): void
   continueLife(): void
+  showPast(): void
+  showSummary(lifeId: string): void
   open(category: CategoryId | null): void
   begin(activityId: string): void // a blocked activity is ignored; one with no mini-game finishes at once as Good
   finish(score: number): void // acts once per activity
@@ -56,7 +58,7 @@ export interface AppState {
 let saves: Saves | null = null
 let booting: Promise<void> | null = null
 let loading = false
-const persist = (life: Life) => void saves?.store({ version: 3, active: life, past: useApp.getState().past }).catch(() => {}) // a failed save must not break the game
+const persist = (life: Life | null) => void saves?.store({ version: 3, active: life, past: useApp.getState().past }).catch(() => {}) // a failed save must not break the game
 const localSaves = (): Saves => {
   try {
     return createSaves(indexedDbStore('life-sim', 'saves'))
@@ -129,7 +131,13 @@ export const useApp = create<AppState>()((set, get) => {
       booting = saves
         .load()
         .then((file) => {
-          set({ ready: true, past: file.past, life: file.active, ...(file.active && showNext(file.active)) })
+          const { active, past } = file
+          if (active?.death) {
+            // a save from before death ended lives: it belongs in past lives
+            set({ ready: true, past: [...past, active], life: null })
+            return persist(null)
+          }
+          set({ ready: true, past, life: active, ...(active && showNext(active)) })
         })
         .finally(() => {
           loading = false
@@ -165,6 +173,10 @@ export const useApp = create<AppState>()((set, get) => {
     continueLife() {
       if (get().life) set({ screen: 'year' })
     },
+    showPast: () => set({ screen: 'past' }),
+    showSummary(lifeId) {
+      if (get().past.some((l) => l.id === lifeId)) set({ screen: 'summary', summaryId: lifeId })
+    },
     open: (openCategory) => set({ openCategory }),
     begin(activityId) {
       const { life } = get()
@@ -191,7 +203,12 @@ export const useApp = create<AppState>()((set, get) => {
       const { life } = get()
       if (!life || busy(get())) return
       const pack = packFor(life.country)
-      const next = drawEvents(ageUp(life, pack), pack)
+      const aged = ageUp(life, pack)
+      if (aged.death) {
+        set({ life: null, past: [...get().past, aged], screen: 'summary', summaryId: aged.id, openCategory: null })
+        return persist(null)
+      }
+      const next = drawEvents(aged, pack)
       set({ life: next, birthday: next.age, openCategory: null })
       persist(next)
     },
