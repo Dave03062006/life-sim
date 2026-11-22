@@ -10,9 +10,9 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
 2. **You are not boxed in.** Choices are built from a "what" and a "how", more options open up because of who you have become, every limit states its reason, and there is no single correct path through life.
 3. **You feel what you do.** Your stats change how the mini-games play, your character and surroundings change, old choices come back years later, and every result lands with motion and sound.
 
-## What is playable today (Plans 1 to 3)
+## What is playable today (Plans 1 to 4)
 
-- Start a life. For now you start at 15.
+- A whole life: roll a new life at birth, grow through eight stages, and die. A life summary follows, and past lives are kept.
 - 44 late-teen activities in eight categories.
 - Six mini-game types, and every activity plays one:
   - Timing: stop the marker in the green (Futsal practice).
@@ -31,18 +31,20 @@ It is in the same genre as BitLife, but has its own name, look and writing. Noth
 - Settings: sound, reduce motion, relaxed mini-games.
 - Keys 1-8 and Esc.
 - Automatic saving on the device.
+- Export your saves to a file and import them again.
 
 ## Roadmap
 
-Milestone 1 is built as seven plans:
+Milestone 1 is built as eight plans:
 
 1. Foundation and the playable year.
 2. Five more mini-games: Tapping, Memory, Quiz with a starter question bank, Catch, Typing.
-3. Events, memories and people (done: Plans 1 to 3 are what exists now).
-4. A whole lifespan: eight stages, the new-life roll, school, work, money, death, the life summary, past lives, export and import.
-5. Health and disease.
-6. Content and art for every stage, including the staged 60 images.
-7. Checks and publishing: the life simulation, browser checks, accessibility, a code tour, Vercel.
+3. Events, memories and people.
+4. A whole life: eight stages, the new-life roll, death, the life summary, past lives, export and import (done: Plans 1 to 4 are what exists now).
+5. School, work, money and family (marriage, children).
+6. Health and disease.
+7. Content and art for every stage, including the staged 60 images.
+8. Checks and publishing: browser checks, accessibility, a code tour, Vercel.
 
 ## Long-term goals
 
@@ -79,7 +81,7 @@ The art is AI-generated, then converted to WebP by Python scripts in `tools/art/
 - Saves: the browser's IndexedDB, database `life-sim`.
 - Settings: localStorage, key `life-sim-settings`.
 
-Nothing leaves your device. A damaged or newer save is kept aside and a fresh game starts.
+Use Export and Import on the title screen to back up or move saves (a file called `life-sim-saves.json`). Nothing leaves your device. A damaged or newer save is kept aside and a fresh game starts.
 
 ## More
 

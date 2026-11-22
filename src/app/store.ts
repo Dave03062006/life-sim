@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { packFor } from '../content'
 import type { ActivityDef, EventDef, ResultTier } from '../content/types'
 import { createRng, randomSeed } from '../engine/random'
-import { createSaves, type Saves } from '../engine/save/saves'
+import { createSaves, type SaveFile, type Saves } from '../engine/save/saves'
 import { indexedDbStore, memoryStore } from '../engine/save/storage'
 import { useSettings } from '../engine/settings'
 import { finishActivity, GOOD_SCORE, offersFor } from '../life/activities'
@@ -42,6 +42,7 @@ export interface AppState {
   continueLife(): void
   showPast(): void
   showSummary(lifeId: string): void
+  replaceSaves(file: SaveFile): void // sets the life and past, persists, goes to the title
   open(category: CategoryId | null): void
   begin(activityId: string): void // a blocked activity is ignored; one with no mini-game finishes at once as Good
   finish(score: number): void // acts once per activity
@@ -176,6 +177,10 @@ export const useApp = create<AppState>()((set, get) => {
     showPast: () => set({ screen: 'past' }),
     showSummary(lifeId) {
       if (get().past.some((l) => l.id === lifeId)) set({ screen: 'summary', summaryId: lifeId })
+    },
+    replaceSaves(file) {
+      set({ life: file.active, past: file.past, screen: 'title', roll: null, confirmAbandon: false, openCategory: null, summaryId: null, ...(file.active && showNext(file.active)) })
+      persist(file.active)
     },
     open: (openCategory) => set({ openCategory }),
     begin(activityId) {

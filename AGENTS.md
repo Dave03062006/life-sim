@@ -3,7 +3,7 @@
 Life Sim is a browser life simulator (Vite, React 19, TypeScript, Zustand, Vitest). Read the spec and plans before changing anything:
 
 - Design: `docs/superpowers/specs/2026-11-16-life-sim-design.md`
-- Plans: `docs/superpowers/plans/` (seven plans; Plans 1 to 3 are done)
+- Plans: `docs/superpowers/plans/` (Plans 1 to 4 are done)
 
 ## Folder map
 
@@ -11,17 +11,18 @@ Folders marked (later) are in the spec but do not exist yet.
 
 ```
 src/
-  app/        the store, which screen is showing, sound, address options
+  app/        the store, which screen is showing, backup.ts (export and import), sound, address options
   engine/     clock, randomness, saves, settings (input and motion come later)
   life/       the rules of a life, as plain TypeScript with no React; events.ts (drawing and resolving events),
-              people.ts (family, friends, closeness), personActions.ts (Spend time, Talk, Give a gift, Ask out)
+              people.ts (family, friends, closeness), personActions.ts (Spend time, Talk, Give a gift, Ask out),
+              roll.ts (the new-life roll), death.ts (the odds of dying each year), summary.ts (the life summary)
   content/    typed data: countries/indonesia/ (diseases/ and quiz/ come later)
   minigames/  framework.ts, then one folder per type (timing, tapping, memory, quiz, catch, typing)
   styles/     the two skins' tokens, the art manifest, sprite helpers
-  screens/    TopBar, SettingsDialog, year/ (EventDialog, InterestDialog, PeopleList and the rest of the year screen;
-              Title, NewLife, Summary, PastLives come later)
+  screens/    TopBar, SettingsDialog, Title (with export and import), NewLife, ConfirmDialog, Summary, PastLives,
+              year/ (EventDialog, InterestDialog, PeopleList and the rest of the year screen)
   ui/         shared parts: bar, icon, changes list, reduced-motion hook
-  dev/        (later) the life simulator used by tests, and a frame meter
+  dev/        simulate.ts, the life simulator used by tests (a frame meter comes later)
 tools/art/    the Python conversion scripts
 scripts/      (later) browser checks: play-through, accessibility, keyboard, screenshots
 public/art/   converted WebP art and its manifest
@@ -62,6 +63,14 @@ Run `npm run check`, `npm test` and `npm run build` before committing.
 2. The helper sets the icon id to `act-<id>` (for example `act-futsal`). That id needs an entry in `tools/art/names.json` and a drawn icon. For a new icon, update the source sheet and rerun `python tools/art/build.py` (see `tools/art/README.md`). The display falls back to the category icon only when art is missing at runtime; that does not make the content test pass.
 3. People activities can involve real people. `with: 'mother'` (or another relation) needs one such person, or the activity says "You have no mother."; a woman is picked first, so `with: 'grandparent'` calls a grandmother before a grandfather. It nudges their closeness +4 (scaled like a benefit, -2 on a fail) and counts as time together. `together: ['mother', 'father', 'sibling']` nudges everyone of those relations +2. `makes: 'friend'` adds a new same-age friend of the player's gender, closeness 40, on a Good or Great result; use `{name}` in its Good and Great lines.
 4. Run `npm test`. The content test in `src/content/content.test.ts` checks the entry, including that its icon exists.
+
+## How to add a stage's content
+
+Every stage needs at least two activities in each open category. Add them with the `a(...)` helper as above, and use the `wider` table in `activities.ts` to widen which stages an existing activity covers. Stage events go in `events.ts`. `npm test` plays 1,000 lives and fails on bad content, so run it after every addition.
+
+## Balance guard
+
+`src/dev/simulate.ts` plays whole lives. `npm test` plays 1,000 and `npm run simulate` plays 10,000. The median age at death must stay between 65 and 86 until Plan 6 adds illness; change the odds in `death.ts` only with this test in view. `death.ts` follows the spec's odds, plus a 0.6 tier from age 100 and certain death at 115, which extends the spec.
 
 ## How to add an event
 
@@ -118,3 +127,7 @@ These make the game a failure even if it works:
 ## Commits
 
 Commits are made under Dave's account, with no AI co-author line.
+
+## Plan numbering
+
+1. Foundation and the playable year. 2. More mini-games. 3. Events, memories and people. 4. A whole life (done). 5. School, work, money and family (marriage, children). 6. Health and disease. 7. Content and art. 8. Checks and publishing.
