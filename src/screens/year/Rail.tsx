@@ -3,7 +3,9 @@ import { useApp } from '../../app/store'
 import { energyLeft } from '../../life/energy'
 import { formatRupiah } from '../../life/format'
 import { stageOf } from '../../life/stages'
+import { schoolLabel } from '../../life/school'
 import { isBenefit } from '../../life/stats'
+import { jobLabel } from '../../life/work'
 import type { Change, Life, StatKey } from '../../life/types'
 import { scenePath } from '../../styles/art'
 import { StatBar } from '../../ui/StatBar'
@@ -24,6 +26,7 @@ export function Rail({ life }: { life: Life }) {
   const alt = `${life.name} at home`
   const { stats } = life
   const last = useLastChanges()
+  const status = schoolLabel(life) ?? jobLabel(life)
   // a floating number beside each changed stat, rising and fading (the .delta rise animation)
   const delta = (key: StatKey | 'money') => {
     const change = last.n ? last.entry?.changes.find((c) => c.key === key) : undefined
@@ -52,6 +55,7 @@ export function Rail({ life }: { life: Life }) {
         <p>
           {life.age} years old · {life.city}
         </p>
+        {status && <p>{status}</p>}
       </div>
       <section className="card stats" aria-label="Stats">
         {bar('health')}

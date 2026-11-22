@@ -161,6 +161,13 @@ kbd{font:inherit;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6p
 .opt[aria-pressed=true]{background:var(--ink);color:var(--solid)}
 .opt[aria-pressed=true] small{color:var(--note-on)}
 .opt:disabled{cursor:not-allowed;color:var(--ink2)}
+.opts .opt{text-align:left}
+.lifestyle{display:flex;flex-wrap:wrap;gap:8px;border:0;padding:0}.lifestyle legend{font-weight:800;margin-bottom:6px}
+label.opt{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;cursor:pointer}label.opt small{grid-column:2}
+label.opt:has(:checked){background:var(--ink);color:var(--solid)}label.opt:has(:checked) small{color:var(--note-on)}
+.people h3{font-size:14px;font-weight:800}.people summary{cursor:pointer;font-weight:700;color:var(--ink2);margin-bottom:8px}
+.owned{list-style:none;display:grid;gap:6px;padding:0}.owned li{display:flex;align-items:center;gap:10px;justify-content:space-between;font-weight:700}.owned small{display:block;font-size:12.5px;color:var(--warn)}
+.jobs{max-height:min(80vh,640px);overflow:auto;max-width:min(520px,calc(100vw - 32px))}.jobs .opts{display:grid}
 .evb>.primary{justify-self:end;margin-top:8px}
 .people{grid-column:1/-1;display:grid;gap:10px;padding-bottom:6px;border-bottom:1px solid var(--hair)}
 .folks{display:flex;flex-wrap:wrap;gap:10px}

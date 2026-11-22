@@ -11,13 +11,14 @@ import { Birthday } from './Birthday'
 import { Dock } from './Dock'
 import { EventDialog } from './EventDialog'
 import { InterestDialog } from './InterestDialog'
+import { JobBoard } from './JobBoard'
 import { Journal } from './Journal'
 import { Rail } from './Rail'
 import { Result } from './Result'
 
 /** One year of a life: the character, the journal, and what you can do. */
 export function YearScreen({ life }: { life: Life }) {
-  const { openCategory, playing, lastResult, birthday, settingsOpen, pendingEvent, lastEvent, askingInterest, open, begin, closeResult, ageUp, endBirthday } = useApp()
+  const { openCategory, playing, lastResult, birthday, settingsOpen, pendingEvent, lastEvent, askingInterest, jobBoardOpen, open, begin, closeResult, ageUp, endBirthday } = useApp()
   const asking = pendingEvent !== null || lastEvent !== null || askingInterest
   const [cover, setCover] = useState(0)
   const started = useRef<string | null>(null)
@@ -63,7 +64,7 @@ export function YearScreen({ life }: { life: Life }) {
     <>
       <div className="amb" style={amb} aria-hidden="true" />
       <TopBar />
-      <div className="app" inert={Boolean(playing || lastResult || birthday !== null || settingsOpen || asking)}>
+      <div className="app" inert={Boolean(playing || lastResult || birthday !== null || settingsOpen || asking || jobBoardOpen)}>
         <Rail life={life} />
         <main className="main">
           <div className="stage">
@@ -77,6 +78,7 @@ export function YearScreen({ life }: { life: Life }) {
       <MinigameHost />
       {(pendingEvent || lastEvent) && <EventDialog life={life} />}
       {askingInterest && <InterestDialog />}
+      {jobBoardOpen && <JobBoard life={life} />}
       {birthday !== null && <Birthday age={birthday} onDone={endBirthday} />}
     </>
   )

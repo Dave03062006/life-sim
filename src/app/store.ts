@@ -8,10 +8,12 @@ import { useSettings } from '../engine/settings'
 import { finishActivity, GOOD_SCORE, offersFor } from '../life/activities'
 import { drawEvents, dropStale, resolveEvent, type EventTier } from '../life/events'
 import { modifiersFor } from '../life/modifiers'
+import { sell as sellItem, sellBlocked, setLifestyle as applyLifestyle } from '../life/money'
+import { findMove, takePath as takeMove } from '../life/path'
 import { personById } from '../life/people'
 import { actionsFor, afterEvent, giveGift, queuePersonEvent, talk, timeActivity, type PersonActionId } from '../life/personActions'
 import { cleanName, rollLife, type LifeRoll } from '../life/roll'
-import type { CategoryId, Interest, JournalEntry, Life, PendingEvent } from '../life/types'
+import type { CategoryId, Interest, JournalEntry, Life, Lifestyle, PendingEvent } from '../life/types'
 import { ageUp, newLife } from '../life/year'
 import type { Modifiers } from '../minigames/framework'
 
@@ -32,6 +34,7 @@ export interface AppState {
   settingsOpen: boolean
   pendingEvent: PendingEvent | null // life.pendingEvents[0] once nothing else is showing
   askingInterest: boolean
+  jobBoardOpen: boolean
   lastEvent: { def: EventDef; tier: EventTier; entry: JournalEntry } | null
   boot(saves?: Saves): Promise<void>
   goTitle(): void // ignored while a game, event or dialog shows
@@ -54,6 +57,10 @@ export interface AppState {
   closeEvent(): void
   setInterest(interest: Interest): void // answers the romance question, or changes the answer later
   personAction(personId: string, action: PersonActionId): void
+  takePath(id: string): void // a blocked or unknown move is ignored; saves, and leaves the sheet open
+  setLifestyle(lifestyle: Lifestyle): void // ignored before you live on your own
+  sell(itemId: string): void // a blocked sale is ignored
+  setJobBoardOpen(open: boolean): void
 }
 
 let saves: Saves | null = null
@@ -75,7 +82,7 @@ let resume: (() => void) | null = null
 /** Every per-life dialog closed: a new or imported life starts with none of the old one's. */
 function cleanSlate(): Partial<AppState> {
   resume = null
-  return { askingInterest: false, pendingEvent: null, lastEvent: null, lastResult: null, playing: null, birthday: null, openCategory: null }
+  return { askingInterest: false, pendingEvent: null, lastEvent: null, lastResult: null, playing: null, birthday: null, openCategory: null, jobBoardOpen: false }
 }
 /** The first pending event that can show, or the romance question before one with a romance option; saves any dropped. */
 function showNext(given: Life): Partial<AppState> {
@@ -128,6 +135,7 @@ export const useApp = create<AppState>()((set, get) => {
     settingsOpen: false,
     pendingEvent: null,
     askingInterest: false,
+    jobBoardOpen: false,
     lastEvent: null,
     boot(given) {
       // StrictMode runs the boot effect twice: share one load, never reload over newer play.
@@ -274,5 +282,30 @@ export const useApp = create<AppState>()((set, get) => {
       }
       saveAndShow(action === 'talk' ? talk(life, personId) : queuePersonEvent(life, action, personId))
     },
+    takePath(id) {
+      const { life } = get()
+      if (!life || busy(get())) return
+      const pack = packFor(life.country)
+      const move = findMove(life, id, pack)
+      if (!move || move.blocked) return
+      const next = takeMove(life, id, pack)
+      persist(next)
+      set({ life: next })
+    },
+    setLifestyle(lifestyle) {
+      const { life } = get()
+      if (!life || !life.ownWay || busy(get())) return
+      const next = applyLifestyle(life, lifestyle)
+      persist(next)
+      set({ life: next })
+    },
+    sell(itemId) {
+      const { life } = get()
+      if (!life || busy(get()) || sellBlocked(life, itemId, packFor(life.country))) return
+      const next = sellItem(life, itemId, packFor(life.country))
+      persist(next)
+      set({ life: next })
+    },
+    setJobBoardOpen: (jobBoardOpen) => set({ jobBoardOpen }),
   }
 })

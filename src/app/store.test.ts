@@ -341,3 +341,13 @@ it('imports a file clean, then shows its own queue', async () => {
   app().replaceSaves({ version: 4, active: testLife({ interest: 'none', pendingEvents: [{ eventId: 'party', cast: {} }] }), past: [] })
   expect(app()).toMatchObject({ askingInterest: false, pendingEvent: { eventId: 'party', cast: {} } })
 })
+it('ignores a blocked path move, and closes the job board with the rest', async () => {
+  await fresh()
+  const life = testLife({ age: 13, school: { ...testLife().school, at: 'smp', done: ['tk', 'sd'] } })
+  useApp.setState({ life, screen: 'year', jobBoardOpen: true })
+  useApp.getState().takePath('leave-school')
+  useApp.getState().takePath('nonsense')
+  expect(useApp.getState().life).toBe(life)
+  useApp.getState().replaceSaves({ version: 4, active: null, past: [] })
+  expect(useApp.getState().jobBoardOpen).toBe(false)
+})

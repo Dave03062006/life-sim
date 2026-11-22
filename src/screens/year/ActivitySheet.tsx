@@ -6,6 +6,8 @@ import { formatRupiah } from '../../life/format'
 import type { CategoryId, Life } from '../../life/types'
 import { Icon } from '../../ui/Icon'
 import { CATEGORY, categoryLabel } from './labels'
+import { MoneyPanel } from './MoneyPanel'
+import { PathPanel } from './PathPanel'
 import { PeopleList } from './PeopleList'
 
 function chips(offer: ActivityOffer): { text: string; tone?: 'up' | 'down' }[] {
@@ -84,6 +86,8 @@ export function ActivitySheet({ life, category, onBegin, onClose, onHeight }: Sh
         </button>
       </header>
       <div className="grid">
+        {category === 'school' && <PathPanel life={life} onLayout={measure} />}
+        {category === 'money' && <MoneyPanel life={life} />}
         {category === 'people' && <PeopleList life={life} onLayout={measure} />}
         {offers.length === 0 && <p>Nothing to do here at this age yet.</p>}
         {offers.map((o) => (
