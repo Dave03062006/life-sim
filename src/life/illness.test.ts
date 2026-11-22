@@ -3,7 +3,7 @@ import { packFor } from '../content'
 import type { ContentPack, IllnessDef } from '../content/types'
 import { createRng } from '../engine/random'
 import { finishActivity } from './activities'
-import { applySymptoms, catchIllnesses, discover, illnessEffects, illnessEnergy, onsetChance } from './illness'
+import { applySymptoms, catchIllnesses, closeIllnessYear, discover, illnessDeath, illnessEffects, illnessEnergy, onsetChance } from './illness'
 import { testLife } from './testLife'
 import type { Illness, Life } from './types'
 import { openYear } from './year'
@@ -110,5 +110,44 @@ describe('with the year and the check-up', () => {
   it('sets the vaccinated flag from a Good immunisation', () => {
     const shots = real.activities.find((a) => a.id === 'immunisation')!
     expect(finishActivity(testLife({ age: 3 }), shots, 0.7).life.flags).toContain('vaccinated')
+  })
+})
+
+describe('ending and dying', () => {
+  const rng = () => createRng(1)
+  const dies = (die: number): IllnessDef => ({ ...base, untreated: { die: [[0, die]], weaker: 0 } })
+  const tb: IllnessDef = { ...base, id: 'test-tb', name: 'Tuberculosis', kind: 'long', stages: [{ death: 0, recover: 0 }, { death: 1 }], treated: { die: 0 } }
+  const lifeWith = (...illnesses: Illness[]) => testLife({ illnesses })
+  it('kills an untreated short illness by name, even hidden; cured and survived ones do not', () => {
+    expect(illnessDeath(lifeWith(ill('test-flu')), packOf([dies(1)]), rng())).toBe('Flu')
+    expect(illnessDeath(lifeWith(ill('test-flu', { known: false, treated: 'eased' })), packOf([dies(1)]), rng())).toBe('Flu')
+    expect(illnessDeath(lifeWith(ill('test-flu', { treated: 'cured' })), packOf([dies(1)]), rng())).toBeNull()
+    expect(illnessDeath(lifeWith(ill('test-flu', { treated: 'controlled' })), packOf([dies(1)]), rng())).toBeNull()
+  })
+  it('rolls a long illness at its stage, or at treated.die once controlled', () => {
+    expect(illnessDeath(lifeWith(ill('test-tb', { stage: 1 })), packOf([tb]), rng())).toBe('Tuberculosis')
+    expect(illnessDeath(lifeWith(ill('test-tb', { stage: 1, treated: 'controlled' })), packOf([tb]), rng())).toBeNull()
+  })
+  it('recovers weaker with the effects and line, or plainly, and removes the short illness', () => {
+    const weak = { ...base, untreated: { die: [[0, 0]] as [number, number][], weaker: 1, weakerEffects: { health: -10 } } }
+    const hit = closeIllnessYear(lifeWith(ill('test-flu')), packOf([weak]), rng())
+    expect(hit.illnesses).toEqual([])
+    expect(hit.stats.health).toBe(48)
+    expect(hit.journal.map((e) => e.text)).toEqual(['You got over flu, but it took a lot out of you.'])
+    expect(closeIllnessYear(lifeWith(ill('test-flu')), packOf([dies(0)]), rng()).journal.map((e) => e.text)).toEqual(['You got over flu.'])
+  })
+  it('moves an untreated long illness on, holds it when controlled, and clears it on recover', () => {
+    expect(closeIllnessYear(lifeWith(ill('test-tb')), packOf([tb]), rng()).illnesses[0]?.stage).toBe(1)
+    expect(closeIllnessYear(lifeWith(ill('test-tb', { stage: 1 })), packOf([tb]), rng()).illnesses[0]?.stage).toBe(1)
+    expect(closeIllnessYear(lifeWith(ill('test-tb', { treated: 'controlled' })), packOf([tb]), rng()).illnesses[0]?.stage).toBe(0)
+    const clears = { ...tb, stages: [{ death: 0, recover: 1 }, { death: 1 }] }
+    const done = closeIllnessYear(lifeWith(ill('test-tb')), packOf([clears]), rng())
+    expect(done.illnesses).toEqual([])
+    expect(done.journal.map((e) => e.text)).toEqual(['You got over tuberculosis.'])
+  })
+  it('lets an eased high blood pressure raise onset, but not a controlled one', () => {
+    const risky = { ...base, risk: { untreated: { 'test-sugar': 2 } } }
+    expect(onsetChance(testLife({ age: 50, illnesses: [ill('test-sugar', { treated: 'eased' })] }), risky)).toBeCloseTo(0.4)
+    expect(onsetChance(testLife({ age: 50, illnesses: [ill('test-sugar', { treated: 'controlled' })] }), risky)).toBeCloseTo(0.2)
   })
 })

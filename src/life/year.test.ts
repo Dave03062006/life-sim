@@ -61,4 +61,14 @@ describe('year', () => {
     const life = ageUp(testLife({ age: 24, ownWay: false }), packFor('indonesia'))
     expect([life.age, life.ownWay]).toEqual([25, true])
   })
+
+  it('dies of an illness at the same age, with its name as the cause', () => {
+    const real = packFor('indonesia')
+    const tb = { id: 'test-tb', name: 'Tuberculosis', kind: 'long' as const, onset: [], symptoms: '', stages: [{ death: 1 }], treated: { die: 0 }, treatments: [], sources: [] }
+    const pack = { ...real, illnesses: [tb] }
+    const next = ageUp(testLife({ illnesses: [{ id: 'test-tb', since: 10, stage: 0, known: false, treated: null }] }), pack)
+    expect(next.death).toEqual({ age: 16, cause: 'Tuberculosis' })
+    expect(next.age).toBe(16)
+    expect(next.journal.at(-1)?.text).toBe('You died at 16. Tuberculosis.')
+  })
 })

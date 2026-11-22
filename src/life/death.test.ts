@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ContentPack, IllnessDef } from '../content/types'
 import { createRng } from '../engine/random'
 import { CAUSE, deathCause, oldAgeChance } from './death'
 import { peopleDeaths } from './people'
@@ -46,5 +47,15 @@ describe('death', () => {
     expect(word('grandparent', 'male')).toBe('Your grandfather Sri died, aged 95.')
     expect(word('crush', 'female')).toBe('Your crush Sri died, aged 95.')
     expect(word('father', 'male')).toBe('Your father Sri died, aged 95.')
+  })
+
+  it('checks Health 0 first, then illness, then old age', () => {
+    const flu: IllnessDef = { id: 'test-flu', name: 'Flu', kind: 'short', onset: [], symptoms: '', stages: [{ death: 0 }], untreated: { die: [[0, 1]] }, treated: { die: 0 }, treatments: [], sources: [] }
+    const pack: ContentPack = { id: 'indonesia', activities: [], milestones: {}, events: [], careers: [], belongings: [], illnesses: [flu] }
+    const sick = { id: 'test-flu', since: 1, stage: 0, known: true, treated: null }
+    const stats = testLife().stats
+    expect(deathCause(testLife({ age: 99, illnesses: [sick], stats: { ...stats, health: 0 } }), createRng(1), pack)).toBe(CAUSE.health)
+    expect(deathCause(testLife({ age: 99, illnesses: [sick] }), createRng(1), pack)).toBe('Flu')
+    expect(deathCause(testLife({ age: 116 }), createRng(1), pack)).toBe(CAUSE.oldAge)
   })
 })

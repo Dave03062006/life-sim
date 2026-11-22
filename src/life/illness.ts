@@ -18,7 +18,7 @@ export function onsetChance(life: Life, def: IllnessDef): number {
   if (life.stats.health < LOW_HEALTH) chance *= def.risk?.lowHealth ?? 1
   if (life.stats.stress >= HIGH_STRESS) chance *= def.risk?.highStress ?? 1
   for (const [id, mult] of Object.entries(def.risk?.untreated ?? {})) {
-    if (life.illnesses.some((i) => i.id === id && i.treated === null)) chance *= mult ?? 1
+    if (life.illnesses.some((i) => i.id === id && i.treated !== 'controlled' && i.treated !== 'cured')) chance *= mult ?? 1
   }
   if (def.vaccine && life.flags.includes(def.vaccine)) chance /= 2
   return Math.min(1, chance)
@@ -95,4 +95,42 @@ export function applyIllnessMods(life: Life, pack: ContentPack, m: Modifiers): v
       else m[k] *= v as number
     }
   }
+}
+
+/** The yearly death chance for one illness this year: care changes which roll applies. */
+function deathChance(life: Life, i: Illness, def: IllnessDef): number {
+  if (i.treated === 'controlled') return def.treated.die
+  if (def.kind === 'long') return def.stages[i.stage]?.death ?? 0
+  return def.untreated?.die.find(([from]) => life.age >= from)?.[1] ?? 0
+}
+
+/** One roll per illness, cured ones skipped (they are gone). Returns the name of the first that kills; hidden ones roll too. */
+export function illnessDeath(life: Life, pack: ContentPack, rng: Rng): string | null {
+  let cause: string | null = null
+  for (const i of life.illnesses) {
+    const def = defOf(pack, i)
+    if (!def || i.treated === 'cured') continue
+    if (rng.next() < deathChance(life, i, def)) cause ??= def.name
+  }
+  return cause
+}
+
+/** Survivors at Age Up: short illnesses end (weaker or plain), long ones clear, move on a stage, or hold while controlled. Lines name the illness lower-cased, no article. */
+export function closeIllnessYear(life: Life, pack: ContentPack, rng: Rng): Life {
+  let next = life
+  const kept: Illness[] = []
+  for (const i of life.illnesses) {
+    const def = defOf(pack, i)
+    if (!def || i.treated === 'cured') continue
+    const name = lower(def.name)
+    if (def.kind === 'short') {
+      const weaker = i.treated !== 'controlled' && rng.next() < (def.untreated?.weaker ?? 0)
+      const changes = weaker ? (Object.entries(def.untreated?.weakerEffects ?? {}) as [StatKey, number][]).map(([key, delta]): Change => ({ key, delta })) : []
+      next = applyChanges(next, changes)
+      next = { ...next, journal: [...next.journal, entry(life, weaker ? `You got over ${name}, but it took a lot out of you.` : `You got over ${name}.`, changes)] }
+    } else if (i.treated === 'controlled') kept.push(i)
+    else if (rng.next() < (def.stages[i.stage]?.recover ?? 0)) next = { ...next, journal: [...next.journal, entry(life, `You got over ${name}.`)] }
+    else kept.push({ ...i, stage: Math.min(i.stage + 1, def.stages.length - 1) })
+  }
+  return { ...next, illnesses: kept }
 }

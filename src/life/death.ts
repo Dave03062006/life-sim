@@ -1,4 +1,6 @@
 import type { Rng } from '../engine/random'
+import type { ContentPack } from '../content/types'
+import { illnessDeath } from './illness'
 import type { Life } from './types'
 
 export const OLD_AGE: readonly [from: number, chance: number][] = [[115, 1], [100, 0.6], [90, 0.3], [80, 0.12], [70, 0.04], [60, 0.01]]
@@ -12,9 +14,11 @@ export function oldAgeChance(age: number, health: number | null): number {
   return Math.min(1, scaled)
 }
 
-/** Checked at Age Up: Health 0, then old age, then a rare accident. */
-export function deathCause(life: Life, rng: Rng): string | null {
+/** Checked at Age Up: Health 0, then illness, then old age, then a rare accident. */
+export function deathCause(life: Life, rng: Rng, pack?: ContentPack): string | null {
   if (life.stats.health <= 0) return CAUSE.health
+  const sick = pack && illnessDeath(life, pack, rng)
+  if (sick) return sick
   if (rng.next() < oldAgeChance(life.age, life.stats.health)) return CAUSE.oldAge
   return rng.next() < ACCIDENT ? CAUSE.accident : null
 }
