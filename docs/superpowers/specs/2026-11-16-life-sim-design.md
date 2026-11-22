@@ -545,6 +545,7 @@ The first screen loads only its own skin's art. Mini-games and the art for other
 19. Five university fields (5.9).
 20. An unfinished life is kept as abandoned when a new one starts (section 8).
 21. Text is plain English in the data, with no translation layer yet (10.5).
+22. Old age past the 5.12 table: 60% a year from 100, scaled by Health like the rest, and certain death at 115, whatever the Health. The table stopped at 90, and a 149-year-old broke the grounded tone (5.12, Plan 4).
 
 ## 15. Left to the builder
 
