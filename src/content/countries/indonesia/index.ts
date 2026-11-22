@@ -5,4 +5,4 @@ import { careers } from './careers'
 import { events } from './events'
 import { milestones } from './milestones'
 
-export const indonesia: ContentPack = { id: 'indonesia', activities, milestones, events, careers, belongings }
+export const indonesia: ContentPack = { id: 'indonesia', activities, milestones, events, careers, belongings, illnesses: [] }

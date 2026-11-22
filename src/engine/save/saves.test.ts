@@ -8,7 +8,7 @@ describe('saves', () => {
   it('stores and reads a save', async () => {
     const saves = createSaves(memoryStore())
     expect(await saves.load()).toEqual(EMPTY_SAVE)
-    const file: SaveFile = { version: 4, active: testLife(), past: [] }
+    const file: SaveFile = { version: 5, active: testLife(), past: [] }
     await saves.store(file)
     expect(await saves.load()).toEqual(file)
   })
@@ -18,9 +18,9 @@ describe('saves', () => {
     const store = memoryStore()
     await store.set('save', { checksum: checksumOf({ version: 1, active: old, past: [old] }), file: { version: 1, active: old, past: [old] } })
     const loaded = await createSaves(store).load()
-    expect(loaded.version).toBe(4)
+    expect(loaded.version).toBe(5)
     for (const life of [loaded.active!, loaded.past[0]!]) {
-      expect(life.version).toBe(4)
+      expect(life.version).toBe(5)
       expect(life.wealth).toBe('getting-by')
       expect(life.death).toBeNull()
       expect(life.stats).toEqual(old.stats)
@@ -37,7 +37,7 @@ describe('saves', () => {
     const store = memoryStore()
     await store.set('save', { checksum: checksumOf(file), file })
     const loaded = await createSaves(store).load()
-    expect(loaded.active!.version).toBe(4)
+    expect(loaded.active!.version).toBe(5)
     expect(loaded.active!.people.length).toBeGreaterThan(0)
     expect(loaded.active!.spentWith).toEqual([])
     expect(loaded.past).toEqual([testLife({ id: 'old' })])
@@ -48,18 +48,18 @@ describe('saves', () => {
     const store = memoryStore()
     await store.set('save', { checksum: checksumOf(file), file })
     const loaded = await createSaves(store).load()
-    expect(loaded).toEqual({ version: 4, active: testLife({ id: 'old' }), past: [] })
+    expect(loaded).toEqual({ version: 5, active: testLife({ id: 'old' }), past: [] })
   })
   it('parseSave rejects a bad checksum, a non-object and a newer version', () => {
-    const file = { version: 5, active: null, past: [] }
-    expect(parseSave({ checksum: 'wrong', file: { version: 4, active: null, past: [] } })).toBeNull()
+    const file = { version: 6, active: null, past: [] }
+    expect(parseSave({ checksum: 'wrong', file: { version: 5, active: null, past: [] } })).toBeNull()
     expect(parseSave('nope')).toBeNull()
     expect(parseSave({ checksum: checksumOf(file), file })).toBeNull()
-    const ok = { version: 4, active: null, past: [] }
+    const ok = { version: 5, active: null, past: [] }
     expect(parseSave({ checksum: checksumOf(ok), file: ok })).toEqual(ok)
   })
   it('starts fresh and keeps the bad data aside when a save is damaged or from a newer version', async () => {
-    const bads = [{ checksum: 'wrong', file: { version: 4, active: testLife(), past: [] } }, 'not a save', { checksum: checksumOf({ version: 99 }), file: { version: 99 } }]
+    const bads = [{ checksum: 'wrong', file: { version: 5, active: testLife(), past: [] } }, 'not a save', { checksum: checksumOf({ version: 99 }), file: { version: 99 } }]
     for (const bad of bads) {
       const store = memoryStore()
       await store.set('save', bad)
@@ -78,7 +78,7 @@ describe('saves', () => {
     }
     it('fills the new fields', async () => {
       const life = await v3(30)
-      expect(life).toMatchObject({ version: 4, job: null, lifestyle: 'normal', ownWay: true, flags: [], belongings: [] })
+      expect(life).toMatchObject({ version: 5, job: null, lifestyle: 'normal', ownWay: true, flags: [], belongings: [], illnesses: [] })
       expect(life.school).toMatchObject({ at: null, done: ['tk', 'sd', 'smp', 'sma'] })
     })
     it.each([
@@ -96,5 +96,14 @@ describe('saves', () => {
       expect(life.people[0]).toMatchObject({ relation: 'partner', since: 20 })
       expect(life.people[1]).not.toHaveProperty('since')
     })
+  })
+  it('upgrades a version 4 life to version 5 with no illnesses', async () => {
+    const { illnesses: _i, ...rest } = testLife()
+    const file = { version: 4, active: { ...rest, version: 4 }, past: [{ ...rest, version: 4 }] }
+    const store = memoryStore()
+    await store.set('save', { checksum: checksumOf(file), file })
+    const loaded = await createSaves(store).load()
+    expect(loaded.active).toEqual(testLife())
+    expect(loaded.past[0]).toMatchObject({ version: 5, illnesses: [] })
   })
 })

@@ -22,7 +22,7 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
   const stress = roll(0, 20)
   const people = startingPeople(rng, startAge, gender, name, NAMES)
   return {
-    version: 4,
+    version: 5,
     id: `life-${seed}`,
     rng: rng.state,
     country: 'indonesia',
@@ -50,6 +50,7 @@ export function newLife({ seed, startAge = 0, name = 'Raka Pratama', gender = 'm
     ownWay: startAge >= 25,
     flags: [],
     belongings: [],
+    illnesses: [],
   }
 }
 

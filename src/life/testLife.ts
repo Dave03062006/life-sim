@@ -2,7 +2,7 @@ import type { Life } from './types'
 
 export function testLife(overrides: Partial<Life> = {}): Life {
   return {
-    version: 4,
+    version: 5,
     id: 'life-test',
     rng: 1,
     country: 'indonesia',
@@ -34,6 +34,7 @@ export function testLife(overrides: Partial<Life> = {}): Life {
     ownWay: false,
     flags: [],
     belongings: [],
+    illnesses: [],
     ...overrides,
   }
 }

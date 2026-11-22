@@ -16,7 +16,7 @@ const choice = (id: string, more: Partial<EventDef> = {}): EventDef => ({
 const news = (id: string, more: Partial<EventDef> = {}): EventDef => ({
   id, kind: 'news', stages: ['late-teen'], weight: 1, title: id, text: id, news: say(`${id} happened`), ...more,
 })
-const packOf = (events: EventDef[]): ContentPack => ({ id: 'indonesia', activities: [], milestones: {}, events, careers: [], belongings: [] })
+const packOf = (events: EventDef[]): ContentPack => ({ id: 'indonesia', activities: [], milestones: {}, events, careers: [], belongings: [], illnesses: [] })
 
 const coverFriend = choice('cover-friend', {
   cast: { friend: 'friend' },

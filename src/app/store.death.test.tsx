@@ -17,7 +17,7 @@ const fresh = async (file?: SaveFile) => {
 }
 
 it('moves a life that dies at Age Up to past lives, and shows its summary', async () => {
-  const saves = await fresh({ version: 4, active: testLife({ age: 115 }), past: [testLife({ id: 'old' })] }) // certain death at 115
+  const saves = await fresh({ version: 5, active: testLife({ age: 115 }), past: [testLife({ id: 'old' })] }) // certain death at 115
   app().continueLife()
   app().ageUp()
   const { life, past, screen: shown, summaryId, birthday, pendingEvent } = app()
@@ -38,7 +38,7 @@ it('moves a life that dies at Age Up to past lives, and shows its summary', asyn
 })
 
 it('moves an old save whose active life has died to past lives on load', async () => {
-  const saves = await fresh({ version: 4, active: testLife({ death: { age: 16, cause: 'An accident' } }), past: [] })
+  const saves = await fresh({ version: 5, active: testLife({ death: { age: 16, cause: 'An accident' } }), past: [] })
   expect(app()).toMatchObject({ screen: 'title', life: null })
   expect(app().past.map((l) => l.id)).toEqual(['life-test'])
   await flush()
@@ -46,7 +46,7 @@ it('moves an old save whose active life has died to past lives on load', async (
 })
 
 it('opens past lives and a summary, and goes back to the title', async () => {
-  await fresh({ version: 4, active: null, past: [testLife({ id: 'a' })] })
+  await fresh({ version: 5, active: null, past: [testLife({ id: 'a' })] })
   app().showPast()
   expect(app().screen).toBe('past')
   app().showSummary('a')

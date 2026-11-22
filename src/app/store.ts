@@ -66,7 +66,7 @@ export interface AppState {
 let saves: Saves | null = null
 let booting: Promise<void> | null = null
 let loading = false
-const persist = (life: Life | null) => void saves?.store({ version: 4, active: life, past: useApp.getState().past }).catch(() => {}) // a failed save must not break the game
+const persist = (life: Life | null) => void saves?.store({ version: 5, active: life, past: useApp.getState().past }).catch(() => {}) // a failed save must not break the game
 const localSaves = (): Saves => {
   try {
     return createSaves(indexedDbStore('life-sim', 'saves'))

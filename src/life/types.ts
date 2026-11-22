@@ -24,10 +24,17 @@ export interface Schooling {
   degrees: Field[] // fields you graduated in
   funding: 'scholarship' | 'family' | 'self' | null // while at uni
 }
+export interface Illness {
+  id: string          // the IllnessDef id
+  since: number       // your age when it started
+  stage: number       // 0-based; long illnesses move on each untreated year
+  known: boolean      // false while a silent illness is undiscovered
+  treated: 'cured' | 'controlled' | 'eased' | null // this year's treatment; reset when the year opens
+}
 export interface Job { careerId: string; step: number; performance: number; years: number } // performance 0-100; years in this step
 export type Lifestyle = 'frugal' | 'normal' | 'comfortable'
 export interface Life {
-  version: 4
+  version: 5
   id: string
   rng: number               // the seeded generator's position
   country: 'indonesia'
@@ -55,4 +62,5 @@ export interface Life {
   ownWay: boolean       // living costs apply (first full-time job, or 25)
   flags: string[]       // lasting facts: 'bank', 'bpjs', 'passed-entrance'
   belongings: string[]  // belonging ids you own
+  illnesses: Illness[]
 }

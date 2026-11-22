@@ -1,4 +1,5 @@
-import type { CategoryId, Field, Life, Relation, SchoolLevel, StageId, StatKey } from '../life/types'
+import type { Modifiers } from '../minigames/framework'
+import type { CategoryId, Field, Gender, Life, Relation, SchoolLevel, StageId, StatKey } from '../life/types'
 
 export type MinigameType = 'timing' | 'tapping' | 'memory' | 'quiz' | 'catch' | 'typing'
 export type ResultTier = 'fail' | 'weak' | 'good' | 'great'
@@ -46,6 +47,29 @@ export interface ContentPack {
   events: EventDef[]
   careers: CareerDef[]
   belongings: BelongingDef[]
+  illnesses: IllnessDef[]
+}
+
+export interface Source { title: string; url: string }
+export type IllnessEffect = 'cure' | 'control' | 'ease'
+export interface TreatmentDef {
+  id: string; label: string; place: 'home' | 'puskesmas' | 'hospital'; cost: number; energy: number; effect: IllnessEffect
+  stages?: number[] // only offered while the illness is at one of these stages
+}
+export interface IllnessStage { death: number; recover?: number; symptoms?: Partial<Record<StatKey, number>>; energy?: number; silent?: boolean }
+export interface IllnessDef {
+  id: string; name: string; kind: 'short' | 'long'
+  gender?: Gender                        // breast cancer: female
+  onset: [fromAge: number, chance: number][] // yearly chance by age band, highest band first, like OLD_AGE
+  risk?: { lowHealth?: number; highStress?: number; untreated?: Partial<Record<string, number>> } // multipliers; untreated: another illness id it raises
+  vaccine?: string                       // a flag that halves the chance
+  symptoms: string                       // plain text for the card
+  minigame?: { label: string; mods: Partial<Modifiers> }
+  stages: IllnessStage[]                 // short illnesses have one stage
+  untreated?: { die: [fromAge: number, chance: number][]; weaker?: number; weakerEffects?: Partial<Record<StatKey, number>> } // short illnesses only; required for them (content test)
+  treated: { die: number }               // short: chance of death even with care; long: yearly death while controlled
+  treatments: TreatmentDef[]
+  sources: Source[]
 }
 
 export type Condition =

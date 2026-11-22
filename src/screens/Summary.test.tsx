@@ -24,7 +24,7 @@ const unfinished = testLife({ id: 'unfinished', name: 'Raka Pratama' })
 
 const boot = async (past: Life[]) => {
   const saves = createSaves(memoryStore())
-  await saves.store({ version: 4, active: null, past })
+  await saves.store({ version: 5, active: null, past })
   useApp.setState(useApp.getInitialState())
   await useApp.getState().boot(saves)
   render(<App />)

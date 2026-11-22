@@ -210,4 +210,13 @@ describe('indonesia careers', () => {
     for (const a of pack.activities.filter((x) => x.buys)) expect({ id: a.id, ok: pack.belongings.some((b) => b.id === a.buys) }).toEqual({ id: a.id, ok: true })
     for (const b of pack.belongings) expect({ id: b.id, ok: b.resale <= b.price }).toEqual({ id: b.id, ok: true })
   })
+  it('gives every illness a source, a treatment, descending onset bands, and one stage when short', () => {
+    for (const ill of pack.illnesses) {
+      expect({ id: ill.id, https: ill.sources.length > 0 && ill.sources.every((x) => x.url.startsWith('https://')) }).toEqual({ id: ill.id, https: true })
+      expect({ id: ill.id, cared: ill.treatments.length > 0 }).toEqual({ id: ill.id, cared: true })
+      const ages = ill.onset.map(([from]) => from)
+      expect({ id: ill.id, sorted: ages.every((a, k) => k === 0 || (ages[k - 1] ?? 0) > a) }).toEqual({ id: ill.id, sorted: true })
+      expect({ id: ill.id, stages: ill.kind === 'short' ? ill.stages.length : 1, untreated: ill.kind === 'short' ? !!ill.untreated : true }).toEqual({ id: ill.id, stages: 1, untreated: true })
+    }
+  })
 })
