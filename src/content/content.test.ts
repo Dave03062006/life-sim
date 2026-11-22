@@ -4,6 +4,7 @@ import { eventArt, hasIcon } from '../styles/art'
 import { GAMES } from '../minigames/registry'
 import { THEMES } from '../minigames/themes'
 import { questionsFor } from '../minigames/quiz/questions'
+import { wider } from './countries/indonesia/activities'
 import { packFor } from './index'
 
 const pack = packFor('indonesia')
@@ -54,6 +55,12 @@ describe('indonesia content', () => {
   it('never offers an activity in a category its stage does not open', () => {
     for (const s of STAGES) {
       expect(pack.activities.filter((a) => a.stages.includes(s.id) && !s.categories.includes(a.category)).map((a) => a.id)).toEqual([])
+    }
+  })
+  it('widens only activities that exist, and keeps crawl and first words for age 1 and up', () => {
+    expect(Object.keys(wider).filter((id) => !pack.activities.some((a) => a.id === id))).toEqual([])
+    for (const id of ['crawl', 'first-words']) {
+      expect(pack.activities.find((a) => a.id === id)!.requires).toEqual([{ kind: 'min-age', age: 1, reason: 'From age 1.' }])
     }
   })
   it('writes milestone lines for the key ages', () => {

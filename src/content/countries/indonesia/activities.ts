@@ -40,14 +40,14 @@ const YA: StageId = 'young-adult', AD: StageId = 'adult', SE: StageId = 'senior'
 const CH_UP = [CH, ET, LT, YA, AD, SE], ET_UP = [ET, LT, YA, AD, SE], GROWN = [YA, AD, SE]
 
 // The original late-teen activities, unchanged in text, and the other ages that fit them.
-const wider: Record<string, StageId[]> = {
+export const wider: Record<string, StageId[]> = {
   homework: [CH, ET, LT], 'group-project': [CH, ET, LT], 'skip-class': [ET, LT],
   library: CH_UP, english: CH_UP, chess: CH_UP, diary: CH_UP, 'puzzle-cube': CH_UP, code: ET_UP,
-  futsal: [CH, ET, LT, YA], jog: [CH, ET, LT, YA], gym: [LT, YA], badminton: [CH, ET, LT, YA], swim: [CH, ET, LT, YA], silat: [CH, ET, LT, YA],
-  checkup: ET_UP, dentist: [SC, ...CH_UP], 'eat-better': [CH, ET, LT, YA], counsellor: [ET, LT],
+  futsal: [CH, ET, LT, YA, AD], jog: CH_UP, gym: [LT, YA, AD, SE], badminton: CH_UP, swim: CH_UP, silat: CH_UP,
+  checkup: ET_UP, dentist: [SC, ...CH_UP], 'eat-better': CH_UP, counsellor: [ET, LT],
   cook: [SC, ...CH_UP], 'family-dinner': [B, SC, ...CH_UP], 'call-nenek': [SC, ...CH_UP], 'new-friend': CH_UP,
   'sell-snacks': [CH, ET, LT], tutor: [LT, YA, AD, SE], 'save-bank': CH_UP, clothes: ET_UP, 'warung-shift': [LT, YA, AD],
-  band: ET_UP, warnet: [ET, LT, YA], film: CH_UP, karaoke: CH_UP, 'ride-town': CH_UP, comics: CH_UP,
+  band: ET_UP, warnet: [ET, LT, YA], film: CH_UP, karaoke: ET_UP, 'ride-town': ET_UP, comics: CH_UP,
   nap: [B, SC, ...CH_UP], 'sleep-in': CH_UP, meditate: ET_UP, pijat: GROWN, holiday: CH_UP, 'do-nothing': CH_UP,
 }
 
@@ -116,11 +116,11 @@ const base: ActivityDef[] = [
   a('do-nothing', 'rest', 'Do nothing at home', 'TV, snacks, sofa.', '', 0, 0, { happiness: 1, smarts: -1 }, 'You did absolutely nothing for a while.', { rest: 2 }),
   // Babies
   a('smile-ibu', 'people', 'Smile at Ibu', 'Your mother melts every time.', '', 1, 0, { happiness: 2 }, 'You smiled at Ibu. She told everyone.', { stages: [B] }),
-  a('first-words', 'people', 'Say your first words', 'Mama, papa, or maybe just “nenen”.', '', 1, 0, { smarts: 2, happiness: 1 }, 'You said “mama”. Your mother cried a little.', { stages: [B] }),
+  a('first-words', 'people', 'Say your first words', 'Mama, papa, or maybe just “nenen”.', '', 1, 0, { smarts: 2, happiness: 1 }, 'You said “mama”. Your mother cried a little.', { stages: [B], requires: [{ kind: 'min-age', age: 1, reason: 'From age 1.' }] }),
   a('cry-attention', 'people', 'Cry for attention', 'It works every single time.', '', 1, 0, { happiness: 1, stress: 1 }, 'You cried at midnight. Your parents took turns holding you.', { stages: [B] }),
   a('rattle', 'fun', 'Shake a rattle', 'Noise! Wonderful noise!', '', 1, 0, { happiness: 2 }, 'You shook the rattle until your father asked for a break.', { stages: [B, SC] }),
   a('splash', 'fun', 'Splash at bath time', 'The water is warm and the duck floats.', '', 1, 0, { happiness: 2, health: 1 }, 'You splashed the whole bathroom at bath time.', { stages: [B, SC] }),
-  a('crawl', 'fun', 'Learn to crawl', 'Slowly, then suddenly everywhere.', '', 1, 0, { health: 2, happiness: 1 }, 'You crawled across the floor. Nothing was safe after that.', { stages: [B] }),
+  a('crawl', 'fun', 'Learn to crawl', 'Slowly, then suddenly everywhere.', '', 1, 0, { health: 2, happiness: 1 }, 'You crawled across the floor. Nothing was safe after that.', { stages: [B], requires: [{ kind: 'min-age', age: 1, reason: 'From age 1.' }] }),
   a('posyandu', 'health', 'Posyandu weigh-in', 'The village health post weighs you and checks your growth.', '', 1, 0, { health: 2 }, 'The posyandu nurse said you are growing well.', { stages: [B, SC] }),
   a('immunisation', 'health', 'Get your shots', 'A little needle and a lot of crying.', '', 1, 0, { health: 3, happiness: -1 }, 'You got your shots and cried. Then you got a sticker.', { stages: [B, SC, CH] }),
   a('lullaby', 'rest', 'Fall asleep to a lullaby', 'Ibu hums until your eyes close.', '', 0, 0, { stress: -2 }, 'You fell asleep to a lullaby.', { stages: [B, SC], rest: 2 }),

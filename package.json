@@ -13,6 +13,7 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "check": "npm run typecheck && npm run lint",
+    "simulate": "node -e \"process.env.SIMULATE_LIVES='10000';require('child_process').execSync('npx vitest run src/dev --reporter=verbose',{stdio:'inherit'})\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
