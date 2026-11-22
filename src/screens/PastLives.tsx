@@ -18,7 +18,7 @@ export function PastLives() {
         <ul className="lives">
           {past.toReversed().map((l) => (
             <li key={l.id}>
-              <button onClick={() => showSummary(l.id)}>
+              <button aria-label={`${l.name}, ${l.age} years, ${l.death?.cause ?? 'Unfinished'}`} onClick={() => showSummary(l.id)}>
                 <b>{l.name}</b>
                 <span>
                   {l.age} years · {l.death?.cause ?? 'Unfinished'}

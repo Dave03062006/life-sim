@@ -29,6 +29,20 @@ export function Summary() {
           <p className="note">{s.cause ?? 'Unfinished'}</p>
         </header>
         <Lifeline life={life} />
+        {life.memories.length > 0 && (
+          <div className="family">
+            <span className="label" id="memories">
+              Memories
+            </span>
+            <ul aria-labelledby="memories">
+              {life.memories.toSorted((a, b) => a.age - b.age).map((m) => (
+                <li key={m.id}>
+                  Age {m.age}: {m.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="stats">
           {STATS.map((stat) => (
             <StatBar key={stat} stat={stat} value={s.stats[stat]} minor={stat === 'stress' || stat === 'reputation'} />

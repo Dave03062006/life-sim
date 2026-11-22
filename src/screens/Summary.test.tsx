@@ -15,7 +15,10 @@ const dead = testLife({
   age: 74,
   money: 1500000,
   death: { age: 74, cause: 'Old age' },
-  memories: [{ id: 'trip', age: 15, text: 'You stood up for Dimas on the class trip.', people: [] }],
+  memories: [
+    { id: 'trip', age: 15, text: 'You stood up for Dimas on the class trip.', people: [] },
+    { id: 'drawing', age: 9, text: 'You won the drawing contest.', people: [] },
+  ],
 })
 const unfinished = testLife({ id: 'unfinished', name: 'Raka Pratama' })
 
@@ -34,6 +37,8 @@ it('sums up a life that ended', async () => {
   expect(screen.getByText('Lived 74 years')).toBeTruthy()
   expect(screen.getByText('Old age')).toBeTruthy()
   expect(screen.getByRole('img', { name: 'You stood up for Dimas on the class trip.' })).toBeTruthy()
+  const memories = within(screen.getByRole('list', { name: 'Memories' }))
+  expect(memories.getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Age 9: You won the drawing contest.', 'Age 15: You stood up for Dimas on the class trip.'])
   expect(screen.getByRole('meter', { name: 'Health' }).getAttribute('aria-valuenow')).toBe('58')
   expect(screen.getByText('Rp 1.500.000')).toBeTruthy()
   const people = within(screen.getByRole('list', { name: 'Left behind' }))
@@ -56,7 +61,7 @@ it('lists past lives newest first, each opening its summary, and Back goes to th
   await boot([dead, unfinished])
   await userEvent.click(screen.getByRole('button', { name: 'Past lives (2)' }))
   const rows = screen.getAllByRole('button', { name: /years/ })
-  expect(rows.map((b) => b.textContent)).toEqual(['Raka Pratama16 years · Unfinished', 'Sari Dewi74 years · Old age'])
+  expect(rows).toEqual([screen.getByRole('button', { name: 'Raka Pratama, 16 years, Unfinished' }), screen.getByRole('button', { name: 'Sari Dewi, 74 years, Old age' })])
   await userEvent.click(rows[1]!)
   expect(useApp.getState()).toMatchObject({ screen: 'summary', summaryId: 'dead' })
   useApp.getState().showPast()
