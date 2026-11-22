@@ -24,10 +24,7 @@ function holds(life: Life, c: Condition): boolean {
     case 'no-memory': return !life.memories.some((m) => m.id === c.id)
     case 'money': return life.money >= c.min
     case 'job': return life.job !== null
-    case 'partnered': {
-      const p = spouse(life) ?? life.people.find((q) => q.relation === 'partner' && q.since !== undefined && life.age - q.since >= c.years)
-      return p !== undefined
-    }
+    case 'partnered': return !!spouse(life) || life.people.some((q) => q.relation === 'partner' && q.since !== undefined && life.age - q.since >= c.years)
     case 'children': return children(life).length <= c.max
     case 'age': return life.age >= (c.min ?? 0) && life.age <= (c.max ?? Infinity)
   }

@@ -1,3 +1,4 @@
+import { BABY_AGE_MAX, MAX_CHILDREN, PARTNER_YEARS } from '../../../life/family'
 import type { EventAction, EventDef, Outcome } from '../../types'
 
 type Tiers = [Outcome, Outcome, Outcome]
@@ -674,7 +675,7 @@ const weddingEvent: EventDef = {
 const NO_KIDS = { id: 'no-kids', text: 'You and {them} chose a life without children.' }
 const baby = (id: string, role: 'spouse' | 'partner', weight: number): EventDef => ({
   id, kind: 'choice', stages: ['young-adult', 'adult'], weight, repeat: true, cast: { them: role },
-  when: [{ kind: 'partnered', years: 3 }, { kind: 'children', max: 3 }, { kind: 'age', max: 45 }, { kind: 'no-memory', id: 'no-kids' }],
+  when: [{ kind: 'partnered', years: PARTNER_YEARS }, { kind: 'children', max: MAX_CHILDREN - 1 }, { kind: 'age', max: BABY_AGE_MAX }, { kind: 'no-memory', id: 'no-kids' }],
   title: 'Talking about a baby',
   text: 'You and {them} have been talking about the future. Lately the talk keeps landing on a small person with your noses.',
   actions: [
@@ -728,36 +729,36 @@ const family: EventDef[] = [
     news: { text: 'You and {spouse} celebrated the years together with fried tempeh and a very long nap.', effects: { happiness: 2 }, closeness: { spouse: 3 } },
   },
   {
-    id: 'child-sleepless', kind: 'choice', stages: FAMILY_STAGES, weight: 3, cast: { child: 'child' },
-    title: '{child} will not sleep', text: 'It is well past bedtime, and {child} has decided the night is for company.',
+    id: 'child-late-night', kind: 'choice', stages: FAMILY_STAGES, weight: 3, cast: { child: 'child' },
+    title: 'A late night with {child}', text: 'It is late, and {child} is still up and wants your company.',
     actions: [
-      act('story', 'Read a story', 80, [
-        o('{child} yawned halfway through and fell asleep on your arm.', { effects: { happiness: 3 }, closeness: { child: 6 } }),
-        o('{child} listened to every word, then asked for another.', { effects: { stress: 1 }, closeness: { child: 4 } }),
-        o('You fell asleep first, and {child} drew on your face.', { effects: { stress: 1 }, closeness: { child: 3 } }),
+      act('talk', 'Sit and talk', 80, [
+        o('You and {child} talked until the tea went cold, and neither of you minded.', { effects: { happiness: 3 }, closeness: { child: 6 } }),
+        o('{child} listened to every word, then asked for another round of tea.', { effects: { stress: 1 }, closeness: { child: 4 } }),
+        o('You nodded off mid-sentence, and {child} found it very funny.', { effects: { stress: 1 }, closeness: { child: 3 } }),
       ]),
-      act('sing', 'Sing a lullaby', 70, [
-        o('{child} hummed along and drifted off.', { effects: { happiness: 2 }, closeness: { child: 5 } }),
-        o('{child} said you sang it wrong, but fell asleep.', { effects: { happiness: 1 }, closeness: { child: 3 } }),
-        o('{child} laughed so much that sleep got even further away.', { effects: { stress: 2 }, closeness: { child: 2 } }),
+      act('snack', 'Make a snack together', 70, [
+        o('The two of you made a very odd sandwich, and it was delicious.', { effects: { happiness: 2 }, closeness: { child: 5 } }),
+        o('{child} said it needed more chilli, and it did.', { effects: { happiness: 1 }, closeness: { child: 3 } }),
+        o('You dropped the plate, and {child} laughed so hard that the snack was forgotten.', { effects: { stress: 2 }, closeness: { child: 2 } }),
       ]),
-      act('firm', 'Say it is bedtime', 75, [
-        o('{child} grumbled, then settled down, and you got some peace.', { effects: { stress: -1 }, closeness: { child: 1 } }),
-        o('{child} went to bed with a big sigh.', { effects: { stress: 1 } }),
-        o('{child} protested for an hour, and you gave in to snacks.', { effects: { stress: 3 }, closeness: { child: -1 } }),
+      act('late', 'Say it is late', 75, [
+        o('{child} nodded, said goodnight, and you got some peace.', { effects: { stress: -1 }, closeness: { child: 1 } }),
+        o('{child} went off with a big sigh.', { effects: { stress: 1 } }),
+        o('{child} grumbled for an hour, and you gave in to snacks.', { effects: { stress: 3 }, closeness: { child: -1 } }),
       ]),
     ],
   },
   {
     id: 'child-funny', kind: 'news', stages: FAMILY_STAGES, weight: 2, cast: { child: 'child' },
-    title: '{child} is funny', text: 'Something {child} did today is going to be told at every family dinner.',
-    news: { text: '{child} announced a very serious plan to become a chicken farmer, and asked for a coop.', effects: { happiness: 2 }, closeness: { child: 3 } },
+    title: '{child} is funny', text: 'Something {child} said today is going to be told at every family dinner.',
+    news: { text: '{child} told a joke at dinner that had the whole table laughing, even the aunties.', effects: { happiness: 2 }, closeness: { child: 3 } },
   },
 ]
 
 const propose = person('propose', 'Proposing to {them}', 'You have thought about it for a long time. You want to ask {them} to marry you.', [
   act('ring', 'Propose over dinner', 70, [
-    o('{them} said yes before you finished the question. You are engaged, and then married.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
+    o('{them} said yes before you finished the question. Now there is a wedding to plan.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
     o('{them} said they need a little more time, with a smile.', { effects: { happiness: 1, stress: 2 }, closeness: { them: 3 } }),
     o('{them} said not yet, kindly. The dinner got very quiet.', { effects: { happiness: -5 }, closeness: { them: -6 } }),
   ]),

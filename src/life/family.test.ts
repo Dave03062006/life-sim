@@ -14,6 +14,13 @@ describe('family', () => {
     expect(wed.memories).toEqual([{ id: 'married', age: 26, text: 'You married Rani.', people: ['p-4'] }])
     expect(spouse(life)).toBeUndefined()
   })
+  it('keeps one married memory and clears no-kids on a new marriage', () => {
+    const old = { id: 'married', age: 20, text: 'You married Tia.', people: ['p-9'] }
+    const life = testLife({ age: 40, memories: [old, { id: 'no-kids', age: 22, text: 'x', people: ['p-9'] }], people: [...testLife().people, rani] })
+    const wed = marry(life, 'p-4')
+    expect(wed.memories.map((m) => m.id)).toEqual(['married'])
+    expect(wed.memories[0]).toMatchObject({ age: 40, people: ['p-4'] })
+  })
   it('leaves anyone who is not a partner alone', () => {
     const life = testLife()
     expect(marry(life, 'p-3')).toBe(life)

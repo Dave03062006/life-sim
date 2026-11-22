@@ -167,6 +167,11 @@ describe('indonesia events', () => {
     expect(repeats.map((e) => e.id)).toContain('baby-talk')
     expect(repeats.filter((e) => !(e.when ?? []).some((c) => c.kind === 'children' || c.kind === 'no-memory'))).toEqual([])
   })
+  it('writes the child events so they read right for a grown child', () => {
+    const kids = events.filter((e) => e.cast?.child === 'child' && e.id.startsWith('child-'))
+    expect(kids).toHaveLength(2)
+    expect(kids.filter((e) => /sleep|bedtime|story|lullaby|coop|toddler|baby/i.test(texts(e).join(' ')))).toEqual([])
+  })
   it('offers three wedding choices with the right prices', () => {
     const wedding = events.find((e) => e.id === 'wedding')!
     expect(wedding.weight).toBe(0)

@@ -17,6 +17,7 @@ export function marry(life: Life, personId: string): Life {
   return {
     ...life,
     people: life.people.map((p) => (p === person ? { ...p, relation: 'spouse', since: life.age } : p)),
-    memories: [...life.memories, { id: 'married', age: life.age, text: `You married ${person.name}.`, people: [personId] }],
+    // a new marriage can have the baby talk again, and the first 'married' memory stays
+    memories: [...life.memories.filter((m) => m.id !== 'no-kids' && m.id !== 'married'), { id: 'married', age: life.age, text: `You married ${person.name}.`, people: [personId] }],
   }
 }
