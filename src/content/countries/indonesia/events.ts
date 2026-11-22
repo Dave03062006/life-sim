@@ -416,6 +416,205 @@ const news: EventDef[] = [
   newsItem('news-toothache', 'A toothache', 'Too many es teh manis. A trip to the puskesmas fixed the tooth and emptied your wallet a little.', { effects: { health: -2, stress: 2 }, money: -50_000 }),
 ]
 
+const stageNews = (stage: EventDef['stages'][number], id: string, title: string, text: string, news: Partial<Outcome> = {}): EventDef =>
+  ({ id, kind: 'news', stages: [stage], weight: 2, title, text, news: { text, ...news } })
+
+const lifeNews: EventDef[] = [
+  stageNews('baby', 'news-baby-laugh', 'Your first big laugh', 'You laughed out loud at a sneezing cat. Your mother laughed so hard she had to sit down.', { effects: { happiness: 3 } }),
+  stageNews('baby', 'news-baby-cold', 'A runny nose', 'You caught a small cold. Your parents took turns carrying you around the house all night.', { effects: { health: -2, happiness: -1 } }),
+  stageNews('small-child', 'news-sc-lost-sandal', 'The missing sandal', 'You lost one sandal at the neighbour’s house. It turned up in the rice bucket a week later.', { effects: { happiness: 2 } }),
+  stageNews('small-child', 'news-sc-rain', 'Playing in the rain', 'The rain came down and you ran out before anyone could stop you. The tea afterwards was worth it.', { effects: { happiness: 3, health: -1 } }),
+  stageNews('child', 'news-child-bag', 'A new school bag', 'Your parents bought you a new school bag with your favourite cartoon on it. You carried it everywhere.', { effects: { happiness: 3 } }),
+  stageNews('child', 'news-child-scraped-knee', 'A scraped knee', 'You fell off your bike on the way home. A plaster and a sweet drink fixed most of it.', { effects: { health: -2, happiness: 1 } }),
+  stageNews('early-teen', 'news-et-growth', 'Taller overnight', 'You grew three centimetres over the holidays. Your school trousers are suddenly too short.', { effects: { looks: 1, stress: 1 }, money: -60_000 }),
+  stageNews('early-teen', 'news-et-ulangan', 'A good ulangan', 'You got a high mark on a hard ulangan. You told everyone at home, twice.', { effects: { smarts: 2, happiness: 3 } }),
+  stageNews('young-adult', 'news-ya-rent', 'The rent goes up', 'Your landlord raised the monthly rent a little. You adjusted your budget and sighed.', { effects: { stress: 3 }, money: -200_000 }),
+  stageNews('young-adult', 'news-ya-weekend', 'A free weekend', 'For once nothing was planned. You slept, cooked and watched too many films.', { effects: { happiness: 3, stress: -3 } }),
+  stageNews('adult', 'news-ad-reunion', 'A school reunion', 'Your old class met at a restaurant. Everyone is older, and somehow you all laughed like before.', { effects: { happiness: 3, reputation: 1 } }),
+  stageNews('adult', 'news-ad-back', 'A stiff back', 'You lifted a box the wrong way. A week of rest and warm compresses put you right.', { effects: { health: -3, stress: 2 } }),
+  stageNews('senior', 'news-se-photos', 'Old photographs', 'You found a box of old photographs. You spent the afternoon naming everyone in them.', { effects: { happiness: 3, stress: -2 } }),
+  stageNews('senior', 'news-se-ronda', 'The neighbourhood watch', 'The young ones took over the night watch and brought you a hot cup of tea, just to chat.', { effects: { happiness: 2, reputation: 2 } }),
+]
+
+const lifeChoices: EventDef[] = [
+  {
+    id: 'et-lunch-alone', kind: 'choice', stages: ['early-teen'], weight: 3,
+    title: 'Lunch alone',
+    text: 'Your usual group is busy today, and the kantin is loud. You hold your tray and look for a seat.',
+    actions: [
+      act('join', 'Ask to join a table', 60, [
+        o('They made room at once, and someone shared their kerupuk.', { effects: { happiness: 3, reputation: 1 } }),
+        o('They said yes, a little awkwardly. The lunch was quiet but fine.', { effects: { happiness: 1 } }),
+        o('The table was full. You ate near the wall and pretended not to mind.', { effects: { happiness: -2 } }),
+      ]),
+      act('read', 'Eat alone with a book', 80, [
+        o('The book was good and the lunch passed in a blink.', { effects: { smarts: 1, stress: -2 } }),
+        o('You read a page or two and mostly watched the others.', { effects: { stress: -1 } }),
+        o('You could not focus, and the break felt very long.', { effects: { happiness: -2 } }),
+      ]),
+      act('library', 'Eat in the library corner', 70, [
+        o('It was quiet, and the librarian gave you a book tip.', { effects: { smarts: 2, stress: -2 } }),
+        o('You were told no food was allowed, but she let it go this once.', { effects: { stress: 1 } }),
+        o('The librarian sent you back to the kantin.', { effects: { happiness: -1 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'et-mall-trip', kind: 'choice', stages: ['early-teen'], weight: 3,
+    title: 'A trip to the mall',
+    text: 'Your friends are going to the mall on Saturday. You have a little saved, and the tickets add up.',
+    actions: [
+      act('go', 'Go and spend a little', 70, [
+        o('You split a plate of fries and laughed all afternoon.', { effects: { happiness: 4 }, money: -40_000 }),
+        o('It was fun, though the prices made you wince.', { effects: { happiness: 2, stress: 1 }, money: -60_000 }),
+        o('It rained, the shops were crowded, and you came back tired.', { effects: { happiness: -1, stress: 2 }, money: -30_000 }),
+      ]),
+      act('stay', 'Stay home and save', 80, [
+        o('You helped at home and your savings grew a little.', { effects: { stress: -1, happiness: 1 } }),
+        o('A quiet Saturday. You wondered what you missed.', { effects: { happiness: -1 } }),
+        o('You stayed home and everyone posted photos. That stung.', { effects: { happiness: -3 } }),
+      ]),
+      act('cheap', 'Suggest a free alternative', 60, [
+        o('Everyone agreed to play in the park, and it turned out better.', { effects: { happiness: 4, reputation: 2 } }),
+        o('A few friends came along. It was a small but happy afternoon.', { effects: { happiness: 2 } }),
+        o('Nobody liked the idea, and you ended up going home alone.', { effects: { happiness: -2 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'ya-two-offers', kind: 'choice', stages: ['young-adult'], weight: 3,
+    title: 'Two offers',
+    text: 'One job pays a little more but is far from home. The other pays less and is ten minutes away.',
+    actions: [
+      act('far', 'Take the higher pay', 65, [
+        o('The pay is better and your colleagues are friendly. The commute is long, but it was worth it.', { effects: { stress: 2, reputation: 2 }, money: 300_000 }),
+        o('The pay is better, though the commute eats your mornings.', { effects: { stress: 4 }, money: 200_000 }),
+        o('The job was harder than described and the commute drained you.', { effects: { stress: 6, happiness: -3 }, money: 100_000 }),
+      ]),
+      act('near', 'Take the job near home', 75, [
+        o('You get home early, cook and sleep well. The pay is enough.', { effects: { happiness: 3, stress: -3 }, money: 150_000 }),
+        o('Quiet, steady work. Nothing exciting, but nothing to fear either.', { effects: { stress: -1 }, money: 100_000 }),
+        o('The work was dull and you wondered about the other offer.', { effects: { happiness: -2 }, money: 100_000 }),
+      ]),
+      act('think', 'Ask for a few days to think', 70, [
+        o('Both places respected the request, and you chose calmly.', { effects: { stress: -2, reputation: 1 } }),
+        o('One offer waited, the other moved on. You took the one that waited.', { effects: { stress: 1 } }),
+        o('Both moved on while you thought. You started looking again.', { effects: { stress: 4, happiness: -2 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'ya-dishes', kind: 'choice', stages: ['young-adult'], weight: 3,
+    title: 'The dishes pile up',
+    text: 'The sink is full and your housemates are all “very busy”. It is your turn, or maybe it is nobody’s.',
+    actions: [
+      act('wash', 'Wash them all', 80, [
+        o('You hummed while you scrubbed. Someone left you a snack as thanks.', { effects: { happiness: 2, stress: -1 } }),
+        o('It took an hour, but the kitchen looks lovely.', { effects: { stress: 1 } }),
+        o('You broke a glass and got no thanks at all.', { effects: { stress: 3, happiness: -2 } }),
+      ]),
+      act('rota', 'Put up a cleaning rota', 60, [
+        o('Everyone agreed, and the rota actually worked.', { effects: { reputation: 2, stress: -2 } }),
+        o('People agreed, then slowly forgot. It helped a bit.', { effects: { stress: 1 } }),
+        o('The rota became a joke on the fridge.', { effects: { happiness: -1 } }),
+      ]),
+      act('talk', 'Talk to them over dinner', 65, [
+        o('You cooked, they listened, and they promised to do better.', { effects: { happiness: 3, reputation: 1 } }),
+        o('It got a bit awkward but made the point.', { effects: { stress: 1 } }),
+        o('Everyone got defensive and ate in silence.', { effects: { happiness: -3, stress: 2 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'ad-noisy-neighbours', kind: 'choice', stages: ['adult'], weight: 3,
+    title: 'Loud neighbours',
+    text: 'The house next door has music until midnight again. You have an early morning.',
+    actions: [
+      act('knock', 'Knock and ask kindly', 70, [
+        o('They apologised, turned it down and sent over some kue the next day.', { effects: { stress: -2, reputation: 2 } }),
+        o('They turned it down for one night. It is a start.', { effects: { stress: 1 } }),
+        o('They did not open the door.', { effects: { stress: 3 } }),
+      ]),
+      act('rt', 'Mention it to the RT head', 65, [
+        o('The RT head had a friendly word, and it stopped quietly.', { effects: { stress: -2 } }),
+        o('He promised to look into it. Things improved a little.', { effects: { stress: 1 } }),
+        o('He took sides with the neighbours, and it got awkward.', { effects: { reputation: -2, stress: 3 } }),
+      ]),
+      act('earplugs', 'Buy earplugs and let it go', 80, [
+        o('Earplugs are marvellous. You slept like a log.', { effects: { stress: -2, health: 1 }, money: -15_000 }),
+        o('They helped a little, though you still heard the bass.', { effects: { stress: 1 }, money: -15_000 }),
+        o('They fell out in the night, and you heard everything.', { effects: { stress: 3, happiness: -1 }, money: -15_000 }),
+      ]),
+    ],
+  },
+  {
+    id: 'ad-overtime', kind: 'choice', stages: ['adult'], weight: 3,
+    title: 'Overtime',
+    text: 'Your boss asks you to stay late again. The pay is nice, but your sofa has been calling for days.',
+    actions: [
+      act('stay', 'Stay and work', 70, [
+        o('You finished early, got a nice bonus and a thank-you from the boss.', { effects: { reputation: 3, stress: 2 }, money: 150_000 }),
+        o('A long night, but the extra pay helps.', { effects: { stress: 4 }, money: 100_000 }),
+        o('You stayed late for nothing, and your head hurt.', { effects: { stress: 6, health: -2 } }),
+      ]),
+      act('leave', 'Say no politely', 65, [
+        o('Your boss understood, and you got home for dinner.', { effects: { happiness: 3, stress: -3 } }),
+        o('Your boss sighed but said it was fine.', { effects: { stress: 1 } }),
+        o('Your boss noticed, and the mood in the office cooled.', { effects: { reputation: -2, stress: 2 } }),
+      ]),
+      act('half', 'Stay for an hour only', 75, [
+        o('A fair deal. Everyone was happy.', { effects: { reputation: 1, stress: -1 }, money: 50_000 }),
+        o('You managed most of it and left on time.', { effects: { stress: 1 }, money: 30_000 }),
+        o('The hour stretched into three.', { effects: { stress: 4, happiness: -2 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'se-photo-box', kind: 'choice', stages: ['senior'], weight: 3,
+    title: 'The box of photos',
+    text: 'A dusty box of old photographs sits in the cupboard. Some faces you can name. Others you cannot.',
+    actions: [
+      act('share', 'Show them to the family', 75, [
+        o('Everyone gathered round. You told stories until the tea went cold.', { effects: { happiness: 4, stress: -3 } }),
+        o('A few people looked, and you had a nice afternoon.', { effects: { happiness: 2 } }),
+        o('Everyone was busy. You looked through them alone.', { effects: { happiness: -1 } }),
+      ]),
+      act('album', 'Sort them into an album', 70, [
+        o('It took a week, and the album looks wonderful.', { effects: { happiness: 3, smarts: 1 } }),
+        o('You sorted half, and left the rest for another day.', { effects: { stress: -1 } }),
+        o('You mixed them all up and had to start again.', { effects: { stress: 2 } }),
+      ]),
+      act('shut', 'Close the box for now', 80, [
+        o('Some memories keep. You felt calm.', { effects: { stress: -1 } }),
+        o('You peeked once more before putting it away.', { effects: { happiness: 1 } }),
+        o('You could not stop thinking about it all night.', { effects: { happiness: -2, stress: 2 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'se-health-day', kind: 'choice', stages: ['senior'], weight: 3,
+    title: 'Health day for seniors',
+    text: 'The puskesmas runs a free health day for the elderly. A neighbour asks if you are going.',
+    actions: [
+      act('go', 'Go and get checked', 80, [
+        o('Your blood pressure is fine, and the nurse praised your daily walks.', { effects: { health: 3, stress: -2 } }),
+        o('They found a small thing to watch, and gave you simple advice.', { effects: { health: 2, stress: 1 } }),
+        o('The queue was long, and you left tired and hungry.', { effects: { stress: 3 } }),
+      ]),
+      act('together', 'Go with the neighbour', 75, [
+        o('You walked together, chatted all the way, and both were checked.', { effects: { health: 2, happiness: 3 } }),
+        o('The check was quick, and the walk home was better.', { effects: { health: 1, happiness: 2 } }),
+        o('Your neighbour changed their mind. You went alone.', { effects: { happiness: -1 } }),
+      ]),
+      act('skip', 'Stay home today', 80, [
+        o('You rested and felt just fine.', { effects: { stress: -2 } }),
+        o('You rested, though you wondered about the check.', { effects: { stress: 1 } }),
+        o('You felt a twinge later and wished you had gone.', { effects: { stress: 3, health: -1 } }),
+      ]),
+    ],
+  },
+]
+
 // weight 0: never drawn; the people screen queues them with the person cast as `them`
 const person = (id: string, title: string, text: string, actions: EventAction[]): EventDef =>
   ({ id, kind: 'choice', stages: ['early-teen', 'late-teen', 'young-adult', 'adult', 'senior'], weight: 0, title, text, actions })
@@ -457,4 +656,4 @@ const people: EventDef[] = [
   ]),
 ]
 
-export const events: EventDef[] = [...choices, ...news, ...people]
+export const events: EventDef[] = [...choices, ...news, ...lifeNews, ...lifeChoices, ...people]

@@ -29,7 +29,7 @@ export function simulateLife(seed: number, pack: ContentPack): Life {
     for (let plays = 0; plays < MAX_PLAYS && energyLeft(life) > 0; plays++) {
       const open = stageOf(life.age).categories
         .map((c) => offersFor(life, c, pack).filter((o) => !o.blocked))
-        .filter((offers) => offers.length > 0) // an empty category is Task 3's to fill
+        .filter((offers) => offers.length > 0) // a category can be all blocked (no money, no parent); the offers themselves always exist
       if (open.length === 0) break
       life = finishActivity(life, rng.pick(rng.pick(open)).def, rng.next()).life
     }

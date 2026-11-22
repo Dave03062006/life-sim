@@ -88,10 +88,3 @@ it('gives focus back to the card that was pressed, and Escape closes a result', 
   expect(useApp.getState().lastResult).toBeNull()
   expect(document.activeElement).toBe(card)
 })
-
-it('says why a category is empty', async () => {
-  await start()
-  act(() => useApp.setState({ life: testLife({ age: 18 }) }))
-  await userEvent.click(screen.getByRole('button', { name: 'School' }))
-  expect(screen.getByText('Nothing to do here at this age yet.')).toBeTruthy()
-})

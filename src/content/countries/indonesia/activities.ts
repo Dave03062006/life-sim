@@ -1,8 +1,8 @@
-import type { CategoryId, StatKey } from '../../../life/types'
+import type { CategoryId, StageId, StatKey } from '../../../life/types'
 import type { ActivityDef, MinigameType, Requirement } from '../../types'
 
 type Fx = Partial<Record<StatKey, number>>
-type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes'>>
+type Extra = Partial<Pick<ActivityDef, 'energyBack' | 'rest' | 'requires' | 'failPenalty' | 'lines' | 'with' | 'together' | 'makes' | 'stages'>>
 
 const FAIL: Partial<Record<CategoryId, Fx>> = {
   body: { health: -3 },
@@ -35,7 +35,23 @@ function a(
   return def
 }
 
-export const activities: ActivityDef[] = [
+const B: StageId = 'baby', SC: StageId = 'small-child', CH: StageId = 'child', ET: StageId = 'early-teen', LT: StageId = 'late-teen'
+const YA: StageId = 'young-adult', AD: StageId = 'adult', SE: StageId = 'senior'
+const CH_UP = [CH, ET, LT, YA, AD, SE], ET_UP = [ET, LT, YA, AD, SE], GROWN = [YA, AD, SE]
+
+// The original late-teen activities, unchanged in text, and the other ages that fit them.
+const wider: Record<string, StageId[]> = {
+  homework: [CH, ET, LT], 'group-project': [CH, ET, LT], 'skip-class': [ET, LT],
+  library: CH_UP, english: CH_UP, chess: CH_UP, diary: CH_UP, 'puzzle-cube': CH_UP, code: ET_UP,
+  futsal: [CH, ET, LT, YA], jog: [CH, ET, LT, YA], gym: [LT, YA], badminton: [CH, ET, LT, YA], swim: [CH, ET, LT, YA], silat: [CH, ET, LT, YA],
+  checkup: ET_UP, dentist: [SC, ...CH_UP], 'eat-better': [CH, ET, LT, YA], counsellor: [ET, LT],
+  cook: [SC, ...CH_UP], 'family-dinner': [B, SC, ...CH_UP], 'call-nenek': [SC, ...CH_UP], 'new-friend': CH_UP,
+  'sell-snacks': [CH, ET, LT], tutor: [LT, YA, AD, SE], 'save-bank': CH_UP, clothes: ET_UP, 'warung-shift': [LT, YA, AD],
+  band: ET_UP, warnet: [ET, LT, YA], film: CH_UP, karaoke: CH_UP, 'ride-town': CH_UP, comics: CH_UP,
+  nap: [B, SC, ...CH_UP], 'sleep-in': CH_UP, meditate: ET_UP, pijat: GROWN, holiday: CH_UP, 'do-nothing': CH_UP,
+}
+
+const base: ActivityDef[] = [
   a('study-exam', 'school', 'Study for the exam', 'Hit the books before semester exams. Builds Smarts.', 'quiz', 2, 0, { smarts: 5, stress: 3 }, 'You studied hard for the semester exam.'),
   a('homework', 'school', 'Do your homework', 'Keep up with assignments. A little Smarts and a calmer head.', 'typing', 1, 0, { smarts: 2, stress: -1 }, 'You handed in your homework on time, for once.'),
   a('osis', 'school', 'Run for OSIS', 'Campaign for a seat on the student council.', 'tapping', 2, 0, { reputation: 6, stress: 2 }, 'You campaigned for a seat on OSIS.', { requires: [stat('reputation', 'Reputation')] }),
@@ -98,4 +114,39 @@ export const activities: ActivityDef[] = [
   a('pijat', 'rest', 'Get a pijat', 'A proper massage for sore muscles.', '', 0, -80000, { health: 2, stress: -4 }, 'You got a pijat. Everything stopped hurting.', { rest: 4 }),
   a('holiday', 'rest', 'Holiday at Nenek’s village', 'A week away from the city.', '', 0, -300000, { happiness: 5, stress: -8 }, 'You spent a week in Nenek’s village.', { rest: 5 }),
   a('do-nothing', 'rest', 'Do nothing at home', 'TV, snacks, sofa.', '', 0, 0, { happiness: 1, smarts: -1 }, 'You did absolutely nothing for a while.', { rest: 2 }),
+  // Babies
+  a('smile-ibu', 'people', 'Smile at Ibu', 'Your mother melts every time.', '', 1, 0, { happiness: 2 }, 'You smiled at Ibu. She told everyone.', { stages: [B] }),
+  a('first-words', 'people', 'Say your first words', 'Mama, papa, or maybe just “nenen”.', '', 1, 0, { smarts: 2, happiness: 1 }, 'You said “mama”. Your mother cried a little.', { stages: [B] }),
+  a('cry-attention', 'people', 'Cry for attention', 'It works every single time.', '', 1, 0, { happiness: 1, stress: 1 }, 'You cried at midnight. Your parents took turns holding you.', { stages: [B] }),
+  a('rattle', 'fun', 'Shake a rattle', 'Noise! Wonderful noise!', '', 1, 0, { happiness: 2 }, 'You shook the rattle until your father asked for a break.', { stages: [B, SC] }),
+  a('splash', 'fun', 'Splash at bath time', 'The water is warm and the duck floats.', '', 1, 0, { happiness: 2, health: 1 }, 'You splashed the whole bathroom at bath time.', { stages: [B, SC] }),
+  a('crawl', 'fun', 'Learn to crawl', 'Slowly, then suddenly everywhere.', '', 1, 0, { health: 2, happiness: 1 }, 'You crawled across the floor. Nothing was safe after that.', { stages: [B] }),
+  a('posyandu', 'health', 'Posyandu weigh-in', 'The village health post weighs you and checks your growth.', '', 1, 0, { health: 2 }, 'The posyandu nurse said you are growing well.', { stages: [B, SC] }),
+  a('immunisation', 'health', 'Get your shots', 'A little needle and a lot of crying.', '', 1, 0, { health: 3, happiness: -1 }, 'You got your shots and cried. Then you got a sticker.', { stages: [B, SC, CH] }),
+  a('lullaby', 'rest', 'Fall asleep to a lullaby', 'Ibu hums until your eyes close.', '', 0, 0, { stress: -2 }, 'You fell asleep to a lullaby.', { stages: [B, SC], rest: 2 }),
+  // Small children
+  a('letters', 'mind', 'Learn your letters', 'A, B, C and a very long song.', '', 1, 0, { smarts: 2 }, 'You learned your letters and sang them to the cat.', { stages: [SC] }),
+  a('picture-book', 'mind', 'Look at picture books', 'Big pictures and a lap to sit in.', '', 1, 0, { smarts: 2, happiness: 1 }, 'You looked at picture books until bedtime.', { stages: [SC] }),
+  a('share-toys', 'people', 'Share your toys', 'It is harder than it sounds.', '', 1, 0, { happiness: 2, reputation: 1 }, 'You shared your toys. Mostly.', { stages: [SC, CH] }),
+  a('crayons', 'fun', 'Draw with crayons', 'The wall is also paper, right?', '', 1, 0, { happiness: 3, smarts: 1 }, 'You drew a very large cat. It is on the wall now.', { stages: [SC] }),
+  a('pretend-play', 'fun', 'Play pretend', 'Today you are a pilot. Tomorrow, a chef.', '', 1, 0, { happiness: 3 }, 'You played pretend until dinner.', { stages: [SC, CH] }),
+  a('play-outside', 'fun', 'Play outside', 'Marbles, tag and muddy knees.', '', 1, 0, { happiness: 3, health: 1 }, 'You played outside until the call to come in.', { stages: [SC, CH] }),
+  a('brush-teeth', 'health', 'Brush your teeth', 'Two minutes, morning and night.', '', 1, 0, { health: 2, looks: 1 }, 'You brushed your teeth without being asked. Once.', { stages: [SC, CH] }),
+  // Children and early teens
+  a('class-test', 'school', 'Study for the class test', 'Revise the basics before the ulangan.', 'quiz', 2, 0, { smarts: 4, stress: 2 }, 'You studied for the class test.', { stages: [CH, ET] }),
+  a('read-ahead', 'school', 'Read ahead', 'Peek at next week’s chapter.', 'memory', 1, 0, { smarts: 2 }, 'You read ahead and felt very clever.', { stages: [CH, ET] }),
+  a('uks', 'health', 'Visit the school health room', 'A plaster, a rest and a cup of tea.', '', 1, 0, { health: 2, stress: -1 }, 'You visited the UKS and lay down for a while.', { stages: [CH, ET, LT] }),
+  // Grown-ups
+  a('evening-class', 'school', 'Take an evening class', 'Learn something new after work.', 'memory', 2, 0, { smarts: 3, stress: 1 }, 'You went to an evening class and kept up.', { stages: GROWN }),
+  a('workshop', 'school', 'Go to a workshop', 'A weekend course with a certificate at the end.', '', 1, -50000, { smarts: 3, reputation: 1 }, 'You went to a weekend workshop and got a certificate.', { stages: GROWN }),
+  a('hobby-class', 'mind', 'Join a batik class', 'Wax, dye and patience.', 'memory', 1, 0, { happiness: 3, smarts: 1 }, 'You made a batik cloth. It is only a little crooked.', { stages: GROWN }),
+  a('gardening', 'body', 'Do some gardening', 'Chillies, spinach and a stubborn mango tree.', 'tapping', 1, 0, { health: 1, stress: -2 }, 'You spent the morning in the garden.', { stages: GROWN }),
+  a('morning-walk', 'body', 'Take a morning walk', 'A slow loop before the heat.', '', 1, 0, { health: 1, stress: -1 }, 'You took a slow walk around the neighbourhood.', { stages: [AD, SE] }),
+  a('senam', 'body', 'Join senam class', 'Gentle exercise to music, with the neighbours.', 'timing', 1, 0, { health: 1, happiness: 2 }, 'You joined the senam class and kept the beat.', { stages: [AD, SE] }),
+  a('neighbour-chat', 'people', 'Chat with the neighbours', 'Tea on the porch and the latest news.', '', 1, 0, { happiness: 2, reputation: 1 }, 'You chatted with the neighbours on the porch.', { stages: GROWN }),
+  a('call-relative', 'people', 'Call a relative far away', 'A long call about nothing and everything.', '', 0, 0, { happiness: 2 }, 'You called a relative far away. The call ran an hour.', { stages: [AD, SE] }),
+  a('side-gig', 'money', 'Take a side gig', 'Weekend work for a little extra.', 'tapping', 2, 90000, { stress: 2 }, 'You took a side gig on the weekend.', { stages: [YA, AD] }),
+  a('sell-garden', 'money', 'Sell garden produce', 'Chillies and spinach at the morning market.', '', 1, 40000, { reputation: 1 }, 'You sold your chillies at the morning market.', { stages: [AD, SE] }),
 ]
+
+export const activities: ActivityDef[] = base.map((d) => (wider[d.id] ? { ...d, stages: wider[d.id]! } : d))

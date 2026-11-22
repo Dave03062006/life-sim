@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { stageOf } from '../life/stages'
+import { STAGES, stageOf } from '../life/stages'
 import { eventArt, hasIcon } from '../styles/art'
 import { GAMES } from '../minigames/registry'
 import { THEMES } from '../minigames/themes'
+import { questionsFor } from '../minigames/quiz/questions'
 import { packFor } from './index'
 
 const pack = packFor('indonesia')
@@ -21,7 +22,7 @@ describe('indonesia content', () => {
       const linesSize = typeof a.lines === 'string' ? a.lines.length : Object.keys(a.lines).length
       expect({ id: a.id, ok: a.title.length > 2 }).toEqual({ id: a.id, ok: true })
       expect({ id: a.id, ok: a.description.length > 9 }).toEqual({ id: a.id, ok: true })
-      expect({ id: a.id, ok: hasIcon(a.icon) }).toEqual({ id: a.id, ok: true })
+      expect({ id: a.id, ok: hasIcon(a.icon) || hasIcon(`cat-${a.category}`) }).toEqual({ id: a.id, ok: true })
       expect({ id: a.id, ok: linesSize > 3 }).toEqual({ id: a.id, ok: true })
       for (const r of a.requires ?? []) expect({ id: a.id, ok: r.reason.length > 9 }).toEqual({ id: a.id, ok: true })
       expect({ id: a.id, ok: !a.rest || a.energy === 0 }).toEqual({ id: a.id, ok: true })
@@ -41,6 +42,30 @@ describe('indonesia content', () => {
   })
   it('marks the milestone at 17', () => {
     expect(pack.milestones[17]).toContain('KTP')
+  })
+  it('offers at least two activities in every category each stage opens', () => {
+    for (const s of STAGES) {
+      for (const c of s.categories) {
+        const n = pack.activities.filter((a) => a.category === c && a.stages.includes(s.id)).length
+        expect({ stage: s.id, c, ok: n >= 2 }).toEqual({ stage: s.id, c, ok: true })
+      }
+    }
+  })
+  it('never offers an activity in a category its stage does not open', () => {
+    for (const s of STAGES) {
+      expect(pack.activities.filter((a) => a.stages.includes(s.id) && !s.categories.includes(a.category)).map((a) => a.id)).toEqual([])
+    }
+  })
+  it('writes milestone lines for the key ages', () => {
+    for (const age of [0, 1, 4, 6, 12, 15, 17, 18, 40, 60]) expect({ age, ok: (pack.milestones[age] ?? '').length > 9 }).toEqual({ age, ok: true })
+  })
+  it('gives child and early-teen quizzes only primary and junior questions, enough to draw five', () => {
+    const young = pack.activities.filter((a) => a.minigame?.type === 'quiz' && (a.stages.includes('child') || a.stages.includes('early-teen')))
+    for (const a of young) {
+      const qs = questionsFor(THEMES[a.id]!.quiz!, 1, 99)
+      expect({ id: a.id, ok: qs.length >= 5 && qs.every((q) => q.level !== 'sma') }).toEqual({ id: a.id, ok: true })
+    }
+    expect(young.map((a) => a.id)).toContain('class-test')
   })
 })
 
@@ -64,6 +89,14 @@ describe('indonesia events', () => {
     expect(lt.filter((e) => e.kind === 'choice').length).toBeGreaterThanOrEqual(14)
     expect(lt.filter((e) => e.kind === 'news').length).toBeGreaterThanOrEqual(8)
     expect(new Set(events.map((e) => e.id)).size).toBe(events.length)
+  })
+  it('gives every stage two news events, and every stage from early teen two choice events', () => {
+    for (const s of STAGES) {
+      const here = events.filter((e) => e.stages.includes(s.id) && e.weight > 0)
+      expect({ s: s.id, n: here.filter((e) => e.kind === 'news').length >= 2 }).toEqual({ s: s.id, n: true })
+      const needed = s.from >= 12 ? 2 : 0
+      expect({ s: s.id, n: here.filter((e) => e.kind === 'choice').length >= needed }).toEqual({ s: s.id, n: true })
+    }
   })
   it('builds every choice event with 2-5 actions and three written outcomes each', () => {
     expect(choices.filter((e) => (e.actions?.length ?? 0) < 2 || (e.actions?.length ?? 0) > 5)).toEqual([])

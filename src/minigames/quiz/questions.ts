@@ -3,7 +3,7 @@ import type { QuizQuestion, QuizSubject } from '../../content/quiz/types'
 import { createRng, type Rng } from '../../engine/random'
 import { formatRupiah } from '../../life/format'
 
-export type QuizSource = { kind: 'bank'; subjects: QuizSubject[] } | { kind: 'change' } | { kind: 'arithmetic' }
+export type QuizSource = { kind: 'bank'; subjects: QuizSubject[]; levels?: QuizQuestion['level'][] } | { kind: 'change' } | { kind: 'arithmetic' }
 type Choices = QuizQuestion['choices']
 
 /** Shuffles the choices and moves the answer index with them. */
@@ -45,7 +45,7 @@ export function questionsFor(source: QuizSource, seed: number, count: number): Q
   const rng = createRng(seed)
   const picked =
     source.kind === 'bank'
-      ? rng.shuffle(QUESTIONS.filter((q) => source.subjects.includes(q.subject))).slice(0, count)
+      ? rng.shuffle(QUESTIONS.filter((q) => source.subjects.includes(q.subject) && (source.levels?.includes(q.level) ?? true))).slice(0, count)
       : Array.from({ length: count }, (_, i) => (source.kind === 'change' ? change : arithmetic)(rng, i))
   return picked.map((q) => shuffled(q, rng))
 }

@@ -39,6 +39,10 @@ export const THEMES: Record<string, Theme> = {
   english: { typingWords: ['because', 'friend', 'weather', 'morning', 'window', 'travel', 'question', 'kitchen'] },
   code: { typingWords: ['const', 'return', 'true', 'false', 'function', 'array', 'string', 'import'] },
   diary: { typingWords: ['happy', 'tired', 'proud', 'nervous', 'calm', 'excited', 'lonely', 'hopeful'] },
+  'class-test': { quiz: { kind: 'bank', subjects: ['maths', 'science', 'english', 'indonesia', 'general'], levels: ['sd', 'smp'] } },
+  'hobby-class': { pads: ['Wax', 'Dye', 'Pattern', 'Dry'] },
+  'evening-class': { pads: ['Read', 'Note', 'Ask', 'Review'] },
+  'read-ahead': { pads: ['Title', 'Page', 'Picture', 'Word'] },
   tutor: { quiz: { kind: 'arithmetic' } },
 }
 

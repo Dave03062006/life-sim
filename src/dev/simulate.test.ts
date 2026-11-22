@@ -16,5 +16,5 @@ describe('simulateLife', () => {
     expect(median).toBeLessThanOrEqual(82)
     expect(share(CAUSE.accident)).toBeLessThan(0.05) // 0.05% a year over ~80 years: 1 - 0.9995^80 ≈ 3.9%
     expect(share(CAUSE.health)).toBeLessThan(0.3)
-  }, 60000)
+  }, 600000) // 10,000 lives with something to do at every age take about three minutes
 })
