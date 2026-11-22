@@ -92,3 +92,10 @@ it('goes back to the title with Escape, even from the name field', async () => {
   await userEvent.keyboard('{Escape}')
   expect(useApp.getState().screen).toBe('title')
 })
+
+it('goes back to the title with the Back button, keeping the active life', async () => {
+  await open(testLife())
+  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+  expect(useApp.getState()).toMatchObject({ screen: 'title', roll: null })
+  expect(useApp.getState().life!.id).toBe('life-test')
+})

@@ -21,7 +21,7 @@ export function NewLife() {
   const life = useApp((s) => s.life)
   const confirming = useApp((s) => s.confirmAbandon)
   const settings = useApp((s) => s.settingsOpen)
-  const { newRoll, editRoll, startLife, answerAbandon } = useApp.getState()
+  const { newRoll, editRoll, startLife, answerAbandon, goTitle } = useApp.getState()
   const start = useRef<HTMLButtonElement>(null)
   // built as Start builds it, so the preview is the life you get
   const preview = useMemo(() => roll && newLife({ ...roll, name: cleanName(roll.name), startAge: 0 }), [roll])
@@ -93,6 +93,9 @@ export function NewLife() {
               Your name can&apos;t be empty.
             </p>
           )}
+          <button className="ghost" onClick={goTitle}>
+            Back
+          </button>
           <button className="ghost" onClick={() => newRoll()}>
             Re-roll
           </button>
