@@ -17,7 +17,7 @@ const builtIn = (id: string): EventDef => ({
 const ayu: Person = { id: 'p-4', name: 'Ayu', relation: 'crush', gender: 'female', age: 16, closeness: 50 }
 const blockedOf = (life = testLife(), id = 'p-3') => Object.fromEntries(actionsFor(life, id).map((a) => [a.id, a.blocked]))
 
-beforeEach(() => events.splice(0, events.length, builtIn('talk'), builtIn('ask-out')))
+beforeEach(() => events.splice(0, events.length, builtIn('talk'), builtIn('ask-out'), builtIn('propose')))
 
 describe('person actions', () => {
   it('offers time, talk and a gift to everyone, and asking out only to a crush', () => {
@@ -79,6 +79,30 @@ describe('person actions', () => {
     expect(afterEvent(life, 'ask-out', { them: 'p-4' }, 'success').people[3]!.relation).toBe('partner')
     expect(afterEvent(life, 'ask-out', { them: 'p-4' }, 'mixed')).toBe(life)
     expect(afterEvent(life, 'talk', { them: 'p-4' }, 'success')).toBe(life)
+  })
+  it('sets since on a new partner and blocks asking out while married', () => {
+    const life = testLife({ age: 17, people: [...testLife().people, ayu] })
+    expect(afterEvent(life, 'ask-out', { them: 'p-4' }, 'success').people[3]).toMatchObject({ relation: 'partner', since: 17 })
+    const wed = testLife({ interest: 'women', people: [...life.people, { ...ayu, id: 'p-5', relation: 'spouse' }] })
+    expect(blockedOf(wed, 'p-4')['ask-out']).toBe('You are married.')
+  })
+  it('lets you propose to a partner, giving the reasons in order', () => {
+    const rani: Person = { id: 'p-5', name: 'Rani', relation: 'partner', gender: 'female', age: 25, closeness: 80, since: 18 }
+    const withRani = (over: Partial<Life>, partner: Partial<Person> = {}) => testLife({ age: 22, people: [...testLife().people, { ...rani, ...partner }], ...over })
+    expect(actionsFor(withRani({}), 'p-5').map((a) => a.id)).toEqual(['time', 'talk', 'gift', 'propose'])
+    expect(blockedOf(withRani({}), 'p-5').propose).toBeNull()
+    expect(blockedOf(withRani({ age: 18 }, { age: 18, closeness: 10 }), 'p-5').propose).toBe('You need to be 19 to marry.')
+    expect(blockedOf(withRani({}, { age: 18, closeness: 10 }), 'p-5').propose).toBe('Rani needs to be 19 to marry.')
+    expect(blockedOf(withRani({}, { closeness: 69 }), 'p-5').propose).toBe('You are not close enough yet.')
+    expect(actionsFor(testLife({ people: [...testLife().people, { ...rani, relation: 'spouse' }] }), 'p-5').map((a) => a.id)).not.toContain('propose')
+  })
+  it('marries and queues the wedding when a proposal succeeds', () => {
+    const rani: Person = { id: 'p-5', name: 'Rani', relation: 'partner', gender: 'female', age: 25, closeness: 80, since: 18 }
+    const life = testLife({ age: 22, people: [...testLife().people, rani] })
+    const wed = afterEvent(life, 'propose', { them: 'p-5' }, 'success')
+    expect(wed.people[3]).toMatchObject({ relation: 'spouse', since: 22 })
+    expect(wed.pendingEvents).toEqual([{ eventId: 'wedding', cast: { them: 'p-5' } }])
+    expect(afterEvent(life, 'propose', { them: 'p-5' }, 'mixed')).toBe(life)
   })
   it('says what time and talking cost, and warns of overwork', () => {
     const detail = (life: Life) => Object.fromEntries(actionsFor(life, 'p-3').map((a) => [a.id, a.detail]))

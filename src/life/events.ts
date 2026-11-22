@@ -1,12 +1,13 @@
 import type { Condition, ContentPack, EventAction, EventDef, MannerKind, Outcome } from '../content/types'
 import { createRng, type Rng } from '../engine/random'
 import { NAMES } from '../content/countries/indonesia/names'
+import { children, spouse } from './family'
 import { findMove, takePath } from './path'
 import { addPerson, nudgeCloseness, personById } from './people'
 import { stageOf } from './stages'
 import { applyChanges, roundAway } from './stats'
 import { currentStep, nextStepOf } from './work'
-import type { Change, JournalEntry, Life, Person, StatKey } from './types'
+import type { Change, Gender, JournalEntry, Life, Person, StatKey } from './types'
 
 export const DEFAULT_MANNERS: { id: string; label: string; kind: MannerKind }[] = [
   { id: 'calm', label: 'Calmly', kind: 'calm' },
@@ -23,6 +24,11 @@ function holds(life: Life, c: Condition): boolean {
     case 'no-memory': return !life.memories.some((m) => m.id === c.id)
     case 'money': return life.money >= c.min
     case 'job': return life.job !== null
+    case 'partnered': {
+      const p = spouse(life) ?? life.people.find((q) => q.relation === 'partner' && q.since !== undefined && life.age - q.since >= c.years)
+      return p !== undefined
+    }
+    case 'children': return children(life).length <= c.max
     case 'age': return life.age >= (c.min ?? 0) && life.age <= (c.max ?? Infinity)
   }
 }
@@ -80,17 +86,23 @@ function applyOutcome(life: Life, outcome: Outcome, cast: Record<string, string>
     people.push(...nudged.moved)
   }
   const genders = CRUSH_GENDER[life.interest ?? 'none']
-  if (outcome.addPerson && genders.length > 0) {
+  let roles = cast
+  const taken = new Set([...life.name.split(' '), ...next.people.map((p) => p.name)])
+  if (outcome.addPerson?.relation === 'child') {
+    const gender = rng.pick<Gender>(['female', 'male'])
+    const name = rng.pick(NAMES[gender].filter((n) => !taken.has(n)))
+    next = addPerson(next, { id: '', name, relation: 'child', gender, age: 0, closeness: 80 })
+    roles = { ...cast, child: next.people.at(-1)!.id }
+  } else if (outcome.addPerson && genders.length > 0) {
     const gender = rng.pick([...genders])
-    const taken = new Set([life.name, ...next.people.map((p) => p.name)])
     const name = rng.pick(NAMES[gender].filter((n) => !taken.has(n)))
     next = addPerson(next, { id: '', name, relation: 'crush', gender, age: life.age + rng.int(-1, 2), closeness: 40 })
   }
   const memory = outcome.memory
   if (memory && !next.memories.some((m) => m.id === memory.id)) {
-    next = { ...next, memories: [...next.memories, { id: memory.id, age: life.age, text: fill(memory.text, life, cast), people: Object.values(cast) }] }
+    next = { ...next, memories: [...next.memories, { id: memory.id, age: life.age, text: fill(memory.text, next, roles), people: Object.values(roles) }] }
   }
-  const entry: JournalEntry = { age: life.age, kind: 'event', text: fill(outcome.text, life, cast), changes, people }
+  const entry: JournalEntry = { age: life.age, kind: 'event', text: fill(outcome.text, next, roles), changes, people }
   return { life: { ...next, journal: [...next.journal, entry] }, entry }
 }
 
@@ -100,16 +112,18 @@ export function drawEvents(life: Life, pack: ContentPack): Life {
   const count = roll < 0.5 ? 1 : roll < 0.85 ? 2 : 3
   let next = life
   let bigDrawn = false
+  const drawn: string[] = [] // a repeat event comes back in a later year, never twice in one
   for (let i = 0; i < count; i++) {
     const stage = stageOf(next.age).id
     const eligible = pack.events.filter((ev) =>
-      ev.weight > 0 && ev.stages.includes(stage) && !next.seenEvents.includes(ev.id) && !(bigDrawn && ev.big) &&
+      ev.weight > 0 && ev.stages.includes(stage) && !drawn.includes(ev.id) && (ev.repeat || !next.seenEvents.includes(ev.id)) && !(bigDrawn && ev.big) &&
       (ev.when ?? []).every((c) => holds(next, c)) && castFor(next, ev, null) !== null)
     if (eligible.length === 0) break
     const ev = rng.weighted(eligible, (e) => e.weight)
     const cast = castFor(next, ev, rng)!
     bigDrawn ||= !!ev.big
-    next = { ...next, seenEvents: [...next.seenEvents, ev.id] }
+    drawn.push(ev.id)
+    if (!next.seenEvents.includes(ev.id)) next = { ...next, seenEvents: [...next.seenEvents, ev.id] }
     if (ev.kind === 'news') next = applyOutcome(next, ev.news ?? { text: ev.text }, cast, 1, 0, rng).life
     else next = { ...next, pendingEvents: [...next.pendingEvents, { eventId: ev.id, cast }] }
   }

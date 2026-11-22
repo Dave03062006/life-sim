@@ -32,6 +32,8 @@ export function relationLabel({ relation, gender }: Person): string {
   switch (relation) {
     case 'sibling': return female ? 'Sister' : 'Brother'
     case 'grandparent': return female ? 'Grandmother' : 'Grandfather'
+    case 'spouse': return female ? 'Wife' : 'Husband'
+    case 'child': return female ? 'Daughter' : 'Son'
     default: return relation[0]!.toUpperCase() + relation.slice(1)
   }
 }

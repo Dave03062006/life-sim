@@ -55,13 +55,15 @@ export type Condition =
   | { kind: 'money'; min: number }
   | { kind: 'age'; min?: number; max?: number }
   | { kind: 'job' } // you hold a job
+  | { kind: 'partnered'; years: number } // a spouse, or a partner for at least `years`
+  | { kind: 'children'; max: number } // at most this many children
 export interface Outcome {
   text: string // may use {role} placeholders, e.g. {friend}
   effects?: Partial<Record<StatKey, number>>
   money?: number
   closeness?: Partial<Record<string, number>> // role -> change
   memory?: { id: string; text: string } // recorded with the cast's people
-  addPerson?: { relation: 'crush' } // a new crush matching life.interest; skipped when interest is null or none
+  addPerson?: { relation: 'crush' | 'child' } // a crush matching life.interest (skipped when interest is null or none), or a newborn child; {child} in the text names them
   raise?: true // also pays 10% of the next career step's salary
   path?: string // a path move taken when this outcome lands; skipped if blocked
 }
@@ -80,6 +82,7 @@ export interface EventDef {
   stages: StageId[]
   weight: number
   big?: boolean
+  repeat?: true // may be drawn again in a later year
   when?: Condition[]
   cast?: Record<string, Relation> // roles to fill, e.g. { friend: 'friend' }
   art?: string // banner key in the art manifest; defaults to the event id

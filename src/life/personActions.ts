@@ -2,13 +2,14 @@ import { packFor } from '../content'
 import type { ActivityDef, MinigameType } from '../content/types'
 import { OVERWORK_HEALTH, OVERWORK_STRESS, overworkPoints } from './energy'
 import type { EventTier } from './events'
+import { marry, MARRY_AGE, PROPOSE_CLOSENESS, spouse } from './family'
 import { formatRupiah } from './format'
 import { nudgeCloseness, personById } from './people'
 import { STAGES } from './stages'
 import { applyChanges } from './stats'
 import type { Change, JournalEntry, Life, Person, Relation } from './types'
 
-export type PersonActionId = 'time' | 'talk' | 'gift' | 'ask-out'
+export type PersonActionId = 'time' | 'talk' | 'gift' | 'ask-out' | 'propose'
 export interface PersonAction { id: PersonActionId; label: string; blocked: string | null; detail: string }
 export const GIFT_PRICE = 50_000
 export const GIFT_CLOSENESS = 10
@@ -45,9 +46,16 @@ export function actionsFor(life: Life, personId: string): PersonAction[] {
   ]
   if (person.relation === 'crush') {
     const blocked = missing('ask-out') ?? (life.interest === 'none' ? 'You are not looking for romance.' : null) ??
+      (spouse(life) ? 'You are married.' : null) ??
       (life.people.some((p) => p.relation === 'partner') ? 'You already have a partner.' : null) ??
       (life.age < ASK_OUT_AGE ? `You need to be ${ASK_OUT_AGE}.` : person.closeness < ASK_OUT_CLOSENESS ? 'You are not close enough yet.' : null)
     actions.push({ id: 'ask-out', label: 'Ask out', blocked, detail: `Ask ${name} to be your partner.` })
+  }
+  if (person.relation === 'partner') {
+    const blocked = missing('propose') ?? (life.age < MARRY_AGE ? `You need to be ${MARRY_AGE} to marry.` : null) ??
+      (person.age < MARRY_AGE ? `${name} needs to be ${MARRY_AGE} to marry.` : null) ??
+      (person.closeness < PROPOSE_CLOSENESS ? 'You are not close enough yet.' : null)
+    actions.push({ id: 'propose', label: 'Propose', blocked, detail: `Ask ${name} to marry you.` })
   }
   return actions
 }
@@ -98,12 +106,14 @@ export function talk(life: Life, personId: string): Life {
   return queuePersonEvent(next, 'talk', personId)
 }
 
-/** Queues a built-in person event (`talk`, `ask-out`) with the person cast as `them`. */
-export const queuePersonEvent = (life: Life, eventId: 'talk' | 'ask-out', personId: string): Life =>
+/** Queues a built-in person event (`talk`, `ask-out`, `propose`) with the person cast as `them`. */
+export const queuePersonEvent = (life: Life, eventId: 'talk' | 'ask-out' | 'propose', personId: string): Life =>
   ({ ...life, pendingEvents: [...life.pendingEvents, { eventId, cast: { them: personId } }] })
 
-/** Rules that follow an event's result: a successful ask-out makes the crush a partner. */
+/** Rules that follow an event's result: a successful ask-out makes the crush a partner, a successful proposal a wedding. */
 export function afterEvent(life: Life, eventId: string, cast: Record<string, string>, tier: EventTier): Life {
-  if (eventId !== 'ask-out' || tier !== 'success' || !cast.them) return life
-  return { ...life, people: life.people.map((p) => (p.id === cast.them && p.relation === 'crush' ? { ...p, relation: 'partner' } : p)) }
+  if (tier !== 'success' || !cast.them) return life
+  if (eventId === 'propose') return { ...marry(life, cast.them), pendingEvents: [...life.pendingEvents, { eventId: 'wedding', cast: { them: cast.them } }] }
+  if (eventId !== 'ask-out') return life
+  return { ...life, people: life.people.map((p) => (p.id === cast.them && p.relation === 'crush' ? { ...p, relation: 'partner', since: life.age } : p)) }
 }

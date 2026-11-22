@@ -1,5 +1,6 @@
 import { packFor } from '../content'
 import type { ContentPack } from '../content/types'
+import { children as childrenOf } from './family'
 import { formatRupiah } from './format'
 import { UNI_FEE } from './school'
 import { applyChanges } from './stats'
@@ -32,7 +33,7 @@ export function closeMoneyYear(life: Life, pack: ContentPack): Life {
   const salary = salaryOf(life, pack)
   const cut = life.belongings.reduce((sum, id) => sum + (pack.belongings.find((b) => b.id === id)?.livingCut ?? 0), 0)
   const living = ownWay ? Math.max(0, LIFESTYLE[life.lifestyle].cost - cut) : 0
-  const children = life.people.filter((p) => p.relation === 'child' && p.age < 18).length * CHILD_COST
+  const children = childrenOf(life).filter((p) => p.age < 18).length * CHILD_COST
   const uni = life.school.at === 'uni' && life.school.funding === 'self' ? UNI_FEE : 0
   const bpjs = age >= BPJS_AGE && life.flags.includes('bpjs') ? BPJS_PREMIUM : 0
   const before = life.money + allowance + salary - living - children - uni - bpjs

@@ -656,6 +656,123 @@ const people: EventDef[] = [
   ]),
 ]
 
+// Weddings and children. `wedding` is queued by a successful proposal; the baby talk repeats each year until you have a child or say no.
+const wedding = (text: string, money: number, effects: Outcome['effects']): Tiers => [
+  o(text, { money, effects }),
+  o(`${text} The rice ran out early, but nobody minded.`, { money, effects }),
+  o(`${text} It rained, and everybody squeezed in closer.`, { money, effects }),
+]
+const weddingEvent: EventDef = {
+  ...person('wedding', 'Your wedding with {them}', 'You and {them} are getting married. How do you want to celebrate?', [
+    act('small', 'A small family wedding', 85, wedding('You and {them} held a small family wedding, with warm tea and a lot of aunties.', -15_000_000, { happiness: 6 })),
+    act('big', 'A big wedding for the whole neighbourhood', 85, wedding('You and {them} held a big wedding for the whole neighbourhood, with music and far too much food.', -80_000_000, { happiness: 8, reputation: 5 })),
+    act('papers', 'Just sign the papers', 85, wedding('You and {them} signed the papers on a quiet morning. It felt exactly right.', 0, { happiness: 3 })),
+  ]),
+  stages: ['young-adult', 'adult', 'senior'],
+}
+
+const NO_KIDS = { id: 'no-kids', text: 'You and {them} chose a life without children.' }
+const baby = (id: string, role: 'spouse' | 'partner', weight: number): EventDef => ({
+  id, kind: 'choice', stages: ['young-adult', 'adult'], weight, repeat: true, cast: { them: role },
+  when: [{ kind: 'partnered', years: 3 }, { kind: 'children', max: 3 }, { kind: 'age', max: 45 }, { kind: 'no-memory', id: 'no-kids' }],
+  title: 'Talking about a baby',
+  text: 'You and {them} have been talking about the future. Lately the talk keeps landing on a small person with your noses.',
+  actions: [
+    act('try', 'Try for a baby', 75, [
+      o('{child} was born.', { effects: { happiness: 8, stress: 3 }, closeness: { them: 6 }, addPerson: { relation: 'child' } }),
+      o('Not this year. You and {them} stayed hopeful.', { effects: { happiness: 1 } }),
+      o('Not this year. You and {them} agreed to keep trying and keep laughing.', { effects: { stress: 1 } }),
+    ]),
+    act('wait', 'Wait a few years', 80, [
+      o('You and {them} agreed to wait. You booked a holiday instead.', { effects: { happiness: 2, stress: -2 }, closeness: { them: 3 } }),
+      o('You and {them} agreed to wait, though your mothers sighed loudly.', { effects: { stress: 1 } }),
+      o('You and {them} disagreed about the timing, then made up over noodles.', { effects: { stress: 2 }, closeness: { them: -1 } }),
+    ]),
+    act('happy', "We're happy as we are", 80, [
+      o('You and {them} agreed it is just the two of you. The house stays quiet and yours.', { effects: { happiness: 3, stress: -3 }, closeness: { them: 5 }, memory: NO_KIDS }),
+      o('You and {them} agreed, though a few relatives will need convincing.', { effects: { stress: 1 }, memory: NO_KIDS }),
+      o('You and {them} agreed, after a long and slightly awkward talk.', { effects: { stress: 2 }, memory: NO_KIDS }),
+    ]),
+  ],
+})
+
+const FAMILY_STAGES: EventDef['stages'] = ['young-adult', 'adult']
+const family: EventDef[] = [
+  baby('baby-talk', 'spouse', 4),
+  baby('baby-talk-partner', 'partner', 3),
+  {
+    id: 'spouse-bad-week', kind: 'choice', stages: FAMILY_STAGES, weight: 3, cast: { spouse: 'spouse' },
+    title: '{spouse} has a bad week',
+    text: '{spouse} comes home quiet. Work was loud, the bus was late, and the rice cooker has opinions.',
+    actions: [
+      act('listen', 'Make tea and listen', 80, [
+        o('{spouse} talked it all out, and the week looked smaller after tea.', { effects: { happiness: 2, stress: -2 }, closeness: { spouse: 6 } }),
+        o('{spouse} said thanks and went to bed early.', { effects: { stress: -1 }, closeness: { spouse: 3 } }),
+        o('You listened, but the tea went cold and so did the mood.', { effects: { stress: 2 }, closeness: { spouse: 1 } }),
+      ]),
+      act('cook', 'Cook their favourite meal', 70, [
+        o('The nasi goreng was nearly perfect. {spouse} had seconds.', { effects: { happiness: 3 }, closeness: { spouse: 7 } }),
+        o('The dinner was a little salty, and {spouse} ate it anyway.', { effects: { happiness: 1 }, closeness: { spouse: 4 } }),
+        o('You burnt the garlic. {spouse} laughed for the first time all week.', { effects: { stress: 1 }, closeness: { spouse: 3 } }),
+      ]),
+      act('space', 'Give them space', 75, [
+        o('{spouse} took a long walk and came back smiling.', { effects: { stress: -1 }, closeness: { spouse: 2 } }),
+        o('{spouse} wanted space, and you both got on with the evening.', { effects: { stress: 1 } }),
+        o('{spouse} wondered why you did not ask. The evening felt long.', { effects: { happiness: -1 }, closeness: { spouse: -3 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'spouse-anniversary', kind: 'news', stages: FAMILY_STAGES, weight: 2, cast: { spouse: 'spouse' },
+    title: 'Another year together', text: 'You and {spouse} remember the day you were married.',
+    news: { text: 'You and {spouse} celebrated the years together with fried tempeh and a very long nap.', effects: { happiness: 2 }, closeness: { spouse: 3 } },
+  },
+  {
+    id: 'child-sleepless', kind: 'choice', stages: FAMILY_STAGES, weight: 3, cast: { child: 'child' },
+    title: '{child} will not sleep', text: 'It is well past bedtime, and {child} has decided the night is for company.',
+    actions: [
+      act('story', 'Read a story', 80, [
+        o('{child} yawned halfway through and fell asleep on your arm.', { effects: { happiness: 3 }, closeness: { child: 6 } }),
+        o('{child} listened to every word, then asked for another.', { effects: { stress: 1 }, closeness: { child: 4 } }),
+        o('You fell asleep first, and {child} drew on your face.', { effects: { stress: 1 }, closeness: { child: 3 } }),
+      ]),
+      act('sing', 'Sing a lullaby', 70, [
+        o('{child} hummed along and drifted off.', { effects: { happiness: 2 }, closeness: { child: 5 } }),
+        o('{child} said you sang it wrong, but fell asleep.', { effects: { happiness: 1 }, closeness: { child: 3 } }),
+        o('{child} laughed so much that sleep got even further away.', { effects: { stress: 2 }, closeness: { child: 2 } }),
+      ]),
+      act('firm', 'Say it is bedtime', 75, [
+        o('{child} grumbled, then settled down, and you got some peace.', { effects: { stress: -1 }, closeness: { child: 1 } }),
+        o('{child} went to bed with a big sigh.', { effects: { stress: 1 } }),
+        o('{child} protested for an hour, and you gave in to snacks.', { effects: { stress: 3 }, closeness: { child: -1 } }),
+      ]),
+    ],
+  },
+  {
+    id: 'child-funny', kind: 'news', stages: FAMILY_STAGES, weight: 2, cast: { child: 'child' },
+    title: '{child} is funny', text: 'Something {child} did today is going to be told at every family dinner.',
+    news: { text: '{child} announced a very serious plan to become a chicken farmer, and asked for a coop.', effects: { happiness: 2 }, closeness: { child: 3 } },
+  },
+]
+
+const propose = person('propose', 'Proposing to {them}', 'You have thought about it for a long time. You want to ask {them} to marry you.', [
+  act('ring', 'Propose over dinner', 70, [
+    o('{them} said yes before you finished the question. You are engaged, and then married.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
+    o('{them} said they need a little more time, with a smile.', { effects: { happiness: 1, stress: 2 }, closeness: { them: 3 } }),
+    o('{them} said not yet, kindly. The dinner got very quiet.', { effects: { happiness: -5 }, closeness: { them: -6 } }),
+  ]),
+  act('home', 'Ask at home, with family nearby', 65, [
+    o('Everybody cheered when {them} said yes. The aunties cried first.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
+    o('{them} wanted to talk it over first, and you both agreed it was fair.', { effects: { happiness: 1, stress: 2 }, closeness: { them: 3 } }),
+    o('{them} felt a bit put on the spot. You will do it differently next time.', { effects: { happiness: -5 }, closeness: { them: -6 } }),
+  ]),
+  act('walk', 'Ask on a quiet walk', 75, [
+    o('{them} stopped walking, laughed, and said yes.', { effects: { happiness: 8 }, closeness: { them: 10 } }),
+    o('{them} held your hand and said "soon", which was almost an answer.', { effects: { happiness: 1, stress: 2 }, closeness: { them: 3 } }),
+    o('{them} said not yet. You walked home slowly.', { effects: { happiness: -5 }, closeness: { them: -6 } }),
+  ]),
+])
+
 // Queued by school.ts when SMP ends, never drawn at random; each outcome carries the path move it takes.
 const fork = (path: string, ...texts: [string, string, string]): Tiers =>
   texts.map((text) => o(text, { path })) as Tiers
@@ -715,4 +832,4 @@ const jobNews: EventDef[] = [
   workNews('news-work-praise', 'A kind word', 'A customer wrote to say you were helpful. Your boss read it out in the morning meeting.', { effects: { reputation: 3, happiness: 3 } }),
 ]
 
-export const events: EventDef[] = [...choices, ...news, ...jobNews, ...lifeNews, ...lifeChoices, ...people, afterSmp, promotion]
+export const events: EventDef[] = [...choices, ...news, ...jobNews, ...lifeNews, ...lifeChoices, ...people, propose, weddingEvent, ...family, afterSmp, promotion]

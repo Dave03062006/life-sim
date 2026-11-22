@@ -93,7 +93,8 @@ describe('indonesia events', () => {
   const choices = events.filter((e) => e.kind === 'choice')
   const actions = choices.flatMap((e) => (e.actions ?? []).map((a) => ({ e, a })))
   const outcomes = actions.flatMap(({ e, a }) => (['success', 'mixed', 'fail'] as const).map((t) => ({ e, a, t, o: a.outcomes[t] })))
-  const roles = (e: (typeof events)[number]) => ['name', ...(e.id === 'talk' || e.id === 'ask-out' ? ['them'] : []), 'job', 'next', ...Object.keys(e.cast ?? {})]
+  const BUILT_IN = ['talk', 'ask-out', 'propose', 'wedding']
+  const roles = (e: (typeof events)[number]) => ['name', ...(BUILT_IN.includes(e.id) ? ['them'] : []), 'job', 'next', ...Object.keys(e.cast ?? {}), ...(e.id.startsWith('baby-talk') ? ['child'] : [])]
   const texts = (e: (typeof events)[number]) => [e.title, e.text, e.recall?.text ?? '', e.news?.text ?? '',
     ...(e.actions ?? []).flatMap((a) => [a.label, a.open?.note ?? '', ...Object.values(a.outcomes).flatMap((o) => [o.text, o.memory?.text ?? ''])])]
   const unknownRoles = events.flatMap((e) => texts(e).flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((m) => m[1]!)).filter((r) => !roles(e).includes(r)))
@@ -134,14 +135,14 @@ describe('indonesia events', () => {
     expect(recorded.has('covered-friend')).toBe(true)
   })
   it('keeps effects modest', () => {
-    const big = outcomes.filter(({ o }) => Object.values(o.effects ?? {}).some((v) => Math.abs(v) > 8) || Math.abs(o.money ?? 0) > 500_000 || (o.money !== undefined && o.money !== 0 && Math.abs(o.money) < 10_000))
+    const big = outcomes.filter(({ e }) => e.id !== 'wedding').filter(({ o }) => Object.values(o.effects ?? {}).some((v) => Math.abs(v) > 8) || Math.abs(o.money ?? 0) > 500_000 || (o.money !== undefined && o.money !== 0 && Math.abs(o.money) < 10_000))
     expect(big).toEqual([])
     expect(events.filter((e) => e.news && (Object.values(e.news.effects ?? {}).some((v) => Math.abs(v) > 8) || Math.abs(e.news.money ?? 0) > 500_000))).toEqual([])
   })
   it('limits crush events to late teens and rare draws, and adds crushes only in romance actions', () => {
     expect(events.filter((e) => Object.values(e.cast ?? {}).includes('crush') && (!e.stages.includes('late-teen') || e.weight > 2))).toEqual([])
-    expect(outcomes.filter(({ a, o }) => o.addPerson && !a.romance)).toEqual([])
-    expect(outcomes.filter(({ o }) => o.addPerson)).not.toHaveLength(0)
+    expect(outcomes.filter(({ a, o }) => o.addPerson?.relation === 'crush' && !a.romance)).toEqual([])
+    expect(outcomes.filter(({ o }) => o.addPerson?.relation === 'crush')).not.toHaveLength(0)
   })
   it('includes the required story events and news', () => {
     const trip = events.find((e) => e.id === 'class-trip-money')!
@@ -158,8 +159,19 @@ describe('indonesia events', () => {
     expect(events.find((e) => e.id === 'cover-for-friend')!.when).toContainEqual({ kind: 'age', min: 15, max: 15 })
     expect(events.find((e) => e.id === 'class-trip-money')!.when).toContainEqual({ kind: 'age', min: 16 })
   })
-  it('uses {them} only in talk and ask-out', () => {
-    expect(events.filter((e) => e.id !== 'talk' && e.id !== 'ask-out' && texts(e).some((t) => t.includes('{them}')))).toEqual([])
+  it('uses {them} only in built-in person events and events that cast it', () => {
+    expect(events.filter((e) => !BUILT_IN.includes(e.id) && !e.cast?.them && texts(e).some((t) => t.includes('{them}')))).toEqual([])
+  })
+  it('limits every repeat event with a children or no-memory condition', () => {
+    const repeats = events.filter((e) => e.repeat)
+    expect(repeats.map((e) => e.id)).toContain('baby-talk')
+    expect(repeats.filter((e) => !(e.when ?? []).some((c) => c.kind === 'children' || c.kind === 'no-memory'))).toEqual([])
+  })
+  it('offers three wedding choices with the right prices', () => {
+    const wedding = events.find((e) => e.id === 'wedding')!
+    expect(wedding.weight).toBe(0)
+    expect(wedding.actions!.map((a) => a.outcomes.success.money)).toEqual([-15_000_000, -80_000_000, 0])
+    expect(events.find((e) => e.id === 'propose')!.weight).toBe(0)
   })
   it('defines talk and ask-out for use from 12', () => {
     const built = events.filter((e) => e.id === 'talk' || e.id === 'ask-out')

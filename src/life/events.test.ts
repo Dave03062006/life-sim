@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { packFor } from '../content'
 import type { ContentPack, EventAction, EventDef, Outcome } from '../content/types'
 import { createRng } from '../engine/random'
 import { availableActions, drawEvents, dropStale, fill, resolveEvent, rollTier } from './events'
@@ -232,5 +233,50 @@ describe('memories and age gates', () => {
     const gated = packOf([choice('only-15', { when: [{ kind: 'age', min: 15, max: 15 }] })])
     expect(drawEvents(testLife({ age: 15 }), gated).seenEvents).toEqual(['only-15'])
     expect(drawEvents(testLife({ age: 16 }), gated).seenEvents).toEqual([])
+  })
+})
+
+describe('family events', () => {
+  const real = packFor('indonesia').events
+  const babies = packOf(real.filter((e) => e.id.startsWith('baby-talk')))
+  const rani = (since: number): Person => ({ id: 'p-4', name: 'Rani', relation: 'partner', gender: 'female', age: 24, closeness: 80, since })
+  const drawn = (life: Life) => Array.from({ length: 40 }, (_, i) => drawEvents({ ...life, rng: i + 1 }, babies).pendingEvents.length)
+  const youngPair = (since: number) => testLife({ age: 25, people: [...testLife().people, rani(since)] })
+
+  it('does not offer a baby after 2 years with a partner, but does after 3', () => {
+    expect(drawn(youngPair(23)).every((n) => n === 0)).toBe(true)
+    expect(drawn(youngPair(22)).every((n) => n === 1)).toBe(true)
+  })
+  it('offers a baby to a spouse at once, up to three children, and not after no-kids', () => {
+    const spouse: Person = { ...rani(25), relation: 'spouse' }
+    const kid = (id: string): Person => ({ id, name: id, relation: 'child', gender: 'male', age: 1, closeness: 80 })
+    const life = testLife({ age: 25, people: [...testLife().people, spouse] })
+    expect(drawn(life).every((n) => n === 1)).toBe(true)
+    expect(drawn({ ...life, people: [...life.people, kid('k1'), kid('k2'), kid('k3')] }).every((n) => n === 1)).toBe(true)
+    expect(drawn({ ...life, people: [...life.people, kid('k1'), kid('k2'), kid('k3'), kid('k4')] }).every((n) => n === 0)).toBe(true)
+    expect(drawn({ ...life, memories: [{ id: 'no-kids', age: 24, text: 'x', people: [] }] }).every((n) => n === 0)).toBe(true)
+    expect(drawn({ ...life, age: 46 }).every((n) => n === 0)).toBe(true)
+  })
+  it('adds a newborn with a free name when trying for a baby succeeds', () => {
+    const life = testLife({ age: 25, people: [...testLife().people, { ...rani(25), relation: 'spouse' }], pendingEvents: pending('baby-talk', { them: 'p-4' }) })
+    const results = Array.from({ length: 40 }, (_, i) => resolveEvent({ ...life, rng: i + 1 }, babies, 'try', 'calm'))
+    const win = results.find((r) => r.tier === 'success')
+    expect(win).toBeDefined()
+    const born = win!.life.people.find((p) => p.relation === 'child')!
+    expect(born).toMatchObject({ age: 0, closeness: 80 })
+    expect(life.people.some((p) => p.name === born.name) || life.name.includes(born.name)).toBe(false)
+    expect(win!.entry.text).toBe(`${born.name} was born.`)
+    expect(results.filter((r) => r.tier !== 'success').every((r) => r.life.people.length === life.people.length)).toBe(true)
+  })
+  it('lets a repeat event come back in a later year, but only once a year', () => {
+    const only = packOf([choice('again', { repeat: true })])
+    const first = drawEvents(testLife(), only)
+    expect(first.pendingEvents).toHaveLength(1)
+    expect(drawEvents(first, only).pendingEvents).toHaveLength(2)
+    expect(drawEvents(first, only).seenEvents).toEqual(['again'])
+  })
+  it('drops a waiting wedding whose spouse has died', () => {
+    const life = testLife({ pendingEvents: pending('wedding', { them: 'p-4' }) })
+    expect(dropStale(life, packOf(real)).pendingEvents).toEqual([])
   })
 })

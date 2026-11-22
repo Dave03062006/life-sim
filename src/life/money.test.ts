@@ -46,6 +46,11 @@ describe('money', () => {
     expect(run(18)).toBe(-42_000_000)
   })
 
+  it('charges 18.000.000 for two children under 18', () => {
+    const kid = (id: string, age: number) => ({ id, name: id, relation: 'child' as const, gender: 'male' as const, age, closeness: 80 })
+    expect(closeMoneyYear(testLife({ ...grown, age: 40, money: 0, people: [kid('a', 3), kid('b', 17)] }), pack).money).toBe(-42_000_000 - 18_000_000)
+  })
+
   it('charges BPJS from 18 with the flag, and sets ownWay at 25', () => {
     const life = testLife({ ...grown, age: 25, ownWay: false, flags: ['bpjs'], money: 100_000_000 })
     const closed = closeMoneyYear(life, pack)
